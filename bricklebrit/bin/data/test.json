@@ -1,0 +1,45 @@
+{
+ "ContentType": "Root",
+ "Properties": [
+ ],
+ "ChildNodes": [
+  {
+   "ContentType": "Sprite",
+   "Properties": [
+    { "name": "Name", "type": "String", "value": "Sprite Name 1"},
+    { "name": "Position", "type": "PointInt", "value": {"x": 0,"y": 0}},
+    { "name": "Rotation", "type": "Float", "value": 0.000000},
+    { "name": "Scale", "type": "PointFloat", "value": {"x": 1.000000,"y": 1.000000}},
+    { "name": "Size", "type": "RectInt", "value": {"x": 0,"y": 0,"width": 0,"height": 0}},
+    { "name": "Texture", "type": "String", "value": "res://"},
+    { "name": "TextureSourceRect", "type": "RectInt", "value": {"x": 0,"y": 0,"width": 0,"height": 0}}
+   ]
+  },
+  {
+   "ContentType": "Sprite",
+   "Properties": [
+    { "name": "Name", "type": "String", "value": "Sprite Name 2"},
+    { "name": "Position", "type": "PointInt", "value": {"x": 0,"y": 0}},
+    { "name": "Rotation", "type": "Float", "value": 0.000000},
+    { "name": "Scale", "type": "PointFloat", "value": {"x": 1.000000,"y": 1.000000}},
+    { "name": "Size", "type": "RectInt", "value": {"x": 0,"y": 0,"width": 0,"height": 0}},
+    { "name": "Texture", "type": "String", "value": "res://"},
+    { "name": "TextureSourceRect", "type": "RectInt", "value": {"x": 0,"y": 0,"width": 0,"height": 0}}
+   ],
+   "ChildNodes": [
+    {
+     "ContentType": "Sprite",
+     "Properties": [
+      { "name": "Name", "type": "String", "value": "Sprite Name 3"},
+      { "name": "Position", "type": "PointInt", "value": {"x": 0,"y": 0}},
+      { "name": "Rotation", "type": "Float", "value": 0.000000},
+      { "name": "Scale", "type": "PointFloat", "value": {"x": 1.000000,"y": 1.000000}},
+      { "name": "Size", "type": "RectInt", "value": {"x": 0,"y": 0,"width": 0,"height": 0}},
+      { "name": "Texture", "type": "String", "value": "res://"},
+      { "name": "TextureSourceRect", "type": "RectInt", "value": {"x": 0,"y": 0,"width": 0,"height": 0}}
+     ]
+    }
+   ]
+  }
+ ]
+}
