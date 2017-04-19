@@ -7,7 +7,7 @@ import "/home/pam/Programmierung/of_v0.9.8_linux64_release/libs/openFrameworksCo
 Project{
     property string of_root: '/home/pam/Programmierung/of_v0.9.8_linux64_release'
     references: [
-        FileInfo.path(path)+"/Shared/bricklelib.qbs",
+        FileInfo.path(path)+"/shared/bricklelib.qbs",
         FileInfo.joinPaths(of_root,"/libs/openFrameworksCompiled/project/qtcreator/openFrameworks.qbs")
     ]
 
