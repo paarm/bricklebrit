@@ -6,12 +6,11 @@ Project {
         name: "brickleedit"
         cpp.includePaths: ["."]
         files: [
-            "main.cpp",
-            "mainwindow.cpp",
-            "mainwindow.h",
-            "mainwindow.ui",
-            "myopenglwidget.cpp",
-            "myopenglwidget.h"
+            "src/main.cpp",
+            "src/mainwindow/mainwindow.cpp",
+            "src/mainwindow/mainwindow.h",
+            "src/mainwindow/sceneglwidget.cpp",
+            "src/mainwindow/sceneglwidget.h"
         ]
         Depends {
             name: "Qt";
