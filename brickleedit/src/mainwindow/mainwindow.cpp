@@ -25,14 +25,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 	panel->setLayout(vTreeLayout);
 	mTreeDock->setWidget(panel);
-
-
 	// Properties Dock
 	mPropertiesDock=new QDockWidget("Properties", this);
 	this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, mPropertiesDock);
 
+
+	mToolBar->addAction(QIcon("data/icons/newproject.png"), "New Project");
+	QObject::connect(mToolBar->actions().back(), &QAction::triggered, this, &MainWindow::onNewProject);
 }
 
 MainWindow::~MainWindow()
 {
 }
+
+void MainWindow::onNewProject() {
+	mProjectContext.newProject();
+}
+

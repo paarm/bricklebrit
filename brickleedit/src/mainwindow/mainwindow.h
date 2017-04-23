@@ -13,6 +13,10 @@
 #include <QSpacerItem>
 #include <QTreeWidget>
 #include <QSizePolicy>
+#include <QMenu>
+#include <QAction>
+#include <QIcon>
+#include "../project/projectcontext.h"
 
 namespace Ui {
 class MainWindow;
@@ -25,12 +29,14 @@ class MainWindow : public QMainWindow
 public:
 	explicit MainWindow(QWidget *parent = 0);
 	~MainWindow();
-
+public slots:
+	void onNewProject();
 private:
 	SceneGlWidget*	mSceneGlWidget=nullptr;
 	QToolBar*		mToolBar=nullptr;
 	QDockWidget*	mTreeDock=nullptr;
 	QDockWidget*	mPropertiesDock=nullptr;
+	ProjectContext	mProjectContext;
 };
 
 #endif // MAINWINDOW_H
