@@ -1,14 +1,11 @@
 #include "projectcontext.h"
 
-ProjectContext::ProjectContext()
-{
+ProjectContext::ProjectContext() {}
 
-}
-
-void ProjectContext::newProject() {
+void ProjectContext::createNewProject(const string& rProjectName) {
 	mNodeRoot.deleteChildNodes();
 	NodeProject* rNodeProject=static_cast<NodeProject*>(mNodeRoot.addChildNode(new NodeProject()));
-	rNodeProject->setProjectName("My new Project");
+	rNodeProject->setProjectName(rProjectName);
 	rNodeProject->addChildNode(new NodeSprite());
 	string mm;
 	rNodeProject->serialize(mm,0);

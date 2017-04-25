@@ -13,11 +13,18 @@ Project {
         cpp.includePaths: ["."]
         cpp.staticLibraries: "GLEW"
         files: [
+            "src/gui/guicontext.cpp",
+            "src/gui/guicontext.h",
+            "src/gui/newproject/newprojectdialog.cpp",
+            "src/gui/newproject/newprojectdialog.h",
+            "src/gui/newproject/newprojectdialog.ui",
+            "src/gui/toolbar.cpp",
+            "src/gui/toolbar.h",
             "src/main.cpp",
-            "src/mainwindow/mainwindow.cpp",
-            "src/mainwindow/mainwindow.h",
-            "src/mainwindow/sceneglwidget.cpp",
-            "src/mainwindow/sceneglwidget.h",
+            "src/gui/mainwindow.cpp",
+            "src/gui/mainwindow.h",
+            "src/gui/sceneglwidget.cpp",
+            "src/gui/sceneglwidget.h",
             "src/project/projectcontext.cpp",
             "src/project/projectcontext.h",
         ]
