@@ -10,6 +10,6 @@ protected:
 	virtual bool parseRoot(JSONValue *rJSONValueParent);
 public:
 	NodeParser();
-	Node* parseFile(const string& rFile);
+	Node* parseFile(Node* rNodeRoot, const string& rFile);
 };
 

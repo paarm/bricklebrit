@@ -10,8 +10,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	mToolBar=new ToolBar("Tools", this);
 	this->addToolBar(mToolBar);
 	// Tree Dock
-	mSceneTreeDock=new QDockWidget("Tree", this);
+	mSceneTreeDock=new SceneTreeDock(this);
 	this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, mSceneTreeDock);
+#if 0
 	QWidget	*panel=new QWidget(mSceneTreeDock);
 	QVBoxLayout *vTreeLayout = new QVBoxLayout();
 	QHBoxLayout *treeLayout = new QHBoxLayout();
@@ -26,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 	panel->setLayout(vTreeLayout);
 	mSceneTreeDock->setWidget(panel);
+#endif
 	// Properties Dock
 	mElementPropertyDock=new QDockWidget("Properties", this);
 	this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, mElementPropertyDock);

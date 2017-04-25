@@ -20,5 +20,6 @@ public:
 
 public slots:
 	void onNewProject();
+	void onOpenProject();
 };
 

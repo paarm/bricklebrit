@@ -1,4 +1,7 @@
 #include "node.h"
+#include <iostream>
+#include <fstream>
+
 
 const string getContentTypeAsString(ContentType &rContentType) {
 	switch (rContentType) {
@@ -121,11 +124,42 @@ Node::~Node() {
 	deleteChildNodes();
 }
 
+Node* Node::getParent() {
+	return mParent;
+}
+
 Node* Node::addChildNode(Node *rNode) {
 	mNodes.push_back(rNode);
 	Node *rv=mNodes.back();
 	rv->mParent=this;
 	return rv;
+}
+
+void Node::moveChildNode(Node* rNodeToMove) {
+	if (rNodeToMove!=this) {
+		Node* parent=rNodeToMove->getParent();
+		if (parent && parent!=this) {
+			bool found=false;
+			for (auto it=rNodeToMove->mParent->mNodes.begin();it!=rNodeToMove->mParent->mNodes.end();it++) {
+				if (*it.base()==rNodeToMove) {
+					found=true;
+					rNodeToMove->mParent->mNodes.erase(it);
+					break;
+				}
+			}
+			if (found) {
+				addChildNode(rNodeToMove);
+			}
+		}
+	}
+}
+
+Node* Node::getFirstChildNode() {
+	Node *firstChild=nullptr;
+	if (!mNodes.empty()) {
+		firstChild=mNodes[0];
+	}
+	return firstChild;
 }
 
 void Node::deleteChildNodes() {
@@ -152,6 +186,11 @@ void Node::deleteNode(Node *rNodeToDelete) {
 unsigned long Node::getChildCount() {
 	return mNodes.size();
 }
+
+ContentType& Node::getContentType() {
+	return mContentType;
+}
+
 
 template<typename T>
 void Node::setProperty(const string& rName, const T &rValue, PropertyType rPropertyType, PropertyBaseValue<T>*r) {
@@ -264,7 +303,43 @@ PropertyPointFloat* Node::getPropertyPointFloat(const string &rName) {
 	}
 	return nullptr;
 }
+#if 0
+template<typename CharT>
+class DecimalSeparator : public std::numpunct<CharT>
+{
+public:
+	DecimalSeparator(CharT Separator)
+	: m_Separator(Separator)
+	{}
 
+protected:
+	CharT do_decimal_point()const
+	{
+		return m_Separator;
+	}
+
+private:
+	CharT m_Separator;
+};
+#endif
+
+bool Node::persistSubNode(const string &rFileNameAbs) {
+	bool rv=false;
+	string rContentString;
+	serialize(rContentString,0);
+	ofstream outputFile;
+	   // tell cout to use our new locale.
+
+	//outputFile.unsetf(ios::showpoint);
+	outputFile.open (rFileNameAbs.c_str());
+	if (outputFile.is_open()) {
+		//outputFile.imbue(std::locale(std::cout.getloc(), new DecimalSeparator<char>('.')));
+		outputFile << rContentString;
+		outputFile.close();
+		rv=true;
+	}
+	return rv;
+}
 
 void Node::serialize(string &buf, unsigned long indent) {
 	string rC=string(indent, ' ');
@@ -311,6 +386,17 @@ void Node::serialize(string &buf, unsigned long indent) {
 }
 
 void Node::deserialize(JSONValue *rJSONValueParent) {
+	string contentType=JsonParserBase::extractString(rJSONValueParent, L"ContentType");
+	if (contentType.empty()) {
+		cout << "ContentType not found or empty\n";
+	} else {
+		ContentType rContentType=getContentTypeFromString(contentType);
+		Node *rChildNode=addChildNode(getInstanceFromContentType(rContentType));
+		rChildNode->deserializeSelf(rJSONValueParent);
+	}
+}
+
+void Node::deserializeSelf(JSONValue *rJSONValueParent) {
 	do {
 		if (rJSONValueParent->IsObject()) {
 #if 0
@@ -373,14 +459,7 @@ void Node::deserialize(JSONValue *rJSONValueParent) {
 			if (rChildNodes && rChildNodes->IsArray()) {
 				const JSONArray &rJSONArray=rChildNodes->AsArray();
 				for (auto *rJSONValue : rJSONArray) {
-					string contentType=JsonParserBase::extractString(rJSONValue, L"ContentType");
-					if (contentType.empty()) {
-						cout << "ContentType not found or empty\n";
-						continue;
-					}
-					ContentType rContentType=getContentTypeFromString(contentType);
-					Node *rChildNode=addChildNode(getInstanceFromContentType(rContentType));
-					rChildNode->deserialize(rJSONValue);
+					deserialize(rJSONValue);
 				}
 			}
 		}

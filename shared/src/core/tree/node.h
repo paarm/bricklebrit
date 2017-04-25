@@ -34,15 +34,20 @@ private:
 	void setProperty(const string& rName, const T &rValue, PropertyType rPropertyType, PropertyBaseValue<T>*r);
 	template<typename T>
 	void setProperty(const string& rName, PropertyType rPropertyType, PropertyBaseValue<T>*r);
+	void deserializeSelf(JSONValue *rJSONValueParent);
 public:
 	Node();
 	Node(ContentType rContentType);
 	virtual ~Node();
 	Node* addChildNode(Node*);
+	Node* getParent();
+	Node* getFirstChildNode();
+	void moveChildNode(Node* rNodeToMove);
 	void deleteChildNodes();
 	void deleteNode(Node *rNodeToDelete);
 	unsigned long getChildCount();
 
+	ContentType& getContentType();
 	void setPropertyString(const string& rName, const string &rValue);
 	void setPropertyFloat(const string& rName, const float &rValue);
 	void setPropertyInt(const string& rName, const int &rValue);
@@ -60,6 +65,7 @@ public:
 	PropertyPointInt* getPropertyPointInt(const string &rName);
 	PropertyPointFloat* getPropertyPointFloat(const string &rName);
 
+	bool persistSubNode(const string &rFileNameAbs);
 	void serialize(string &buf, unsigned long indent);
 	void deserialize(JSONValue *rJSONValueParent);
 };

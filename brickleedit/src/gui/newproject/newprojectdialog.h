@@ -18,9 +18,13 @@ public:
 	void init();
 	void setProjectName(const QString& rProjectName);
 	QString getProjectName();
+	void setProjectPath(const QString& rProjectPath);
+	QString getProjectPath();
 
 private slots:
-	void on_buttonBox_clicked(QAbstractButton *button);
+	void on_choosePath_clicked();
+	void on_okButton_clicked();
+	void on_cancelButton_clicked();
 
 private:
 	Ui::NewProjectDialog *ui;

@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+ <qresource>
+     <file>icons/newproject.png</file>
+	 <file>icons/openproject.png</file>
+</qresource>
+ </RCC>

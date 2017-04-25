@@ -11,10 +11,19 @@ bool JsonParserBase::parse(const string &rFileName) {
 	getcwd(cCurrentPath, sizeof(cCurrentPath));
 
 	cout << "Current working dir: " << cCurrentPath <<endl;
-
-    ifstream rFileStream(rFileName);
+#if 0
+	ifstream rFileStreamxx(rFileName);
+	string line;
+	while ( getline (rFileStreamxx,line) ) {
+		cout << line.c_str() << '\n';
+	}
+	rFileStreamxx.close();
+#endif
+	ifstream rFileStream(rFileName);
     string rFileString((istreambuf_iterator<char>(rFileStream)), istreambuf_iterator<char>());
-    //cout << rFileString <<endl;
+	rFileStream.close();
+
+	//cout << rFileString <<endl;
 
     JSONValue *rJSONValue=JSON::Parse(rFileString.c_str());
     if (rJSONValue && rJSONValue->IsObject()) {
