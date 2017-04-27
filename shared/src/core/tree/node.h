@@ -30,10 +30,7 @@ private:
 	Node*						mParent=nullptr;
 	map<string, PropertyBase*>	mPropertyMap;
 	ContentType					mContentType=ContentType::Node;
-	template<typename T>
-	void setProperty(const string& rName, const T &rValue, PropertyType rPropertyType, PropertyBaseValue<T>*r);
-	template<typename T>
-	void setProperty(const string& rName, PropertyType rPropertyType, PropertyBaseValue<T>*r);
+	void setProperty(const string& rName, PropertyBase* r);
 	void deserializeSelf(JSONValue *rJSONValueParent);
 public:
 	Node();
@@ -55,6 +52,7 @@ public:
 	void setPropertyRectFloat(const string& rName, const RectFloat &rValue);
 	void setPropertyPointInt(const string& rName, const PointInt &rValue);
 	void setPropertyPointFloat(const string& rName, const PointFloat &rValue);
+	void setPropertyList(const string& rName);
 
 	PropertyBase* getProperty(const string &rName);
 	PropertyString* getPropertyString(const string &rName);
@@ -64,6 +62,7 @@ public:
 	PropertyRectFloat* getPropertyRectFloat(const string &rName);
 	PropertyPointInt* getPropertyPointInt(const string &rName);
 	PropertyPointFloat* getPropertyPointFloat(const string &rName);
+	PropertyList* getPropertyList(const string &rName);
 
 	bool persistSubNode(const string &rFileNameAbs);
 	void serialize(string &buf, unsigned long indent);
@@ -130,6 +129,17 @@ const PointFloat& get##fieldName() { \
 	return getPropertyPointFloat (#fieldName)->value; \
 }
 
+#define PROPERTY_LIST(fieldName) \
+void set##fieldName() { \
+	setPropertyList (#fieldName); \
+} \
+const ListType& get##fieldName() { \
+	return getPropertyList (#fieldName)->value; \
+} \
+PropertyList* getPropertyList##fieldName() { \
+	return getPropertyList (#fieldName); \
+}
+
 
 class NodeRoot : public Node {
 private:
@@ -143,9 +153,11 @@ private:
 public:
 	PROPERTY_STRING(ProjectName)
 	PROPERTY_STRING(StartScene)
+	PROPERTY_LIST(ListTest)
 	NodeProject() : Node(ContentType::Project) {
 		setProjectName("");
 		setStartScene("");
+		setListTest();
 	}
 };
 

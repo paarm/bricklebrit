@@ -20,12 +20,26 @@ struct Point {
 typedef Point<int> PointInt;
 
 struct PropertyPointInt : PropertyBaseValue<PointInt> {
-	virtual string serialize() override {
-		return getSerialStart(getPropertyStringFromPropertyType(propertyType))
-				+value.getSerialString()
-				+getSerialEnd();
+	PropertyPointInt() {
+		value.x=0;
+		value.y=0;
+		propertyType=PropertyType::PointInt;
 	}
-	virtual void deserialize(JSONValue *rPropertyValueParent) override {
+	PropertyPointInt(int rX, int rY) {
+		value.x=rX;
+		value.y=rY;
+		propertyType=PropertyType::PointInt;
+	}
+
+	PropertyPointInt(const PointInt& v) {
+		value=v;
+		propertyType=PropertyType::PointInt;
+	}
+	virtual string serializeValue() override {
+		return getSerialStart(getPropertyStringFromPropertyType(propertyType))
+				+value.getSerialString();
+	}
+	virtual void deserializeValue(JSONValue *rPropertyValueParent) override {
 		JSONValue *values=rPropertyValueParent->Child(L"value");
 		if (values && values->IsObject()) {
 			float rX=JsonParserBase::extractNumber(values, L"x");
@@ -39,12 +53,25 @@ struct PropertyPointInt : PropertyBaseValue<PointInt> {
 typedef Point<float> PointFloat;
 
 struct PropertyPointFloat : PropertyBaseValue<PointFloat> {
-	virtual string serialize() override {
-		return getSerialStart(getPropertyStringFromPropertyType(propertyType))
-				+value.getSerialString()
-				+getSerialEnd();
+	PropertyPointFloat() {
+		value.x=0.0;
+		value.y=0.0;
+		propertyType=PropertyType::PointFloat;
 	}
-	virtual void deserialize(JSONValue *rPropertyValueParent) override {
+	PropertyPointFloat(float rX, float rY) {
+		value.x=rX;
+		value.y=rY;
+		propertyType=PropertyType::PointFloat;
+	}
+	PropertyPointFloat(const PointFloat& v) {
+		value=v;
+		propertyType=PropertyType::PointFloat;
+	}
+	virtual string serializeValue() override {
+		return getSerialStart(getPropertyStringFromPropertyType(propertyType))
+				+value.getSerialString();
+	}
+	virtual void deserializeValue(JSONValue *rPropertyValueParent) override {
 		JSONValue *values=rPropertyValueParent->Child(L"value");
 		if (values && values->IsObject()) {
 			float rX=JsonParserBase::extractNumber(values, L"x");

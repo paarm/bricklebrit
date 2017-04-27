@@ -24,12 +24,31 @@ struct Rect {
 typedef Rect<int> RectInt;
 
 struct PropertyRectInt : PropertyBaseValue<RectInt> {
-	virtual string serialize() override {
-		return getSerialStart(getPropertyStringFromPropertyType(propertyType))
-				+value.getSerialString()
-				+getSerialEnd();
+	PropertyRectInt() {
+		value.x=0;
+		value.y=0;
+		value.width=0;
+		value.height=0;
+		propertyType=PropertyType::RectInt;
 	}
-	virtual void deserialize(JSONValue *rPropertyValueParent) override {
+
+	PropertyRectInt(int rX, int rY, int rWidth, int rHeight) {
+		value.x=rX;
+		value.y=rY;
+		value.width=rWidth;
+		value.height=rHeight;
+		propertyType=PropertyType::RectInt;
+	}
+
+	PropertyRectInt(const RectInt &v) {
+		value=v;
+		propertyType=PropertyType::RectInt;
+	}
+	virtual string serializeValue() override {
+		return getSerialStart(getPropertyStringFromPropertyType(propertyType))
+				+value.getSerialString();
+	}
+	virtual void deserializeValue(JSONValue *rPropertyValueParent) override {
 		JSONValue *values=rPropertyValueParent->Child(L"value");
 		if (values && values->IsObject()) {
 			float rX=JsonParserBase::extractNumber(values, L"x");
@@ -47,12 +66,31 @@ struct PropertyRectInt : PropertyBaseValue<RectInt> {
 typedef Rect<float> RectFloat;
 
 struct PropertyRectFloat : PropertyBaseValue<RectFloat> {
-	virtual string serialize() override {
-		return getSerialStart(getPropertyStringFromPropertyType(propertyType))
-				+value.getSerialString()
-				+getSerialEnd();
+	PropertyRectFloat() {
+		value.x=0.0;
+		value.y=0.0;
+		value.width=0.0;
+		value.height=0.0;
+		propertyType=PropertyType::RectFloat;
 	}
-	virtual void deserialize(JSONValue *rPropertyValueParent) override {
+
+	PropertyRectFloat(float rX, float rY, float rWidth, float rHeight) {
+		value.x=rX;
+		value.y=rY;
+		value.width=rWidth;
+		value.height=rHeight;
+		propertyType=PropertyType::RectFloat;
+	}
+
+	PropertyRectFloat(const RectFloat &v) {
+		value=v;
+		propertyType=PropertyType::RectFloat;
+	}
+	virtual string serializeValue() override {
+		return getSerialStart(getPropertyStringFromPropertyType(propertyType))
+				+value.getSerialString();
+	}
+	virtual void deserializeValue(JSONValue *rPropertyValueParent) override {
 		JSONValue *values=rPropertyValueParent->Child(L"value");
 		if (values && values->IsObject()) {
 			float rX=JsonParserBase::extractNumber(values, L"x");

@@ -11,6 +11,14 @@ bool ProjectContext::createNewProject(const string& rProjectName, const string& 
 
 	NodeProject* rNodeProject=static_cast<NodeProject*>(mNodeRoot.addChildNode(new NodeProject()));
 	rNodeProject->setProjectName(rProjectName);
+
+	PropertyList *pl=rNodeProject->getPropertyListListTest();
+	pl->addEntry(new PropertyString("Test 1"));
+	pl->addEntry(new PropertyString("Test 2"));
+	pl->addEntry(new PropertyRectFloat(10.0,20.0,11.0,12.0));
+
+
+
 	rNodeProject->addChildNode(new NodeSprite());
 	rv=rNodeProject->persistSubNode(rProjectPathWithFileAbs);
 	return rv;

@@ -15,6 +15,8 @@ PropertyType getPropertyTypeFromName(const string &rType) {
 		return PropertyType::PointInt;
 	} else if (rType=="PointFloat") {
 		return PropertyType::PointFloat;
+	} else if (rType=="List") {
+		return PropertyType::List;
 	}
 	return PropertyType::String;
 }
@@ -34,6 +36,9 @@ const string getPropertyStringFromPropertyType(const PropertyType& rPropertyType
 		return "PointInt";
 	} else if (rPropertyType==PropertyType::PointFloat) {
 		return "PointFloat";
+	} else if (rPropertyType==PropertyType::List) {
+		return "List";
 	}
 	return "String";
 }
+

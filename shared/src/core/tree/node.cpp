@@ -191,26 +191,7 @@ ContentType& Node::getContentType() {
 	return mContentType;
 }
 
-
-template<typename T>
-void Node::setProperty(const string& rName, const T &rValue, PropertyType rPropertyType, PropertyBaseValue<T>*r) {
-	//PropertyBaseValue<T> *r=new PropertyBaseValue<T>();
-	r->name=rName;
-	r->propertyType=rPropertyType;
-	r->value=rValue;
-
-	if (mPropertyMap.find(rName)!=mPropertyMap.end()) {
-		delete mPropertyMap[rName];
-	}
-	mPropertyMap[rName]=r;
-}
-
-template<typename T>
-void Node::setProperty(const string& rName, PropertyType rPropertyType, PropertyBaseValue<T>*r) {
-	//PropertyBaseValue<T> *r=new PropertyBaseValue<T>();
-	r->name=rName;
-	r->propertyType=rPropertyType;
-
+void Node::setProperty(const string& rName, PropertyBase* r) {
 	if (mPropertyMap.find(rName)!=mPropertyMap.end()) {
 		delete mPropertyMap[rName];
 	}
@@ -218,25 +199,28 @@ void Node::setProperty(const string& rName, PropertyType rPropertyType, Property
 }
 
 void Node::setPropertyString(const string& rName, const string &rValue) {
-	setProperty<string>(rName, rValue, PropertyType::String, new PropertyString());
+	setProperty(rName, new PropertyString(rValue));
 }
 void Node::setPropertyFloat(const string& rName, const float &rValue) {
-	setProperty<float>(rName, rValue, PropertyType::Float, new PropertyFloat());
+	setProperty(rName, new PropertyFloat(rValue));
 }
 void Node::setPropertyInt(const string& rName, const int &rValue) {
-	setProperty<int>(rName, rValue, PropertyType::Integer, new PropertyInt);
+	setProperty(rName, new PropertyInt(rValue));
 }
 void Node::setPropertyRectInt(const string& rName, const RectInt &rValue) {
-	setProperty<RectInt>(rName, rValue, PropertyType::RectInt, new PropertyRectInt());
+	setProperty(rName, new PropertyRectInt(rValue));
 }
 void Node::setPropertyRectFloat(const string& rName, const RectFloat &rValue) {
-	setProperty<RectFloat>(rName, rValue, PropertyType::RectFloat, new PropertyRectFloat());
+	setProperty(rName, new PropertyRectFloat(rValue));
 }
 void Node::setPropertyPointInt(const string& rName, const PointInt &rValue) {
-	setProperty<PointInt>(rName, rValue, PropertyType::PointInt, new PropertyPointInt());
+	setProperty(rName, new PropertyPointInt(rValue));
 }
 void Node::setPropertyPointFloat(const string& rName, const PointFloat &rValue) {
-	setProperty<PointFloat>(rName, rValue, PropertyType::PointFloat, new PropertyPointFloat());
+	setProperty(rName, new PropertyPointFloat(rValue));
+}
+void Node::setPropertyList(const string& rName) {
+	setProperty(rName, new PropertyList());
 }
 
 PropertyBase* Node::getProperty(const string &rName) {
@@ -303,6 +287,16 @@ PropertyPointFloat* Node::getPropertyPointFloat(const string &rName) {
 	}
 	return nullptr;
 }
+
+PropertyList* Node::getPropertyList(const string &rName) {
+	PropertyBase *p=getProperty(rName);
+	if (p && p->propertyType==PropertyType::List) {
+		return static_cast<PropertyList*>(p);
+	}
+	return nullptr;
+}
+
+
 #if 0
 template<typename CharT>
 class DecimalSeparator : public std::numpunct<CharT>
@@ -354,8 +348,8 @@ void Node::serialize(string &buf, unsigned long indent) {
 			unsigned long count=mPropertyMap.size();
 			for(auto &p : mPropertyMap) {
 				if (p.second) {
-					string rPropertyString=p.second->serialize();
-					buf+=rP+rPropertyString;
+					string rPropertyString=p.second->serializeValue();
+					buf+=rP+"{\"name\": \""+p.first+"\", "+rPropertyString+"}";
 				}
 				if (i+1<count) {
 					buf+=",\n";
@@ -423,34 +417,11 @@ void Node::deserializeSelf(JSONValue *rJSONValueParent) {
 						continue;
 					}
 					PropertyType rPropertyType=getPropertyTypeFromName(rType);
-					if (rPropertyType==PropertyType::Float) {
-							PropertyFloat *p=new PropertyFloat();
-							p->deserialize(rJSONValue);
-							setProperty(rName, rPropertyType, p);
-					} else if (rPropertyType==PropertyType::Integer) {
-						PropertyInt *px=new PropertyInt();
-						px->deserialize(rJSONValue);
-						setProperty(rName, rPropertyType, px);
-					} else if (rPropertyType==PropertyType::String) {
-						PropertyString *p=new PropertyString();
-						p->deserialize(rJSONValue);
-						setProperty(rName, rPropertyType, p);
-					} else if (rPropertyType==PropertyType::PointInt) {
-						PropertyPointInt *p=new PropertyPointInt();
-						p->deserialize(rJSONValue);
-						setProperty(rName, rPropertyType, p);
-					} else if (rPropertyType==PropertyType::PointFloat) {
-						PropertyPointFloat *p=new PropertyPointFloat();
-						p->deserialize(rJSONValue);
-						setProperty(rName, rPropertyType, p);
-					} else if (rPropertyType==PropertyType::RectInt) {
-						PropertyRectInt *p=new PropertyRectInt();
-						p->deserialize(rJSONValue);
-						setProperty(rName, rPropertyType, p);
-					} else if (rPropertyType==PropertyType::RectFloat) {
-						PropertyRectFloat *p=new PropertyRectFloat();
-						p->deserialize(rJSONValue);
-						setProperty(rName, rPropertyType, p);
+					PropertyBase* p=nullptr;
+					p=getPropertyInstanceByType(rPropertyType);
+					if (p) {
+						p->deserializeValue(rJSONValue);
+						setProperty(rName, p);
 					}
 				}
 			}

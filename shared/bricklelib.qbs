@@ -25,6 +25,7 @@ Project {
             "src/core/tree/nodeparser.cpp",
             "src/core/tree/nodeparser.h",
             "src/core/tree/property/property.h",
+            "src/core/tree/property/property_list.h",
             "src/core/tree/property/propertybase.h",
             "src/core/tree/property/propertybase.cpp",
             "src/core/tree/property/property_string.h",
@@ -32,6 +33,7 @@ Project {
             "src/core/tree/property/property_point.h",
             "src/core/tree/property/property_int.h",
             "src/core/tree/property/property_float.h",
+            "src/core/tree/property/propertyinstance.cpp",
             "src/core/tree/tree.h",
         ]
         Depends {

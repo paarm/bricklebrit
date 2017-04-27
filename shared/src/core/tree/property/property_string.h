@@ -2,12 +2,21 @@
 #include "propertybase.h"
 
 struct PropertyString : PropertyBaseValue<string> {
-	virtual string serialize() override {
-		return getSerialStart(getPropertyStringFromPropertyType(propertyType))
-				+"\"value\": \""+value+"\""
-				+getSerialEnd();
+	PropertyString() {
+		value="";
+		propertyType=PropertyType::String;
 	}
-	virtual void deserialize(JSONValue *rPropertyValueParent) override {
+
+	PropertyString(const string &v) {
+		value=v;
+		propertyType=PropertyType::String;
+	}
+
+	virtual string serializeValue() override {
+		return getSerialStart(getPropertyStringFromPropertyType(propertyType))
+				+"\"value\": \""+value+"\"";
+	}
+	virtual void deserializeValue(JSONValue *rPropertyValueParent) override {
 		string rValue=JsonParserBase::extractString(rPropertyValueParent, L"value");
 		value=rValue;
 	}

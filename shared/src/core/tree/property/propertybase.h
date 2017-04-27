@@ -11,7 +11,8 @@ enum class PropertyType {
 	RectInt,
 	RectFloat,
 	PointInt,
-	PointFloat
+	PointFloat,
+	List
 };
 
 PropertyType getPropertyTypeFromName(const string &rType);
@@ -19,15 +20,11 @@ const string getPropertyStringFromPropertyType(const PropertyType& rPropertyType
 
 struct PropertyBase {
 	PropertyType	propertyType;
-	string			name;
 	string getSerialStart(string rTypeString) {
-		return string("")+"{ \"name\": \""+name+"\", \"type\": \""+rTypeString+"\", ";
+		return string("")+"\"type\": \""+rTypeString+"\", ";
 	}
-	string getSerialEnd() {
-		return string("}");
-	}
-	virtual string serialize()=0;
-	virtual void deserialize(JSONValue *rPropertyValue)=0;
+	virtual string serializeValue()=0;
+	virtual void deserializeValue(JSONValue *rPropertyValue)=0;
 	virtual ~PropertyBase() {}
 };
 
@@ -35,3 +32,8 @@ template <typename T>
 struct PropertyBaseValue : PropertyBase {
 	T value;
 };
+
+PropertyBase* getPropertyInstanceByType(PropertyType rPropertyType);
+
+
+
