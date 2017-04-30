@@ -21,5 +21,7 @@ public:
 public slots:
 	void onNewProject();
 	void onOpenProject();
+	void onNewScene();
+	void onOpenScene();
 };
 

@@ -19,6 +19,7 @@ public:
 	static bool extractNumberExistAsInt(JSONValue *rJSONValueParent, const wstring &rName, int *out);
 	static bool extractBool(JSONValue *rJSONValueParent, const wstring &rName);
 	JsonParserBase();
+	virtual ~JsonParserBase();
     bool parse(const string &rFileName);
 };
 

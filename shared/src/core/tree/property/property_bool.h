@@ -1,10 +1,11 @@
 #pragma once
 #include "propertybase.h"
 
-class PropertyFloat : public PropertyBaseValue<float> {
+class PropertyBool : public PropertyBaseValue<bool> {
 public:
-	PropertyFloat();
-	PropertyFloat(const float &v);
+	PropertyBool();
+	PropertyBool(const bool &v);
 	virtual string serializeValue() override;
 	virtual void deserializeValue(JSONValue *rPropertyValueParent) override;
 };
+

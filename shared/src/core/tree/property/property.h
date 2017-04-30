@@ -1,4 +1,5 @@
 #pragma once
+#include "property_bool.h"
 #include "property_int.h"
 #include "property_float.h"
 #include "property_string.h"

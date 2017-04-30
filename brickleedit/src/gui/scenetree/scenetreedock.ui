@@ -46,7 +46,7 @@
         </property>
         <property name="icon">
          <iconset resource="../resources/resource.qrc">
-          <normaloff>:/icons/newproject.png</normaloff>:/icons/newproject.png</iconset>
+          <normaloff>:/icons/new.png</normaloff>:/icons/new.png</iconset>
         </property>
         <property name="autoDefault">
          <bool>false</bool>

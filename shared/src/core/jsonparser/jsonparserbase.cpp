@@ -2,6 +2,9 @@
 
 JsonParserBase::JsonParserBase() {
 }
+
+JsonParserBase::~JsonParserBase() {}
+
 #include <unistd.h>
 bool JsonParserBase::parse(const string &rFileName) {
     bool rv=true;

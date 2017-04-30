@@ -1,8 +1,10 @@
 #include "propertybase.h"
 
 PropertyType getPropertyTypeFromName(const string &rType) {
-	if (rType=="Integer") {
-		return PropertyType::Integer;
+	if (rType=="Bool") {
+		return PropertyType::Bool;
+	} else if (rType=="Int") {
+		return PropertyType::Int;
 	} else if (rType=="String") {
 		return PropertyType::String;
 	} else if (rType=="Float") {
@@ -22,8 +24,10 @@ PropertyType getPropertyTypeFromName(const string &rType) {
 }
 
 const string getPropertyStringFromPropertyType(const PropertyType& rPropertyType) {
-	if (rPropertyType==PropertyType::Integer) {
-		return "Integer";
+	if (rPropertyType==PropertyType::Bool) {
+		return "Bool";
+	} else if (rPropertyType==PropertyType::Int) {
+		return "Int";
 	} else if (rPropertyType==PropertyType::String) {
 		return "String";
 	} else if (rPropertyType==PropertyType::Float) {
@@ -42,3 +46,15 @@ const string getPropertyStringFromPropertyType(const PropertyType& rPropertyType
 	return "String";
 }
 
+
+PropertyBase::PropertyBase(PropertyType rPropertyType) {
+	mPropertyType=rPropertyType;
+}
+PropertyType PropertyBase::getPropertyType() {
+	return mPropertyType;
+}
+string PropertyBase::getSerialStart(string rTypeString) {
+	return string("")+"\"type\": \""+rTypeString+"\", ";
+}
+PropertyBase::~PropertyBase() {
+}

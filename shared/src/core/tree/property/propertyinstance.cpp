@@ -1,5 +1,6 @@
-#include "property_float.h"
 #include "property_int.h"
+#include "property_bool.h"
+#include "property_float.h"
 #include "property_string.h"
 #include "property_point.h"
 #include "property_rect.h"
@@ -7,9 +8,11 @@
 
 PropertyBase* getPropertyInstanceByType(PropertyType rPropertyType) {
 	PropertyBase* p=nullptr;
-	if (rPropertyType==PropertyType::Float) {
+	if (rPropertyType==PropertyType::Bool) {
+		p=new PropertyBool();
+	} else if (rPropertyType==PropertyType::Float) {
 		p=new PropertyFloat();
-	} else if (rPropertyType==PropertyType::Integer) {
+	} else if (rPropertyType==PropertyType::Int) {
 		p=new PropertyInt(0);
 	} else if (rPropertyType==PropertyType::String) {
 		p=new PropertyString();
@@ -24,4 +27,5 @@ PropertyBase* getPropertyInstanceByType(PropertyType rPropertyType) {
 	} else if (rPropertyType==PropertyType::List) {
 		p=new PropertyList();
 	}
+	return p;
 }

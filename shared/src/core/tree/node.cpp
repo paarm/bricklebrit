@@ -2,123 +2,101 @@
 #include <iostream>
 #include <fstream>
 
+template <typename T>
+T* getXInstanceFromNodeType(bool rCreateNewId) {
+	return new T(rCreateNewId);
+}
 
-const string getContentTypeAsString(ContentType &rContentType) {
-	switch (rContentType) {
-		case ContentType::Root:
-		return "Root";
-		case ContentType::Project:
-			return "Project";
-		case ContentType::Node:
-			return "Node";
-		case ContentType::World:
-			return "World";
-		case ContentType::Scene:
-			return "Scene";
-		case ContentType::SceneRef:
-			return "SceneRef";
-		case ContentType::Sprite:
-			return "Sprite";
-		case ContentType::AnimatedSprite:
-			return "AnimatedSprite";
-		case ContentType::SpriteFrameGroup:
-			return "SpriteFrameGroup";
-		case ContentType::SpriteFrame:
-			return "SpriteFrame";
-		case ContentType::Texture:
-			return "Texture";
-		case ContentType::Sound:
-			return "Sound";
-		case ContentType::Music:
-			return "Music";
+Node * getInstanceFromNodeType(NodeType &rNodeType, bool rCreateNewId) {
+	switch (rNodeType) {
+		case NodeType::Root:
+			return getXInstanceFromNodeType<NodeRoot>(rCreateNewId);
+		case NodeType::Project:
+			return getXInstanceFromNodeType<NodeProject>(rCreateNewId);
+		case NodeType::Node:
+			return getXInstanceFromNodeType<Node>(rCreateNewId);
+		case NodeType::Sprite:
+			return getXInstanceFromNodeType<NodeSprite>(rCreateNewId);
+		case NodeType::Scene:
+			return getXInstanceFromNodeType<Node>(rCreateNewId);
+		case NodeType::SceneRef:
+			return getXInstanceFromNodeType<Node>(rCreateNewId);
+
+		case NodeType::TextureAtlas:
+			return getXInstanceFromNodeType<NodeTextureAtlas>(rCreateNewId);
+		case NodeType::TextureAtlasFrame:
+			return getXInstanceFromNodeType<NodeTextureAtlasFrame>(rCreateNewId);
+
+		case NodeType::AnimationSet:
+			return getXInstanceFromNodeType<NodeAnimationSet>(rCreateNewId);
+		case NodeType::AnimationSetFrameTexture:
+			return getXInstanceFromNodeType<NodeAnimationSetFrameTexture>(rCreateNewId);
+		case NodeType::AnimationSetFrameTextureAtlas:
+			return getXInstanceFromNodeType<NodeAnimationSetFrameTextureAtlas>(rCreateNewId);
+
+		case NodeType::Sound:
+			return getXInstanceFromNodeType<Node>(rCreateNewId);
+		case NodeType::Music:
+			return getXInstanceFromNodeType<Node>(rCreateNewId);
+		case NodeType::LastNodeType:
+			return nullptr;
+	}
+	return getXInstanceFromNodeType<Node>(rCreateNewId);
+}
+
+static NodeLookupTable gNodeLookupTable[]={
+	{NodeType::Node							,"Root"},
+	{NodeType::Node							,"Node"},
+	{NodeType::Project						,"Project"},
+	{NodeType::Scene						,"Scene"},
+	{NodeType::SceneRef						,"SceneRef"},
+	{NodeType::Sprite						,"Sprite"},
+	// Texture Atlas
+	{NodeType::TextureAtlas					,"TextureAtlas"},
+	{NodeType::TextureAtlasFrame			,"TextureAtlasFrame"},
+	// Animation Set
+	{NodeType::AnimationSet					,"AnimationSet"},
+	{NodeType::AnimationSetFrameTexture		,"AnimationSetFrameTexture"},
+	{NodeType::AnimationSetFrameTextureAtlas,"AnimationSetFrameTextureAtlas"},
+
+	{NodeType::Sound						,"Sound"},
+	{NodeType::Music						,"Music"},
+	{NodeType::LastNodeType					,""},
+};
+
+const string getNodeTypeAsString(NodeType &rNodeType) {
+	NodeLookupTable *rNodeLookupTable=gNodeLookupTable;
+	while(rNodeLookupTable->nodeType!=NodeType::LastNodeType) {
+		if (rNodeLookupTable->nodeType==rNodeType) {
+			return rNodeLookupTable->nodeName;
+		}
+		rNodeLookupTable++;
 	}
 	return "Node";
 }
 
-ContentType getContentTypeFromString(const string &rContentTypeString) {
-	if (rContentTypeString=="Root") {
-		return ContentType::Root;
-	} else if (rContentTypeString=="Node") {
-		return ContentType::Node;
-	} else if (rContentTypeString=="Project") {
-		return ContentType::Project;
-	} else if (rContentTypeString=="World") {
-		return ContentType::World;
-	} else if (rContentTypeString=="Scene") {
-		return ContentType::Scene;
-	} else if (rContentTypeString=="SceneRef") {
-		return ContentType::SceneRef;
-	} else if (rContentTypeString=="Sprite") {
-		return ContentType::Sprite;
-	} else if (rContentTypeString=="AnimatedSprite") {
-		return ContentType::AnimatedSprite;
-	} else if (rContentTypeString=="SpriteFrameGroup") {
-		return ContentType::SpriteFrameGroup;
-	} else if (rContentTypeString=="SpriteFrame") {
-		return ContentType::SpriteFrame;
-	} else if (rContentTypeString=="Texture") {
-		return ContentType::Texture;
-	} else if (rContentTypeString=="Sound") {
-		return ContentType::Sound;
-	} else if (rContentTypeString=="Music") {
-		return ContentType::Music;
+NodeType getNodeTypeFromString(const string &rNodeTypeString) {
+	NodeLookupTable *rNodeLookupTable=gNodeLookupTable;
+	while(rNodeLookupTable->nodeType!=NodeType::LastNodeType) {
+		if (rNodeLookupTable->nodeName==rNodeTypeString) {
+			return rNodeLookupTable->nodeType;
+		}
+		rNodeLookupTable++;
 	}
-	return ContentType::Node;
+	return NodeType::Node;
 }
 
-Node * getInstanceFromContentType(ContentType &rContentType) {
-	switch (rContentType) {
-		case ContentType::Root:
-			return new NodeRoot();
-		case ContentType::Project:
-			return new NodeProject();
-		case ContentType::Node:
-			return new Node();
-		case ContentType::Sprite:
-			return new NodeSprite();
-		case ContentType::World:
-			return new Node();
-		case ContentType::Scene:
-			return new Node();
-		case ContentType::SceneRef:
-			return new Node();
-		case ContentType::AnimatedSprite:
-			return new Node();
-		case ContentType::SpriteFrameGroup:
-			return new Node();
-		case ContentType::SpriteFrame:
-			return new Node();
-		case ContentType::Texture:
-			return new Node();
-		case ContentType::Sound:
-			return new Node();
-		case ContentType::Music:
-			return new Node();
+Node::Node(bool rCreateNewId) : Node(NodeType::Node, rCreateNewId) {
+}
+
+Node::Node(NodeType rNodeType) : Node(rNodeType, true) {
+}
+
+Node::Node(NodeType rNodeType, bool rCreateNewId) : mNodeType(rNodeType) {
+	if (rCreateNewId) {
+		setId(NodeIdGenerator::getInstance().getNextNumber());
 	}
-	return new Node();
 }
-
-Node::Node() : Node(ContentType::Node) {
-}
-
-Node::Node(ContentType rContentType) : mContentType(rContentType) {
-
-#if 0
-	if (mContentType==ContentType::World) {
-		setPropertyString("Name", "World");
-	} else if (mContentType==ContentType::Sprite) {
-		setPropertyString	("Name", "Sprite Name");
-		setPropertyPointInt	("Position", PointInt(0,0));
-		setPropertyRectInt	("Size", RectInt(0,0,0,0));
-		setPropertyPointFloat("Scale", PointFloat(1.0,1.0));
-		setPropertyFloat	("Rotation", 0.0);
-		setPropertyString	("Texture", "res://");
-		setPropertyRectInt	("TextureSourceRect", RectInt(0,0,0,0));
-	} else if (mContentType==ContentType::Project) {
-	}
-#endif
-}
-
 
 Node::~Node() {
 	deleteChildNodes();
@@ -187,8 +165,8 @@ unsigned long Node::getChildCount() {
 	return mNodes.size();
 }
 
-ContentType& Node::getContentType() {
-	return mContentType;
+NodeType& Node::getNodeType() {
+	return mNodeType;
 }
 
 void Node::setProperty(const string& rName, PropertyBase* r) {
@@ -198,27 +176,63 @@ void Node::setProperty(const string& rName, PropertyBase* r) {
 	mPropertyMap[rName]=r;
 }
 
+
+void Node::setPropertyString(const string& rName) {
+	setProperty(rName, new PropertyString());
+}
 void Node::setPropertyString(const string& rName, const string &rValue) {
 	setProperty(rName, new PropertyString(rValue));
+}
+
+void Node::setPropertyFloat(const string& rName) {
+	setProperty(rName, new PropertyFloat());
 }
 void Node::setPropertyFloat(const string& rName, const float &rValue) {
 	setProperty(rName, new PropertyFloat(rValue));
 }
+
+void Node::setPropertyBool(const string& rName) {
+	setProperty(rName, new PropertyBool());
+}
+void Node::setPropertyBool(const string& rName, const bool &rValue) {
+	setProperty(rName, new PropertyBool(rValue));
+}
+
+void Node::setPropertyInt(const string& rName) {
+	setProperty(rName, new PropertyInt());
+}
 void Node::setPropertyInt(const string& rName, const int &rValue) {
 	setProperty(rName, new PropertyInt(rValue));
+}
+
+void Node::setPropertyRectInt(const string& rName) {
+	setProperty(rName, new PropertyRectInt());
 }
 void Node::setPropertyRectInt(const string& rName, const RectInt &rValue) {
 	setProperty(rName, new PropertyRectInt(rValue));
 }
+
+void Node::setPropertyRectFloat(const string& rName) {
+	setProperty(rName, new PropertyRectFloat());
+}
 void Node::setPropertyRectFloat(const string& rName, const RectFloat &rValue) {
 	setProperty(rName, new PropertyRectFloat(rValue));
+}
+
+void Node::setPropertyPointInt(const string& rName) {
+	setProperty(rName, new PropertyPointInt());
 }
 void Node::setPropertyPointInt(const string& rName, const PointInt &rValue) {
 	setProperty(rName, new PropertyPointInt(rValue));
 }
+
+void Node::setPropertyPointFloat(const string& rName) {
+	setProperty(rName, new PropertyPointFloat());
+}
 void Node::setPropertyPointFloat(const string& rName, const PointFloat &rValue) {
 	setProperty(rName, new PropertyPointFloat(rValue));
 }
+
 void Node::setPropertyList(const string& rName) {
 	setProperty(rName, new PropertyList());
 }
@@ -234,7 +248,7 @@ PropertyBase* Node::getProperty(const string &rName) {
 
 PropertyString* Node::getPropertyString(const string &rName) {
 	PropertyBase *p=getProperty(rName);
-	if (p && p->propertyType==PropertyType::String) {
+	if (p && p->getPropertyType()==PropertyType::String) {
 		return static_cast<PropertyString*>(p);
 	}
 	return nullptr;
@@ -242,15 +256,23 @@ PropertyString* Node::getPropertyString(const string &rName) {
 
 PropertyFloat* Node::getPropertyFloat(const string &rName) {
 	PropertyBase *p=getProperty(rName);
-	if (p && p->propertyType==PropertyType::String) {
+	if (p && p->getPropertyType()==PropertyType::String) {
 		return static_cast<PropertyFloat*>(p);
+	}
+	return nullptr;
+}
+
+PropertyBool* Node::getPropertyBool(const string &rName) {
+	PropertyBase *p=getProperty(rName);
+	if (p && p->getPropertyType()==PropertyType::Bool) {
+		return static_cast<PropertyBool*>(p);
 	}
 	return nullptr;
 }
 
 PropertyInt* Node::getPropertyInt(const string &rName) {
 	PropertyBase *p=getProperty(rName);
-	if (p && p->propertyType==PropertyType::String) {
+	if (p && p->getPropertyType()==PropertyType::String) {
 		return static_cast<PropertyInt*>(p);
 	}
 	return nullptr;
@@ -258,7 +280,7 @@ PropertyInt* Node::getPropertyInt(const string &rName) {
 
 PropertyRectInt* Node::getPropertyRectInt(const string &rName) {
 	PropertyBase *p=getProperty(rName);
-	if (p && p->propertyType==PropertyType::RectInt) {
+	if (p && p->getPropertyType()==PropertyType::RectInt) {
 		return static_cast<PropertyRectInt*>(p);
 	}
 	return nullptr;
@@ -266,7 +288,7 @@ PropertyRectInt* Node::getPropertyRectInt(const string &rName) {
 
 PropertyRectFloat* Node::getPropertyRectFloat(const string &rName) {
 	PropertyBase *p=getProperty(rName);
-	if (p && p->propertyType==PropertyType::RectInt) {
+	if (p && p->getPropertyType()==PropertyType::RectInt) {
 		return static_cast<PropertyRectFloat*>(p);
 	}
 	return nullptr;
@@ -274,7 +296,7 @@ PropertyRectFloat* Node::getPropertyRectFloat(const string &rName) {
 
 PropertyPointInt* Node::getPropertyPointInt(const string &rName) {
 	PropertyBase *p=getProperty(rName);
-	if (p && p->propertyType==PropertyType::RectInt) {
+	if (p && p->getPropertyType()==PropertyType::RectInt) {
 		return static_cast<PropertyPointInt*>(p);
 	}
 	return nullptr;
@@ -282,7 +304,7 @@ PropertyPointInt* Node::getPropertyPointInt(const string &rName) {
 
 PropertyPointFloat* Node::getPropertyPointFloat(const string &rName) {
 	PropertyBase *p=getProperty(rName);
-	if (p && p->propertyType==PropertyType::RectInt) {
+	if (p && p->getPropertyType()==PropertyType::RectInt) {
 		return static_cast<PropertyPointFloat*>(p);
 	}
 	return nullptr;
@@ -290,7 +312,7 @@ PropertyPointFloat* Node::getPropertyPointFloat(const string &rName) {
 
 PropertyList* Node::getPropertyList(const string &rName) {
 	PropertyBase *p=getProperty(rName);
-	if (p && p->propertyType==PropertyType::List) {
+	if (p && p->getPropertyType()==PropertyType::List) {
 		return static_cast<PropertyList*>(p);
 	}
 	return nullptr;
@@ -340,7 +362,7 @@ void Node::serialize(string &buf, unsigned long indent) {
 	buf+=rC+"{\n";
 	{
 		string rT=string(indent+1, ' ');
-		buf+=rT+"\"ContentType\": \""+ getContentTypeAsString(mContentType)+"\""+",\n";
+		buf+=rT+"\"NodeType\": \""+ getNodeTypeAsString(mNodeType)+"\""+",\n";
 		buf+=rT+"\"Properties\": [\n";
 		if (!mPropertyMap.empty()) {
 			string rP=string(indent+2, ' ');
@@ -380,12 +402,12 @@ void Node::serialize(string &buf, unsigned long indent) {
 }
 
 void Node::deserialize(JSONValue *rJSONValueParent) {
-	string contentType=JsonParserBase::extractString(rJSONValueParent, L"ContentType");
-	if (contentType.empty()) {
-		cout << "ContentType not found or empty\n";
+	string rNodeTypeString=JsonParserBase::extractString(rJSONValueParent, L"NodeType");
+	if (rNodeTypeString.empty()) {
+		cout << "NodeType not found or empty\n";
 	} else {
-		ContentType rContentType=getContentTypeFromString(contentType);
-		Node *rChildNode=addChildNode(getInstanceFromContentType(rContentType));
+		NodeType rNodeType=getNodeTypeFromString(rNodeTypeString);
+		Node *rChildNode=addChildNode(getInstanceFromNodeType(rNodeType, false));
 		rChildNode->deserializeSelf(rJSONValueParent);
 	}
 }
@@ -394,9 +416,9 @@ void Node::deserializeSelf(JSONValue *rJSONValueParent) {
 	do {
 		if (rJSONValueParent->IsObject()) {
 #if 0
-			string contentType=JsonParserBase::extractString(rJSONValueParent, L"ContentType");
-			if (contentType.empty()) {
-				cout << "ContentType not found or empty\n";
+			string NodeType=JsonParserBase::extractString(rJSONValueParent, L"NodeType");
+			if (NodeType.empty()) {
+				cout << "NodeType not found or empty\n";
 				break;
 			}
 #endif
@@ -422,6 +444,10 @@ void Node::deserializeSelf(JSONValue *rJSONValueParent) {
 					if (p) {
 						p->deserializeValue(rJSONValue);
 						setProperty(rName, p);
+						if (rPropertyType==PropertyType::Int && rName=="Id") {
+							PropertyInt *rId=static_cast<PropertyInt*>(p);
+							NodeIdGenerator::getInstance().updateLatestNumberIfHigher(rId->value);
+						}
 					}
 				}
 			}

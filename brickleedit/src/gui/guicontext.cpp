@@ -31,3 +31,8 @@ void GuiContext::onOpenProject() {
 		GuiContext::getInstance().setWindowTitle(QString::fromStdString(ProjectContext::getInstance().getNodeProject()->getProjectName()));
 	}
 }
+
+void GuiContext::onNewScene() {
+}
+void GuiContext::onOpenScene() {
+}

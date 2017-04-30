@@ -5,21 +5,36 @@
 #include <string>
 #include "property/property.h"
 #include "../jsonparser/jsonparser.h"
+#include "nodeidgenerator.h"
+#include <future>
 
-enum class ContentType {
+
+enum class NodeType {
 	Root,
-	Project,
 	Node,
-	World,
+	Project,
 	Scene,
 	SceneRef,
 	Sprite,
-	AnimatedSprite,
-	SpriteFrameGroup,
-	SpriteFrame,
-	Texture,
+	TextureAtlas,
+	TextureAtlasFrame,
+
+	AnimationSet,
+	AnimationSetFrameTexture,
+	AnimationSetFrameTextureAtlas,
+
+
 	Sound,
-	Music
+	Music,
+	LastNodeType
+};
+
+class Node;
+
+struct NodeLookupTable {
+	NodeType	nodeType;
+	string		nodeName;
+	//std::function<Node*(NodeType rNodeType, bool rCreateNewId)> createNodeFct;
 };
 
 using namespace std;
@@ -29,13 +44,14 @@ private:
 	vector<Node*>				mNodes;
 	Node*						mParent=nullptr;
 	map<string, PropertyBase*>	mPropertyMap;
-	ContentType					mContentType=ContentType::Node;
+	NodeType					mNodeType=NodeType::Node;
 	void setProperty(const string& rName, PropertyBase* r);
 	void deserializeSelf(JSONValue *rJSONValueParent);
 public:
-	Node();
-	Node(ContentType rContentType);
-	virtual ~Node();
+	Node(bool rCreateNewId);
+	Node(NodeType rNodeType);
+	Node(NodeType rNodeType, bool rCreateNewId);
+	~Node();
 	Node* addChildNode(Node*);
 	Node* getParent();
 	Node* getFirstChildNode();
@@ -44,19 +60,29 @@ public:
 	void deleteNode(Node *rNodeToDelete);
 	unsigned long getChildCount();
 
-	ContentType& getContentType();
+	NodeType& getNodeType();
+	void setPropertyString(const string& rName);
 	void setPropertyString(const string& rName, const string &rValue);
+	void setPropertyFloat(const string& rName);
 	void setPropertyFloat(const string& rName, const float &rValue);
+	void setPropertyBool(const string& rName);
+	void setPropertyBool(const string& rName, const bool &rValue);
+	void setPropertyInt(const string& rName);
 	void setPropertyInt(const string& rName, const int &rValue);
+	void setPropertyRectInt(const string& rName);
 	void setPropertyRectInt(const string& rName, const RectInt &rValue);
+	void setPropertyRectFloat(const string& rName);
 	void setPropertyRectFloat(const string& rName, const RectFloat &rValue);
+	void setPropertyPointInt(const string& rName);
 	void setPropertyPointInt(const string& rName, const PointInt &rValue);
+	void setPropertyPointFloat(const string& rName);
 	void setPropertyPointFloat(const string& rName, const PointFloat &rValue);
 	void setPropertyList(const string& rName);
 
 	PropertyBase* getProperty(const string &rName);
 	PropertyString* getPropertyString(const string &rName);
 	PropertyFloat* getPropertyFloat(const string &rName);
+	PropertyBool* getPropertyBool(const string &rName);
 	PropertyInt* getPropertyInt(const string &rName);
 	PropertyRectInt* getPropertyRectInt(const string &rName);
 	PropertyRectFloat* getPropertyRectFloat(const string &rName);
@@ -67,121 +93,151 @@ public:
 	bool persistSubNode(const string &rFileNameAbs);
 	void serialize(string &buf, unsigned long indent);
 	void deserialize(JSONValue *rJSONValueParent);
+
+	PROPERTY_INT_GETSET(Id)
 };
 
-const string getContentTypeAsString(ContentType &rContentType);
-ContentType getContentTypeFromString(const string &rContentTypeString);
-Node * getInstanceFromContentType(ContentType &rContentType);
-
-#define PROPERTY_STRING(fieldName) \
-void set##fieldName(const string& r##fieldName) { \
-	setPropertyString (#fieldName, r##fieldName); \
-} \
-const string& get##fieldName() { \
-	return getPropertyString (#fieldName)->value; \
-}
-
-#define PROPERTY_FLOAT(fieldName) \
-void set##fieldName(const float& r##fieldName) { \
-	setPropertyFloat (#fieldName, r##fieldName); \
-} \
-const float& get##fieldName() { \
-	return getPropertyFloat (#fieldName)->value; \
-}
-
-#define PROPERTY_INT(fieldName) \
-void set##fieldName(const int& r##fieldName) { \
-	setPropertyInt (#fieldName, r##fieldName); \
-} \
-const int& get##fieldName() { \
-	return getPropertyInt (#fieldName)->value; \
-}
-
-#define PROPERTY_RECTINT(fieldName) \
-void set##fieldName(const RectInt& r##fieldName) { \
-	setPropertyRectInt (#fieldName, r##fieldName); \
-} \
-const RectInt& get##fieldName() { \
-	return getPropertyRectInt (#fieldName)->value; \
-}
-
-#define PROPERTY_RECTFLOAT(fieldName) \
-void set##fieldName(const RectFloat& r##fieldName) { \
-	setPropertyRectFloat (#fieldName, r##fieldName); \
-} \
-const RectFloat& get##fieldName() { \
-	return getPropertyRectFloat (#fieldName)->value; \
-}
-
-#define PROPERTY_POINTINT(fieldName) \
-void set##fieldName(const PointInt& r##fieldName) { \
-	setPropertyPointInt (#fieldName, r##fieldName); \
-} \
-const PointInt& get##fieldName() { \
-	return getPropertyPointInt (#fieldName)->value; \
-}
-
-#define PROPERTY_POINTFLOAT(fieldName) \
-void set##fieldName(const PointFloat& r##fieldName) { \
-	setPropertyPointFloat (#fieldName, r##fieldName); \
-} \
-const PointFloat& get##fieldName() { \
-	return getPropertyPointFloat (#fieldName)->value; \
-}
-
-#define PROPERTY_LIST(fieldName) \
-void set##fieldName() { \
-	setPropertyList (#fieldName); \
-} \
-const ListType& get##fieldName() { \
-	return getPropertyList (#fieldName)->value; \
-} \
-PropertyList* getPropertyList##fieldName() { \
-	return getPropertyList (#fieldName); \
-}
+const string getNodeTypeAsString(NodeType &rNodeType);
+NodeType getNodeTypeFromString(const string &rNodeTypeString);
+//Node * getInstanceFromNodeType(NodeType &rNodeType);
+template <typename T>
+T* getInstanceFromNodeType(NodeType &rNodeType, bool rCreateNewId);
 
 
 class NodeRoot : public Node {
 private:
 public:
-	NodeRoot() : Node(ContentType::Root) {
+	NodeRoot(bool rCreateNewId) : Node(NodeType::Root, rCreateNewId) {
+	}
+	NodeRoot() : NodeRoot(true) {
 	}
 };
 
 class NodeProject : public Node {
 private:
 public:
-	PROPERTY_STRING(ProjectName)
-	PROPERTY_STRING(StartScene)
-	PROPERTY_LIST(ListTest)
-	NodeProject() : Node(ContentType::Project) {
+	PROPERTY_STRING_GETSET(ProjectName)
+	PROPERTY_STRING_GETSET(StartScene)
+	PROPERTY_LIST_GETSET(ListTest)
+
+	NodeProject(bool rCreateNewId) : Node(NodeType::Project, rCreateNewId) {
 		setProjectName("");
 		setStartScene("");
 		setListTest();
+	}
+
+	NodeProject() : NodeProject(true) {
 	}
 };
 
 class NodeSprite : public Node {
 private:
 public:
-	PROPERTY_STRING(Name)
-	PROPERTY_STRING(Texture)
-	PROPERTY_POINTINT(Position)
-	PROPERTY_RECTINT(Size)
-	PROPERTY_RECTINT(TextureSourceRect)
-	PROPERTY_POINTFLOAT(Scale)
-	PROPERTY_FLOAT(Rotation)
+	PROPERTY_STRING_GETSET(Name)
+	PROPERTY_POINTINT_GETSET(Position)
+	PROPERTY_RECTINT_GETSET(Size)
+	PROPERTY_POINTFLOAT_GETSET(Scale)
+	PROPERTY_FLOAT_GETSET(Rotation)
+	PROPERTY_BOOL_GETSET(IsAnimated)
+	// if isAnimated==true
+		PROPERTY_STRING_GETSET(Texture)
+		PROPERTY_RECTINT_GETSET(TextureSourceRect)
+	// else
+		PROPERTY_STRING_GETSET(DefaultAnimation)
+	// end if
 
-
-	NodeSprite() : Node(ContentType::Sprite) {
-		setName("");
-		setTexture("res://");
-		setPosition(PointInt(0,0));
-		setSize(RectInt(0,0,0,0));
-		setTextureSourceRect(RectInt(0,0,0,0));
+	NodeSprite(bool rCreateNewId) : Node(NodeType::Sprite, rCreateNewId) {
+		setName();
+		setPosition();
+		setSize();
 		setScale(PointFloat(1.0,1.0));
-		setRotation(0);
+		setRotation();
+		setIsAnimated(false);
+		setTexture();
+		setTextureSourceRect();
+		setDefaultAnimation();
+	}
+
+	NodeSprite() : NodeSprite(true) {
 	}
 };
+
+
+class NodeTextureAtlas : public Node {
+private:
+public:
+	PROPERTY_STRING_GETSET(Name)
+	PROPERTY_STRING_GETSET(Texture)
+
+	NodeTextureAtlas(bool rCreateNewId) : Node(NodeType::TextureAtlas, rCreateNewId) {
+		setName();
+		setTexture();
+	}
+
+	NodeTextureAtlas() : NodeTextureAtlas(true) {
+	}
+};
+
+class NodeTextureAtlasFrame : public Node {
+private:
+public:
+	PROPERTY_STRING_GETSET(Name)
+	PROPERTY_RECTINT_GETSET(TextureSourceRect)
+	PROPERTY_INT_GETSET(Rotation)
+
+	NodeTextureAtlasFrame(bool rCreateNewId) : Node(NodeType::TextureAtlasFrame, rCreateNewId) {
+		setName();
+		setTextureSourceRect();
+		setRotation(0); // 0, 90=rotated Right, 270=rotated Left
+	}
+
+	NodeTextureAtlasFrame() : NodeTextureAtlasFrame(true) {
+	}
+};
+
+class NodeAnimationSet : public Node {
+private:
+public:
+	PROPERTY_STRING_GETSET(Name)
+
+	NodeAnimationSet(bool rCreateNewId) : Node(NodeType::AnimationSet, rCreateNewId) {
+		setName();
+	}
+
+	NodeAnimationSet() : NodeAnimationSet(true) {
+	}
+};
+
+class NodeAnimationSetFrameTexture : public Node {
+private:
+public:
+	PROPERTY_STRING_GETSET(Name)
+	PROPERTY_STRING_GETSET(Texture)
+	PROPERTY_RECTINT_GETSET(TextureSourceRect)
+	NodeAnimationSetFrameTexture(bool rCreateNewId) : Node(NodeType::AnimationSetFrameTexture, rCreateNewId) {
+		setName();
+		setTexture();
+		setTextureSourceRect();
+	}
+	NodeAnimationSetFrameTexture() : NodeAnimationSetFrameTexture(true) {
+	}
+};
+
+class NodeAnimationSetFrameTextureAtlas : public Node {
+private:
+public:
+	PROPERTY_STRING_GETSET(Name)
+	PROPERTY_STRING_GETSET(TextureAtlasName)
+	PROPERTY_STRING_GETSET(TextureAtlasFrameName)
+	NodeAnimationSetFrameTextureAtlas(bool rCreateNewId) : Node(NodeType::AnimationSetFrameTextureAtlas, rCreateNewId) {
+		setName();
+		setTextureAtlasName();
+		setTextureAtlasFrameName();
+	}
+	NodeAnimationSetFrameTextureAtlas() : NodeAnimationSetFrameTextureAtlas(true) {
+	}
+};
+
+
 
 
