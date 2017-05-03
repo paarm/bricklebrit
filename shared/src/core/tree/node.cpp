@@ -15,10 +15,14 @@ Node * getInstanceFromNodeType(NodeType &rNodeType, bool rCreateNewId) {
 			return getXInstanceFromNodeType<NodeProject>(rCreateNewId);
 		case NodeType::Node:
 			return getXInstanceFromNodeType<Node>(rCreateNewId);
+		case NodeType::Node2d:
+			return getXInstanceFromNodeType<Node2d>(rCreateNewId);
 		case NodeType::Sprite:
 			return getXInstanceFromNodeType<NodeSprite>(rCreateNewId);
+		case NodeType::Resource:
+			return getXInstanceFromNodeType<NodeResource>(rCreateNewId);
 		case NodeType::Scene:
-			return getXInstanceFromNodeType<Node>(rCreateNewId);
+			return getXInstanceFromNodeType<NodeScene>(rCreateNewId);
 		case NodeType::SceneRef:
 			return getXInstanceFromNodeType<Node>(rCreateNewId);
 
@@ -45,16 +49,20 @@ Node * getInstanceFromNodeType(NodeType &rNodeType, bool rCreateNewId) {
 }
 
 static NodeLookupTable gNodeLookupTable[]={
-	{NodeType::Node							,"Root"},
+	{NodeType::Root							,"Root"},
 	{NodeType::Node							,"Node"},
+// drawable
+	{NodeType::Node2d						,"Node2d"},
+	{NodeType::Sprite						,"Sprite"},
+// resources
+	{NodeType::Resource						,"Resource"},
 	{NodeType::Project						,"Project"},
 	{NodeType::Scene						,"Scene"},
 	{NodeType::SceneRef						,"SceneRef"},
-	{NodeType::Sprite						,"Sprite"},
-	// Texture Atlas
+// Texture Atlas
 	{NodeType::TextureAtlas					,"TextureAtlas"},
 	{NodeType::TextureAtlasFrame			,"TextureAtlasFrame"},
-	// Animation Set
+// Animation Set
 	{NodeType::AnimationSet					,"AnimationSet"},
 	{NodeType::AnimationSetFrameTexture		,"AnimationSetFrameTexture"},
 	{NodeType::AnimationSetFrameTextureAtlas,"AnimationSetFrameTextureAtlas"},
@@ -86,17 +94,25 @@ NodeType getNodeTypeFromString(const string &rNodeTypeString) {
 	return NodeType::Node;
 }
 
-Node::Node(bool rCreateNewId) : Node(NodeType::Node, rCreateNewId) {
-}
-
-Node::Node(NodeType rNodeType) : Node(rNodeType, true) {
-}
-
-Node::Node(NodeType rNodeType, bool rCreateNewId) : mNodeType(rNodeType) {
+Node::Node(bool rCreateNewId) {
+	mNodeType=NodeType::Node;
 	if (rCreateNewId) {
 		setId(NodeIdGenerator::getInstance().getNextNumber());
 	}
+	setName();
 }
+
+Node::Node() : Node(true) {
+}
+
+//Node::Node(NodeType rNodeType) : Node(rNodeType, true) {
+//}
+
+//Node::Node(NodeType rNodeType, bool rCreateNewId) : mNodeType(rNodeType) {
+//	if (rCreateNewId) {
+//		setId(NodeIdGenerator::getInstance().getNextNumber());
+//	}
+//}
 
 Node::~Node() {
 	deleteChildNodes();
@@ -175,7 +191,6 @@ void Node::setProperty(const string& rName, PropertyBase* r) {
 	}
 	mPropertyMap[rName]=r;
 }
-
 
 void Node::setPropertyString(const string& rName) {
 	setProperty(rName, new PropertyString());
@@ -339,10 +354,10 @@ private:
 };
 #endif
 
-bool Node::persistSubNode(const string &rFileNameAbs) {
+bool Node::persistNode(Node *rNode, const string &rFileNameAbs) {
 	bool rv=false;
 	string rContentString;
-	serialize(rContentString,0);
+	rNode->serialize(rContentString,0);
 	ofstream outputFile;
 	   // tell cout to use our new locale.
 
@@ -356,6 +371,25 @@ bool Node::persistSubNode(const string &rFileNameAbs) {
 	}
 	return rv;
 }
+
+Node* Node::unpersistNode(const string &rFileNameAbs) {
+	Node *rNodeRv=nullptr;
+
+	JsonParserBase rJsonParserBase;
+	JSONValue*rJSONValueParent=rJsonParserBase.parse(rFileNameAbs);
+	if (rJSONValueParent) {
+		string rNodeTypeString=JsonParserBase::extractString(rJSONValueParent, L"NodeType");
+		if (rNodeTypeString.empty()) {
+			cout << "NodeType not found or empty\n";
+		} else {
+			NodeType rNodeType=getNodeTypeFromString(rNodeTypeString);
+			rNodeRv=getInstanceFromNodeType(rNodeType, false);
+			rNodeRv->deserializeSelf(rJSONValueParent);
+		}
+	}
+	return rNodeRv;
+}
+
 
 void Node::serialize(string &buf, unsigned long indent) {
 	string rC=string(indent, ' ');

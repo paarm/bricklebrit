@@ -18,10 +18,12 @@ public:
 	MainWindow& getMainWindow();
 	void setWindowTitle(const QString& rProjectName);
 
+	bool createNewProject(const string& rProjectName, const string& rProjectPathAbs, const string&rProjectPathWithFileAbs);
+	bool loadProject(const string&rProjectPathWithFileAbs);
 public slots:
-	void onNewProject();
-	void onOpenProject();
-	void onNewScene();
-	void onOpenScene();
+	void onNewProjectClicked();
+	void onOpenProjectClicked();
+	void onNewSceneClicked();
+	void onOpenSceneClicked();
 };
 

@@ -10,22 +10,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	mActionNewProject = new QAction(QIcon(":/icons/new.png"), tr("&New Project..."), this);
 	//mActionNewProject->setShortcuts(QKeySequence::Open);
 	mActionNewProject->setStatusTip(tr("Create a new Project"));
-	QObject::connect(mActionNewProject, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onNewProject);
+	QObject::connect(mActionNewProject, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onNewProjectClicked);
 
 	mActionOpenProject = new QAction(QIcon(":/icons/open.png"), tr("&Open Project..."), this);
 	//mActionOpenProject->setShortcuts(QKeySequence::Open);
 	mActionOpenProject->setStatusTip(tr("Open a existing Project"));
-	QObject::connect(mActionOpenProject, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onOpenProject);
+	QObject::connect(mActionOpenProject, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onOpenProjectClicked);
 
 	mActionNewScene = new QAction(QIcon(":/icons/new.png"), tr("&New Scene..."), this);
 	mActionNewScene->setShortcuts(QKeySequence::New);
 	mActionNewScene->setStatusTip(tr("Create a new Scene"));
-	QObject::connect(mActionNewScene, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onNewScene);
+	QObject::connect(mActionNewScene, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onNewSceneClicked);
 
 	mActionOpenScene = new QAction(QIcon(":/icons/open.png"), tr("&Open Scene..."), this);
 	mActionOpenScene->setShortcuts(QKeySequence::Open);
 	mActionOpenScene->setStatusTip(tr("Open a existing Scene"));
-	QObject::connect(mActionOpenScene, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onOpenScene);
+	QObject::connect(mActionOpenScene, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onOpenSceneClicked);
 
 
 

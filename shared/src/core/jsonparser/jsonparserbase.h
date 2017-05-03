@@ -10,8 +10,6 @@
 using namespace std;
 
 class JsonParserBase {
-protected:
-    virtual bool parseRoot(JSONValue *rJSONValueParent)=0;
 public:
 	static const string extractString(JSONValue *rJSONValueParent, const wstring &rName);
 	static float extractNumber(JSONValue *rJSONValueParent, const wstring &rName);
@@ -20,7 +18,7 @@ public:
 	static bool extractBool(JSONValue *rJSONValueParent, const wstring &rName);
 	JsonParserBase();
 	virtual ~JsonParserBase();
-    bool parse(const string &rFileName);
+	JSONValue* parse(const string &rFileName);
 };
 
 #endif // JSONPARSERBASE_H

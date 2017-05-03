@@ -12,13 +12,16 @@
 enum class NodeType {
 	Root,
 	Node,
+// Drawable
+	Node2d,
+	Sprite,
+// Resource
+	Resource,
 	Project,
 	Scene,
 	SceneRef,
-	Sprite,
 	TextureAtlas,
 	TextureAtlasFrame,
-
 	AnimationSet,
 	AnimationSetFrameTexture,
 	AnimationSetFrameTextureAtlas,
@@ -44,13 +47,15 @@ private:
 	vector<Node*>				mNodes;
 	Node*						mParent=nullptr;
 	map<string, PropertyBase*>	mPropertyMap;
-	NodeType					mNodeType=NodeType::Node;
 	void setProperty(const string& rName, PropertyBase* r);
 	void deserializeSelf(JSONValue *rJSONValueParent);
+protected:
+	NodeType					mNodeType=NodeType::Node;
 public:
 	Node(bool rCreateNewId);
-	Node(NodeType rNodeType);
-	Node(NodeType rNodeType, bool rCreateNewId);
+	Node();
+	//Node(NodeType rNodeType);
+	//Node(NodeType rNodeType, bool rCreateNewId);
 	~Node();
 	Node* addChildNode(Node*);
 	Node* getParent();
@@ -90,10 +95,12 @@ public:
 	PropertyPointFloat* getPropertyPointFloat(const string &rName);
 	PropertyList* getPropertyList(const string &rName);
 
-	bool persistSubNode(const string &rFileNameAbs);
+	static bool persistNode(Node *rNode, const string &rFileNameAbs);
+	static Node* unpersistNode(const string &rFileNameAbs);
 	void serialize(string &buf, unsigned long indent);
 	void deserialize(JSONValue *rJSONValueParent);
 
+	PROPERTY_STRING_GETSET(Name)
 	PROPERTY_INT_GETSET(Id)
 };
 
@@ -107,7 +114,8 @@ T* getInstanceFromNodeType(NodeType &rNodeType, bool rCreateNewId);
 class NodeRoot : public Node {
 private:
 public:
-	NodeRoot(bool rCreateNewId) : Node(NodeType::Root, rCreateNewId) {
+	NodeRoot(bool rCreateNewId) : Node(rCreateNewId) {
+		mNodeType=NodeType::Root;
 	}
 	NodeRoot() : NodeRoot(true) {
 	}
@@ -120,7 +128,8 @@ public:
 	PROPERTY_STRING_GETSET(StartScene)
 	PROPERTY_LIST_GETSET(ListTest)
 
-	NodeProject(bool rCreateNewId) : Node(NodeType::Project, rCreateNewId) {
+	NodeProject(bool rCreateNewId) : Node(rCreateNewId) {
+		mNodeType=NodeType::Project;
 		setProjectName("");
 		setStartScene("");
 		setListTest();
@@ -130,14 +139,42 @@ public:
 	}
 };
 
-class NodeSprite : public Node {
+class Node2d : public Node {
 private:
 public:
-	PROPERTY_STRING_GETSET(Name)
 	PROPERTY_POINTINT_GETSET(Position)
 	PROPERTY_RECTINT_GETSET(Size)
 	PROPERTY_POINTFLOAT_GETSET(Scale)
 	PROPERTY_FLOAT_GETSET(Rotation)
+
+	Node2d(bool rCreateNewId) : Node(rCreateNewId) {
+		mNodeType=NodeType::Node2d;
+		setPosition();
+		setSize();
+		setScale(PointFloat(1.0,1.0));
+		setRotation();
+	}
+
+	Node2d() : Node2d(true) {
+	}
+
+};
+
+class NodeScene : public Node2d {
+private:
+public:
+
+	NodeScene(bool rCreateNewId) : Node2d(rCreateNewId) {
+		mNodeType=NodeType::Scene;
+	}
+
+	NodeScene() : NodeScene(true) {
+	}
+};
+
+class NodeSprite : public Node2d {
+private:
+public:
 	PROPERTY_BOOL_GETSET(IsAnimated)
 	// if isAnimated==true
 		PROPERTY_STRING_GETSET(Texture)
@@ -146,12 +183,9 @@ public:
 		PROPERTY_STRING_GETSET(DefaultAnimation)
 	// end if
 
-	NodeSprite(bool rCreateNewId) : Node(NodeType::Sprite, rCreateNewId) {
-		setName();
-		setPosition();
-		setSize();
-		setScale(PointFloat(1.0,1.0));
-		setRotation();
+
+	NodeSprite(bool rCreateNewId) : Node2d(rCreateNewId) {
+		mNodeType=NodeType::Sprite;
 		setIsAnimated(false);
 		setTexture();
 		setTextureSourceRect();
@@ -163,13 +197,28 @@ public:
 };
 
 
-class NodeTextureAtlas : public Node {
+
+class NodeResource : public Node {
+private:
+public:
+	NodeResource(bool rCreateNewId) : Node(rCreateNewId) {
+		mNodeType=NodeType::Resource;
+	}
+
+	NodeResource() : NodeResource(true) {
+	}
+};
+
+
+
+class NodeTextureAtlas : public NodeResource {
 private:
 public:
 	PROPERTY_STRING_GETSET(Name)
 	PROPERTY_STRING_GETSET(Texture)
 
-	NodeTextureAtlas(bool rCreateNewId) : Node(NodeType::TextureAtlas, rCreateNewId) {
+	NodeTextureAtlas(bool rCreateNewId) : NodeResource(rCreateNewId) {
+		mNodeType=NodeType::TextureAtlas;
 		setName();
 		setTexture();
 	}
@@ -178,14 +227,15 @@ public:
 	}
 };
 
-class NodeTextureAtlasFrame : public Node {
+class NodeTextureAtlasFrame : public NodeResource {
 private:
 public:
 	PROPERTY_STRING_GETSET(Name)
 	PROPERTY_RECTINT_GETSET(TextureSourceRect)
 	PROPERTY_INT_GETSET(Rotation)
 
-	NodeTextureAtlasFrame(bool rCreateNewId) : Node(NodeType::TextureAtlasFrame, rCreateNewId) {
+	NodeTextureAtlasFrame(bool rCreateNewId) : NodeResource(rCreateNewId) {
+		mNodeType=NodeType::TextureAtlasFrame;
 		setName();
 		setTextureSourceRect();
 		setRotation(0); // 0, 90=rotated Right, 270=rotated Left
@@ -195,12 +245,13 @@ public:
 	}
 };
 
-class NodeAnimationSet : public Node {
+class NodeAnimationSet : public NodeResource {
 private:
 public:
 	PROPERTY_STRING_GETSET(Name)
 
-	NodeAnimationSet(bool rCreateNewId) : Node(NodeType::AnimationSet, rCreateNewId) {
+	NodeAnimationSet(bool rCreateNewId) : NodeResource(rCreateNewId) {
+		mNodeType=NodeType::AnimationSet;
 		setName();
 	}
 
@@ -208,13 +259,14 @@ public:
 	}
 };
 
-class NodeAnimationSetFrameTexture : public Node {
+class NodeAnimationSetFrameTexture : public NodeResource {
 private:
 public:
 	PROPERTY_STRING_GETSET(Name)
 	PROPERTY_STRING_GETSET(Texture)
 	PROPERTY_RECTINT_GETSET(TextureSourceRect)
-	NodeAnimationSetFrameTexture(bool rCreateNewId) : Node(NodeType::AnimationSetFrameTexture, rCreateNewId) {
+	NodeAnimationSetFrameTexture(bool rCreateNewId) : NodeResource(rCreateNewId) {
+		mNodeType=NodeType::AnimationSetFrameTexture;
 		setName();
 		setTexture();
 		setTextureSourceRect();
@@ -223,13 +275,14 @@ public:
 	}
 };
 
-class NodeAnimationSetFrameTextureAtlas : public Node {
+class NodeAnimationSetFrameTextureAtlas : public NodeResource {
 private:
 public:
 	PROPERTY_STRING_GETSET(Name)
 	PROPERTY_STRING_GETSET(TextureAtlasName)
 	PROPERTY_STRING_GETSET(TextureAtlasFrameName)
-	NodeAnimationSetFrameTextureAtlas(bool rCreateNewId) : Node(NodeType::AnimationSetFrameTextureAtlas, rCreateNewId) {
+	NodeAnimationSetFrameTextureAtlas(bool rCreateNewId) : NodeResource(rCreateNewId) {
+		mNodeType=NodeType::AnimationSetFrameTextureAtlas;
 		setName();
 		setTextureAtlasName();
 		setTextureAtlasFrameName();

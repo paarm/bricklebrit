@@ -24,8 +24,6 @@ Project {
             "src/core/tree/node.cpp",
             "src/core/tree/nodeidgenerator.cpp",
             "src/core/tree/nodeidgenerator.h",
-            "src/core/tree/nodeparser.cpp",
-            "src/core/tree/nodeparser.h",
             "src/core/tree/property/property.h",
             "src/core/tree/property/property_bool.cpp",
             "src/core/tree/property/property_bool.h",

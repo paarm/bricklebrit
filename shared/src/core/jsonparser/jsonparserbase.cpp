@@ -6,8 +6,7 @@ JsonParserBase::JsonParserBase() {
 JsonParserBase::~JsonParserBase() {}
 
 #include <unistd.h>
-bool JsonParserBase::parse(const string &rFileName) {
-    bool rv=true;
+JSONValue* JsonParserBase::parse(const string &rFileName) {
     cout << "Loading JSON File " << rFileName << endl;
 
 	char cCurrentPath[FILENAME_MAX];
@@ -30,9 +29,9 @@ bool JsonParserBase::parse(const string &rFileName) {
 
     JSONValue *rJSONValue=JSON::Parse(rFileString.c_str());
     if (rJSONValue && rJSONValue->IsObject()) {
-        rv=parseRoot(rJSONValue);
+		return rJSONValue;
     }
-    return rv;
+	return nullptr;
 }
 
 const string JsonParserBase::extractString(JSONValue *rJSONValueParent, const wstring &rName) {

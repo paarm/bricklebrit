@@ -87,6 +87,13 @@
    </property>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>projectName</tabstop>
+  <tabstop>projectPath</tabstop>
+  <tabstop>choosePath</tabstop>
+  <tabstop>okButton</tabstop>
+  <tabstop>cancelButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
