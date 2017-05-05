@@ -3,6 +3,7 @@
 #include "sceneglwidget.h"
 #include "toolbar.h"
 #include "newproject/newprojectdialog.h"
+#include "newscene/newscenedialog.h"
 #include "scenetree/scenetreedock.h"
 
 class MainWindow : public QMainWindow
@@ -13,6 +14,7 @@ private:
 	SceneTreeDock	*mSceneTreeDock=nullptr;
 	QDockWidget		*mElementPropertyDock=nullptr;
 	NewProjectDialog *mNewProjectDialog=nullptr;
+	NewSceneDialog  *mNewSceneDialog=nullptr;
 
 	QAction			*mActionNewProject=nullptr;
 	QAction			*mActionOpenProject=nullptr;
@@ -25,6 +27,7 @@ public:
 	~MainWindow();
 	ToolBar& getToolBar();
 	NewProjectDialog& getNewProjectDialog();
+	NewSceneDialog& getNewSceneDialog();
 	QAction*	getActionNewProject();
 	QAction*	getActionOpenProject();
 	QAction*	getActionNewScene();

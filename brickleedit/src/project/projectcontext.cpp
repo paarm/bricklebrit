@@ -11,8 +11,10 @@ ProjectContext::~ProjectContext() {
 void ProjectContext::closeProject() {
 	if (mNodeProject) {
 		delete mNodeProject;
+		mNodeProject=nullptr;
 	}
 	NodeIdGenerator::getInstance().resetNumber();
+	closeCurrentScene();
 }
 
 bool ProjectContext::createNewProject(const string& rProjectName, const string& rProjectPathAbs, const string &rProjectPathWithFileAbs) {
@@ -74,4 +76,57 @@ string ProjectContext::getProjectPathAbs() {
 NodeProject *ProjectContext::getNodeProject() {
 	return mNodeProject;
 }
+
+string ProjectContext::getCurrentScenePathAbs() {
+	return mCurrentScenePathAbs;
+}
+
+NodeScene *ProjectContext::getNodeCurrentScene() {
+	return mNodeCurrentScene;
+}
+
+void ProjectContext::closeCurrentScene() {
+	if (mNodeCurrentScene) {
+		Node::persistNode(mNodeCurrentScene, mCurrentScenePathWithFileAbs);
+		delete mNodeCurrentScene;
+		mNodeCurrentScene=nullptr;
+	}
+	mNodeSceneRefMap.clear();
+	mNodeSceneRefMap.shrink_to_fit();
+}
+
+bool ProjectContext::createNewScene(const string& rSceneName, const string& rScenePathAbs, const string &rScenePathWithFileAbs) {
+	bool rv=false;
+	closeCurrentScene();
+
+	mCurrentScenePathAbs=rScenePathAbs;
+	mCurrentScenePathWithFileAbs=rScenePathWithFileAbs;
+	mNodeCurrentScene=new NodeScene();
+	mNodeCurrentScene->setName(rSceneName);
+	rv=Node::persistNode(mNodeCurrentScene, rScenePathWithFileAbs);
+	return rv;
+}
+
+bool ProjectContext::loadCurrentScene(const string&rScenePathWithFileAbs) {
+	bool rv=false;
+	closeCurrentScene();
+	mCurrentScenePathWithFileAbs=rScenePathWithFileAbs;
+
+	QFileInfo fi(QString::fromStdString(mCurrentScenePathWithFileAbs));
+	if (fi.exists() && fi.isFile()) {
+		QString path=fi.absolutePath();
+		mCurrentScenePathAbs=path.toStdString();
+		Node *rNode=Node::unpersistNode(fi.absoluteFilePath().toStdString());
+		if (rNode) {
+			if (rNode->getNodeType()==NodeType::Scene) {
+				mNodeCurrentScene=static_cast<NodeScene*>(rNode);
+				rv=true;
+			} else {
+				closeCurrentScene();
+			}
+		}
+	}
+	return rv;
+}
+
 

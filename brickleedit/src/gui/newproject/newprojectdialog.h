@@ -2,7 +2,6 @@
 #define NEWPROJECTDIALOG_H
 
 #include <QDialog>
-#include <QAbstractButton>
 
 namespace Ui {
 class NewProjectDialog;

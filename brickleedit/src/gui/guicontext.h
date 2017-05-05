@@ -16,10 +16,13 @@ public:
 	}
 	void setMainWindow(MainWindow* rMainWindow);
 	MainWindow& getMainWindow();
-	void setWindowTitle(const QString& rProjectName);
+	void setWindowTitle();
 
 	bool createNewProject(const string& rProjectName, const string& rProjectPathAbs, const string&rProjectPathWithFileAbs);
 	bool loadProject(const string&rProjectPathWithFileAbs);
+
+	bool createNewScene(const string& rSceneName, const string& rScenePathAbs, const string&rScenePathWithFileAbs);
+	bool loadCurrentScene(const string&rScenePathWithFileAbs);
 public slots:
 	void onNewProjectClicked();
 	void onOpenProjectClicked();

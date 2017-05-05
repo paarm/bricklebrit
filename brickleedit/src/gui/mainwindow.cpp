@@ -97,3 +97,10 @@ NewProjectDialog& MainWindow::getNewProjectDialog() {
 	return *mNewProjectDialog;
 }
 
+NewSceneDialog& MainWindow::getNewSceneDialog() {
+	if (mNewSceneDialog==nullptr) {
+		mNewSceneDialog=new NewSceneDialog(this);
+	}
+	return *mNewSceneDialog;
+}
+
