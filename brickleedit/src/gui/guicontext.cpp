@@ -14,16 +14,51 @@ void GuiContext::setMainWindow(MainWindow* rMainWindow) {
 	mMainWindow=rMainWindow;
 }
 
+QString GuiContext::getVirtualProjectPath() {
+	return "project://";
+}
+
+QString GuiContext::toVirtualPath(const QString &rPathAbs) {
+	QString rv;
+	if (rPathAbs.startsWith(getVirtualProjectPath())) {
+		rv=rPathAbs;
+	} else if (rPathAbs.startsWith(QString::fromStdString(ProjectContext::getInstance().getProjectPathAbs()))) {
+		QString fragment=rPathAbs.mid(ProjectContext::getInstance().getProjectPathAbs().length(), rPathAbs.length()-ProjectContext::getInstance().getProjectPathAbs().length());
+		if (fragment.length()>0 && (fragment.at(0)=='/' || fragment.at(0)=='\\')) {
+			fragment=fragment.mid(1,fragment.length()-1);
+		}
+		rv+=getVirtualProjectPath()+fragment;
+	}
+	return rv;
+}
+
+QString GuiContext::fromVirtualPath(const QString &rPathAbs) {
+	QString rv;
+	if (rPathAbs.startsWith(QString::fromStdString(ProjectContext::getInstance().getProjectPathAbs()))) {
+		rv=rPathAbs;
+	} else if (rPathAbs.startsWith(getVirtualProjectPath())) {
+		rv+=QString::fromStdString(ProjectContext::getInstance().getProjectPathAbs());
+		QString fragment=rPathAbs.mid(getVirtualProjectPath().length(), rPathAbs.length()-getVirtualProjectPath().length());
+		if (fragment.length()>0 && fragment[0]!='/' && fragment[0]!='\\') {
+			rv+='/'; // TODO windows
+		}
+		rv+=fragment;
+	}
+	return rv;
+}
+
+
 
 void GuiContext::setWindowTitle() {
 	string rPartTitle="";
 	if (ProjectContext::getInstance().getNodeProject()) {
-		rPartTitle+=" - "+ProjectContext::getInstance().getNodeProject()->getProjectName();
+		rPartTitle+=ProjectContext::getInstance().getNodeProject()->getProjectName();
 		if (ProjectContext::getInstance().getNodeCurrentScene()) {
-			rPartTitle+=" : "+ProjectContext::getInstance().getNodeCurrentScene()->getName();
+			rPartTitle+=" ["+ProjectContext::getInstance().getNodeCurrentScene()->getName()+"]";
 		}
+		rPartTitle+=" - ";
 	}
-	getMainWindow().setWindowTitle("Brickleedit"+QString::fromStdString(rPartTitle));
+	getMainWindow().setWindowTitle(QString::fromStdString(rPartTitle)+"Brickleedit");
 }
 
 void GuiContext::onNewProjectClicked() {
@@ -49,7 +84,7 @@ void GuiContext::onNewSceneClicked() {
 	if (!ProjectContext::getInstance().getNodeProject()) {
 		QMessageBox::warning(&getMainWindow(), tr("Error"), tr("Please open existing project or create a new project first"), QMessageBox::Ok);
 	} else {
-		getMainWindow().getNewSceneDialog().setScenePath(QString::fromStdString(ProjectContext::getInstance().getProjectPathAbs()));
+		getMainWindow().getNewSceneDialog().setScenePath(getVirtualProjectPath());
 		getMainWindow().getNewSceneDialog().setSceneName("New Scene");
 		getMainWindow().getNewSceneDialog().show();
 	}

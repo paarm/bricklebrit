@@ -39,9 +39,10 @@ void NewProjectDialog::on_choosePath_clicked() {
 												 "Projects",
 												 QFileDialog::ShowDirsOnly
 												 | QFileDialog::DontResolveSymlinks);
-	setProjectPath(dir);
+	if (!dir.isEmpty()) {
+		setProjectPath(dir);
+	}
 }
-
 
 void NewProjectDialog::on_okButton_clicked()
 {

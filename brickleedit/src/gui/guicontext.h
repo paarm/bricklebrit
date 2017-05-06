@@ -23,6 +23,9 @@ public:
 
 	bool createNewScene(const string& rSceneName, const string& rScenePathAbs, const string&rScenePathWithFileAbs);
 	bool loadCurrentScene(const string&rScenePathWithFileAbs);
+	QString getVirtualProjectPath();
+	QString fromVirtualPath(const QString &rPathAbs);
+	QString toVirtualPath(const QString &rPathAbs);
 public slots:
 	void onNewProjectClicked();
 	void onOpenProjectClicked();
