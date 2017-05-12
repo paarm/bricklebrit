@@ -1,22 +1,13 @@
 #pragma once
-#include <bricklelib.h>
 #include <QObject>
+#include "currentprojectinfo.h"
 
 class ProjectContext
 {
 private:
-	NodeProject				*mNodeProject=nullptr;
-	NodeScene				*mNodeCurrentScene=nullptr;
-	vector<NodeScene*>		mNodeSceneRefMap;
-	string					mProjectPathAbs;
-	string					mProjectPathWithFileAbs;
+	CurrentProjectInfo		mCurrentProjectInfo;
 
-	string					mCurrentScenePathAbs;
-	string					mCurrentScenePathWithFileAbs;
 	ProjectContext();
-	void closeProject();
-	void closeCurrentScene();
-
 public:
 	static ProjectContext& getInstance() {
 		static ProjectContext rProjectContext;
@@ -25,13 +16,15 @@ public:
 	~ProjectContext();
 	bool createNewProject(const string& rProjectName, const string& rProjectPathAbs, const string&rProjectPathWithFileAbs);
 	bool loadProject(const string&rProjectPathWithFileAbs);
+	void closeProject(bool rPersistBefore);
 
 	bool createNewScene(const string& rSceneName, const string& rScenePathAbs, const string&rScenePathWithFileAbs);
 	bool loadCurrentScene(const string&rScenePathWithFileAbs);
+	void closeCurrentScene(bool rPersistBefore);
 
 	string getProjectPathAbs();
-	string getCurrentScenePathAbs();
 	NodeProject *getNodeProject();
+	string getCurrentScenePathAbs();
 	NodeScene *getNodeCurrentScene();
 };
 

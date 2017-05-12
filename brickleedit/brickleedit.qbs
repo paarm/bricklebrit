@@ -35,6 +35,10 @@ Project {
             "src/gui/mainwindow.h",
             "src/gui/sceneglwidget.cpp",
             "src/gui/sceneglwidget.h",
+            "src/project/currentprojectinfo.cpp",
+            "src/project/currentprojectinfo.h",
+            "src/project/currentsceneinfo.cpp",
+            "src/project/currentsceneinfo.h",
             "src/project/projectcontext.cpp",
             "src/project/projectcontext.h",
         ]
