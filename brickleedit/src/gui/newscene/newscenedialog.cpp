@@ -65,7 +65,7 @@ void NewSceneDialog::on_cancelButton_clicked()
 void NewSceneDialog::on_choosePath_clicked()
 {
 	QString dir = QFileDialog::getExistingDirectory(this, tr("Select new Scene path"),
-												 QString::fromStdString(ProjectContext::getInstance().getProjectPathAbs()),
+												 GuiContext::getInstance().fromVirtualPath(getScenePath()),
 												 QFileDialog::ShowDirsOnly
 												 | QFileDialog::DontResolveSymlinks);
 	if (!dir.isEmpty()) {

@@ -129,6 +129,14 @@ Node* Node::addChildNode(Node *rNode) {
 	return rv;
 }
 
+Node* Node::getNodeFromIndex(unsigned long rIndex) {
+	Node *rv=nullptr;
+	if (rIndex>=0 && rIndex<mNodes.size()) {
+		rv=mNodes[rIndex];
+	}
+	return rv;
+}
+
 void Node::moveChildNode(Node* rNodeToMove) {
 	if (rNodeToMove!=this) {
 		Node* parent=rNodeToMove->getParent();
@@ -271,7 +279,7 @@ PropertyString* Node::getPropertyString(const string &rName) {
 
 PropertyFloat* Node::getPropertyFloat(const string &rName) {
 	PropertyBase *p=getProperty(rName);
-	if (p && p->getPropertyType()==PropertyType::String) {
+	if (p && p->getPropertyType()==PropertyType::Float) {
 		return static_cast<PropertyFloat*>(p);
 	}
 	return nullptr;
@@ -287,7 +295,7 @@ PropertyBool* Node::getPropertyBool(const string &rName) {
 
 PropertyInt* Node::getPropertyInt(const string &rName) {
 	PropertyBase *p=getProperty(rName);
-	if (p && p->getPropertyType()==PropertyType::String) {
+	if (p && p->getPropertyType()==PropertyType::Int) {
 		return static_cast<PropertyInt*>(p);
 	}
 	return nullptr;
@@ -303,7 +311,7 @@ PropertyRectInt* Node::getPropertyRectInt(const string &rName) {
 
 PropertyRectFloat* Node::getPropertyRectFloat(const string &rName) {
 	PropertyBase *p=getProperty(rName);
-	if (p && p->getPropertyType()==PropertyType::RectInt) {
+	if (p && p->getPropertyType()==PropertyType::RectFloat) {
 		return static_cast<PropertyRectFloat*>(p);
 	}
 	return nullptr;
@@ -311,7 +319,7 @@ PropertyRectFloat* Node::getPropertyRectFloat(const string &rName) {
 
 PropertyPointInt* Node::getPropertyPointInt(const string &rName) {
 	PropertyBase *p=getProperty(rName);
-	if (p && p->getPropertyType()==PropertyType::RectInt) {
+	if (p && p->getPropertyType()==PropertyType::PointInt) {
 		return static_cast<PropertyPointInt*>(p);
 	}
 	return nullptr;
@@ -319,7 +327,7 @@ PropertyPointInt* Node::getPropertyPointInt(const string &rName) {
 
 PropertyPointFloat* Node::getPropertyPointFloat(const string &rName) {
 	PropertyBase *p=getProperty(rName);
-	if (p && p->getPropertyType()==PropertyType::RectInt) {
+	if (p && p->getPropertyType()==PropertyType::PointFloat) {
 		return static_cast<PropertyPointFloat*>(p);
 	}
 	return nullptr;

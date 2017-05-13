@@ -23,6 +23,7 @@ public:
 	void	closeScene(bool rPersistBefore);
 	bool	createNewScene(const string& rSceneName, const string& rScenePathAbs, const string &rScenePathWithFileAbs);
 	bool	loadScene(const string&rScenePathWithFileAbs);
+	bool	isSceneAvailable();
 
 	string	getScenePathAbs();
 	NodeScene *getNodeScene();

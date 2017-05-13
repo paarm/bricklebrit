@@ -2,11 +2,15 @@
 #define SCENETREEDOCK_H
 
 #include <QDockWidget>
+#include <QTreeWidgetItem>
 #include "newscenenode/newscenenodedialog.h"
+#include <bricklelib.h>
 
 namespace Ui {
 class SceneTreeDock;
 }
+
+Q_DECLARE_METATYPE(Node*);
 
 class SceneTreeDock : public QDockWidget
 {
@@ -15,10 +19,16 @@ class SceneTreeDock : public QDockWidget
 public:
 	explicit SceneTreeDock(QWidget *parent = 0);
 	~SceneTreeDock();
+	QTreeWidgetItem* getSelectedItem();
+	Node* getSelectedNode();
 
+	QTreeWidgetItem* searchNode(QTreeWidgetItem *parent, Node* rNode);
+	QTreeWidgetItem* addNode(QTreeWidgetItem *parent, Node* rNode);
+	void setNodeToTreeItem(QTreeWidgetItem* r, Node *rNode);
+	Node* getNodeFromTreeItem(QTreeWidgetItem* r);
+	void clear();
 private slots:
 	void on_newNode_clicked();
-	void onNewNodeSelected(QString rNodeTypeName);
 private:
 	Ui::SceneTreeDock *ui;
 	NewSceneNodeDialog *newSceneNodeDialog=nullptr;

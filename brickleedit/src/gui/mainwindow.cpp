@@ -104,3 +104,7 @@ NewSceneDialog& MainWindow::getNewSceneDialog() {
 	return *mNewSceneDialog;
 }
 
+SceneTreeDock& MainWindow::getSceneTreeDock() {
+	return *mSceneTreeDock;
+}
+

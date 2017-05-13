@@ -34,6 +34,10 @@ NodeScene *ProjectContext::getNodeCurrentScene() {
 	return mCurrentProjectInfo.getCurrentSceneInfo().getNodeScene();
 }
 
+bool ProjectContext::isCurrentSceneAvailable() {
+	return mCurrentProjectInfo.getCurrentSceneInfo().isSceneAvailable();
+}
+
 void ProjectContext::closeCurrentScene(bool rPersistBefore) {
 	mCurrentProjectInfo.getCurrentSceneInfo().closeScene(rPersistBefore);
 }

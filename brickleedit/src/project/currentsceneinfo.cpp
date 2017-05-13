@@ -25,6 +25,14 @@ NodeScene* CurrentSceneInfo::getNodeScene() {
 	return mNodeScene;
 }
 
+bool CurrentSceneInfo::isSceneAvailable() {
+	bool rv=false;
+	if (mNodeScene) {
+		rv=true;
+	}
+	return rv;
+}
+
 bool CurrentSceneInfo::createNewScene(const string& rSceneName, const string& rScenePathAbs, const string &rScenePathWithFileAbs) {
 	bool rv=false;
 	closeScene(true);
@@ -33,6 +41,23 @@ bool CurrentSceneInfo::createNewScene(const string& rSceneName, const string& rS
 	mPathInfo.pathWithFileAbs=rScenePathWithFileAbs;
 	mNodeScene=new NodeScene();
 	mNodeScene->setName(rSceneName);
+
+	Node *atlas=mNodeScene->addChildNode(new NodeTextureAtlas());
+	atlas->addChildNode(new NodeTextureAtlasFrame());
+	atlas->addChildNode(new NodeTextureAtlasFrame());
+	atlas->addChildNode(new NodeTextureAtlasFrame());
+	atlas->addChildNode(new NodeTextureAtlasFrame());
+
+	Node *animation=mNodeScene->addChildNode(new NodeAnimationSet());
+	animation->addChildNode(new NodeAnimationSetFrameTexture);
+	animation->addChildNode(new NodeAnimationSetFrameTexture);
+	animation->addChildNode(new NodeAnimationSetFrameTextureAtlas);
+	animation->addChildNode(new NodeAnimationSetFrameTextureAtlas);
+
+	mNodeScene->addChildNode(new NodeSprite());
+
+
+
 	rv=Node::persistNode(mNodeScene, mPathInfo.pathWithFileAbs);
 	return rv;
 }

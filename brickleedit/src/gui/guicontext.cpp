@@ -84,7 +84,11 @@ void GuiContext::onNewSceneClicked() {
 	if (!ProjectContext::getInstance().getNodeProject()) {
 		QMessageBox::warning(&getMainWindow(), tr("Error"), tr("Please open existing project or create a new project first"), QMessageBox::Ok);
 	} else {
-		getMainWindow().getNewSceneDialog().setScenePath(getVirtualProjectPath());
+		if (ProjectContext::getInstance().isCurrentSceneAvailable()) {
+			getMainWindow().getNewSceneDialog().setScenePath(toVirtualPath(QString::fromStdString(ProjectContext::getInstance().getCurrentScenePathAbs())));
+		} else {
+			getMainWindow().getNewSceneDialog().setScenePath(getVirtualProjectPath());
+		}
 		getMainWindow().getNewSceneDialog().setSceneName("New Scene");
 		getMainWindow().getNewSceneDialog().show();
 	}
@@ -94,8 +98,15 @@ void GuiContext::onOpenSceneClicked() {
 	if (!ProjectContext::getInstance().getNodeProject()) {
 		QMessageBox::warning(&getMainWindow(), tr("Error"), tr("Please open existing project or create a new project first"), QMessageBox::Ok);
 	} else {
+		QString path=getVirtualProjectPath();
+		if (ProjectContext::getInstance().isCurrentSceneAvailable()) {
+			path=QString::fromStdString(ProjectContext::getInstance().getCurrentScenePathAbs());
+		} else {
+			getMainWindow().getNewSceneDialog().setScenePath(getVirtualProjectPath());
+		}
+
 		QString file = QFileDialog::getOpenFileName(&getMainWindow(), tr("Open Scene"),
-													 QString::fromStdString(ProjectContext::getInstance().getProjectPathAbs()),
+													path,
 													 "*.brscn",
 													 nullptr,
 													 QFileDialog::DontResolveSymlinks);
@@ -116,6 +127,11 @@ bool GuiContext::loadCurrentScene(const string&rScenePathWithFileAbs) {
 	bool rv=ProjectContext::getInstance().loadCurrentScene(rScenePathWithFileAbs);
 	if (rv) {
 		setWindowTitle();
+		getMainWindow().getSceneTreeDock().clear();
+		NodeScene* rNodeScene=ProjectContext::getInstance().getNodeCurrentScene();
+		if (rNodeScene) {
+			getMainWindow().getSceneTreeDock().addNode(nullptr, rNodeScene);
+		}
 	}
 	return rv;
 }
@@ -143,5 +159,21 @@ bool GuiContext::createNewScene(const string& rSceneName, const string& rScenePa
 		setWindowTitle();
 	}
 	return rv;
+}
+
+void GuiContext::onCreateNewNode(QString rNodeTypeName) {
+	QTreeWidgetItem *parent=getMainWindow().getSceneTreeDock().getSelectedItem();
+	NodeType rNodeType=getNodeTypeFromString(rNodeTypeName.toStdString());
+	Node*rNode=getInstanceFromNodeType(rNodeType, true);
+	if (rNode) {
+		rNode->setName(rNodeTypeName.toStdString());
+		if (parent) {
+			Node* parentNode=getMainWindow().getSceneTreeDock().getNodeFromTreeItem(parent);
+			if (parentNode) {
+				parentNode->addChildNode(rNode);
+			}
+		}
+		getMainWindow().getSceneTreeDock().addNode(parent, rNode);
+	}
 }
 

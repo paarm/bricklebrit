@@ -31,5 +31,7 @@ public slots:
 	void onOpenProjectClicked();
 	void onNewSceneClicked();
 	void onOpenSceneClicked();
+	// Scene Tree
+	void onCreateNewNode(QString rNodeTypeName);
 };
 

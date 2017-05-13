@@ -13,7 +13,6 @@ public:
 	bool	createNewProject(const string& rProjectName, const string& rProjectPathAbs, const string &rProjectPathWithFileAbs);
 	bool	loadProject(const string&rProjectPathWithFileAbs);
 	string	getProjectPathAbs();
-	string	getVirtualProjectPath();
 	NodeProject *getNodeProject();
 	CurrentSceneInfo& getCurrentSceneInfo();
 };

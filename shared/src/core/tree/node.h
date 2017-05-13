@@ -64,6 +64,8 @@ public:
 	void deleteChildNodes();
 	void deleteNode(Node *rNodeToDelete);
 	unsigned long getChildCount();
+	Node* getNodeFromIndex(unsigned long rIndex);
+
 
 	NodeType& getNodeType();
 	void setPropertyString(const string& rName);
@@ -108,7 +110,8 @@ const string getNodeTypeAsString(NodeType &rNodeType);
 NodeType getNodeTypeFromString(const string &rNodeTypeString);
 //Node * getInstanceFromNodeType(NodeType &rNodeType);
 template <typename T>
-T* getInstanceFromNodeType(NodeType &rNodeType, bool rCreateNewId);
+T* getXInstanceFromNodeType(bool rCreateNewId);
+Node * getInstanceFromNodeType(NodeType &rNodeType, bool rCreateNewId);
 
 
 class NodeRoot : public Node {

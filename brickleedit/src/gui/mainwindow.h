@@ -32,5 +32,7 @@ public:
 	QAction*	getActionOpenProject();
 	QAction*	getActionNewScene();
 	QAction*	getActionOpenScene();
+
+	SceneTreeDock& getSceneTreeDock();
 };
 

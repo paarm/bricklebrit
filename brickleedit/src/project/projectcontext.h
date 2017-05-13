@@ -21,6 +21,8 @@ public:
 	bool createNewScene(const string& rSceneName, const string& rScenePathAbs, const string&rScenePathWithFileAbs);
 	bool loadCurrentScene(const string&rScenePathWithFileAbs);
 	void closeCurrentScene(bool rPersistBefore);
+	bool isCurrentSceneAvailable();
+
 
 	string getProjectPathAbs();
 	NodeProject *getNodeProject();

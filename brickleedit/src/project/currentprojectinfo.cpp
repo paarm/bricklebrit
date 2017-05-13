@@ -74,10 +74,6 @@ string CurrentProjectInfo::getProjectPathAbs() {
 	return mPathInfo.pathAbs;
 }
 
-string	CurrentProjectInfo::getVirtualProjectPath() {
-	return "project:://";
-}
-
 NodeProject *CurrentProjectInfo::getNodeProject() {
 	return mNodeProject;
 }
