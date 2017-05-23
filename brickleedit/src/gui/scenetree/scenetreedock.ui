@@ -120,12 +120,12 @@
           </property>
           <column>
            <property name="text">
-            <string>Element</string>
+            <string>Type</string>
            </property>
           </column>
           <column>
            <property name="text">
-            <string>Description</string>
+            <string>Name</string>
            </property>
           </column>
           <column>

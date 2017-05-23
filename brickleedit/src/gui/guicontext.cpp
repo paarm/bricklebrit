@@ -127,11 +127,7 @@ bool GuiContext::loadCurrentScene(const string&rScenePathWithFileAbs) {
 	bool rv=ProjectContext::getInstance().loadCurrentScene(rScenePathWithFileAbs);
 	if (rv) {
 		setWindowTitle();
-		getMainWindow().getSceneTreeDock().clear();
-		NodeScene* rNodeScene=ProjectContext::getInstance().getNodeCurrentScene();
-		if (rNodeScene) {
-			getMainWindow().getSceneTreeDock().addNode(nullptr, rNodeScene);
-		}
+		sceneSwitched();
 	}
 	return rv;
 }
@@ -141,6 +137,7 @@ bool GuiContext::createNewProject(const string& rProjectName, const string& rPro
 	bool rv=ProjectContext::getInstance().createNewProject(rProjectName, rProjectPathAbs, rProjectPathWithFileAbs);
 	if (rv) {
 		setWindowTitle();
+		sceneSwitched();
 	}
 	return rv;
 }
@@ -149,6 +146,7 @@ bool GuiContext::loadProject(const string&rProjectPathWithFileAbs) {
 	bool rv=ProjectContext::getInstance().loadProject(rProjectPathWithFileAbs);
 	if (rv) {
 		setWindowTitle();
+		sceneSwitched();
 	}
 	return rv;
 }
@@ -157,6 +155,7 @@ bool GuiContext::createNewScene(const string& rSceneName, const string& rScenePa
 	bool rv=ProjectContext::getInstance().createNewScene(rSceneName, rScenePathAbs, rScenePathWithFileAbs);
 	if (rv) {
 		setWindowTitle();
+		sceneSwitched();
 	}
 	return rv;
 }
@@ -174,6 +173,22 @@ void GuiContext::onCreateNewNode(QString rNodeTypeName) {
 			}
 		}
 		getMainWindow().getSceneTreeDock().addNode(parent, rNode);
+	}
+}
+
+void GuiContext::sceneSwitched() {
+	getMainWindow().getSceneTreeDock().clear();
+	NodeScene* rNodeScene=ProjectContext::getInstance().getNodeCurrentScene();
+	if (rNodeScene) {
+		getMainWindow().getSceneTreeDock().setSceneEditable(true);
+		getMainWindow().getSceneTreeDock().addNode(nullptr, rNodeScene);
+	}
+	switchProperties(true, nullptr);
+}
+
+void GuiContext::switchProperties(bool isSceneProperty, Node* rNode) {
+	if (isSceneProperty) {
+		getMainWindow().getPropertyTreeDock().setPropertiesForNode(rNode);
 	}
 }
 

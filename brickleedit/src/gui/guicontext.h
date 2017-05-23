@@ -9,6 +9,7 @@ private:
 	Q_OBJECT
 	MainWindow *mMainWindow=nullptr;
 	GuiContext();
+	void sceneSwitched();
 public:
 	static GuiContext& getInstance() {
 		static GuiContext rGuiContext;
@@ -26,6 +27,7 @@ public:
 	QString getVirtualProjectPath();
 	QString fromVirtualPath(const QString &rPathAbs);
 	QString toVirtualPath(const QString &rPathAbs);
+	void switchProperties(bool isSceneProperty, Node* rNode);
 public slots:
 	void onNewProjectClicked();
 	void onOpenProjectClicked();

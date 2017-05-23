@@ -45,6 +45,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	// Tree Dock
 	mSceneTreeDock=new SceneTreeDock(this);
 	this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, mSceneTreeDock);
+	// Scene Properties Dock
+	mScenePropertyTreeDock=new PropertyTreeDock(this);
+	this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, mScenePropertyTreeDock);
 #if 0
 	QWidget	*panel=new QWidget(mSceneTreeDock);
 	QVBoxLayout *vTreeLayout = new QVBoxLayout();
@@ -61,9 +64,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	panel->setLayout(vTreeLayout);
 	mSceneTreeDock->setWidget(panel);
 #endif
-	// Properties Dock
-	mElementPropertyDock=new QDockWidget("Properties", this);
-	this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, mElementPropertyDock);
 }
 
 MainWindow::~MainWindow()
@@ -107,4 +107,9 @@ NewSceneDialog& MainWindow::getNewSceneDialog() {
 SceneTreeDock& MainWindow::getSceneTreeDock() {
 	return *mSceneTreeDock;
 }
+
+PropertyTreeDock& MainWindow::getPropertyTreeDock() {
+	return *mScenePropertyTreeDock;
+}
+
 

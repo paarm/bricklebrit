@@ -47,6 +47,7 @@ private:
 	vector<Node*>				mNodes;
 	Node*						mParent=nullptr;
 	map<string, PropertyBase*>	mPropertyMap;
+	vector<PropertyBase*>		mPropertyList;
 	void setProperty(const string& rName, PropertyBase* r);
 	void deserializeSelf(JSONValue *rJSONValueParent);
 protected:
@@ -96,6 +97,9 @@ public:
 	PropertyPointInt* getPropertyPointInt(const string &rName);
 	PropertyPointFloat* getPropertyPointFloat(const string &rName);
 	PropertyList* getPropertyList(const string &rName);
+
+	unsigned long getPropertyCount();
+	PropertyBase* getPropertyFromIndex(unsigned long rIndex);
 
 	static bool persistNode(Node *rNode, const string &rFileNameAbs);
 	static Node* unpersistNode(const string &rFileNameAbs);

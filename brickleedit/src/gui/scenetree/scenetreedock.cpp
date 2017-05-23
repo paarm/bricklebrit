@@ -7,6 +7,7 @@ SceneTreeDock::SceneTreeDock(QWidget *parent) :
 	ui(new Ui::SceneTreeDock)
 {
 	ui->setupUi(this);
+	setSceneEditable(false);
 }
 
 SceneTreeDock::~SceneTreeDock()
@@ -16,6 +17,11 @@ SceneTreeDock::~SceneTreeDock()
 
 void SceneTreeDock::clear() {
 	ui->treeWidget->clear();
+	setSceneEditable(false);
+}
+
+void SceneTreeDock::setSceneEditable(bool isEditable) {
+	ui->newNode->setEnabled(isEditable);
 }
 
 void SceneTreeDock::on_newNode_clicked()
@@ -87,16 +93,20 @@ QTreeWidgetItem* SceneTreeDock::addNode(QTreeWidgetItem *parent, Node* rNode) {
 		} else {
 			r=new QTreeWidgetItem(ui->treeWidget);
 		}
-		r->setText(0,QString::fromStdString(rNode->getName()));
+		// Type + ID
+		string rType=getNodeTypeAsString(rNode->getNodeType());
+		rType+="("+std::to_string(rNode->getId())+")";
+		r->setText(0, QString::fromStdString(rType));
+		// Name
+		r->setText(1,QString::fromStdString(rNode->getName()));
 		setNodeToTreeItem(r,rNode);
-		string description=getNodeTypeAsString(rNode->getNodeType());
-		description+="("+std::to_string(rNode->getId())+")";
-		r->setText(1, QString::fromStdString(description));
 		//r->setIcon(0, QIcon(":/icons/new.png"));
 		if (parent) {
 			parent->addChild(r);
+			parent->setExpanded(true);
 		} else {
 			ui->treeWidget->addTopLevelItem(r);
+			r->setExpanded(true);
 		}
 		if (rNode->getChildCount()>0) {
 			unsigned long count=rNode->getChildCount();
@@ -112,3 +122,9 @@ QTreeWidgetItem* SceneTreeDock::addNode(QTreeWidgetItem *parent, Node* rNode) {
 }
 
 
+
+void SceneTreeDock::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)
+{
+	Node* rNode=getNodeFromTreeItem(item);
+	GuiContext::getInstance().switchProperties(true, rNode);
+}

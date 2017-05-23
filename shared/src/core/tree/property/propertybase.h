@@ -19,8 +19,11 @@ enum class PropertyType {
 class PropertyBase {
 private:
 	PropertyType	mPropertyType;
+	string			mPropertyName;
 public:
 	PropertyBase(PropertyType rPropertyType);
+	void setPropertyName(const string& rPropertyName);
+	string getPropertyName();
 	PropertyType getPropertyType();
 	string getSerialStart(string rTypeString);
 	virtual string serializeValue()=0;

@@ -170,7 +170,14 @@ void Node::deleteChildNodes() {
 	}
 	mNodes.clear();
 	mNodes.shrink_to_fit();
+
+	for(auto &p : mPropertyMap) {
+		if (p.second) {
+			delete p.second;
+		}
+	}
 	mPropertyMap.clear();
+	mPropertyList.clear();
 }
 
 void Node::deleteNode(Node *rNodeToDelete) {
@@ -194,10 +201,25 @@ NodeType& Node::getNodeType() {
 }
 
 void Node::setProperty(const string& rName, PropertyBase* r) {
+	bool replaced=false;
+	r->setPropertyName(rName);
 	if (mPropertyMap.find(rName)!=mPropertyMap.end()) {
-		delete mPropertyMap[rName];
+		PropertyBase* rExist=mPropertyMap[rName];
+		if (rExist) {
+			for (auto it=mPropertyList.begin(); it!=mPropertyList.end();it++) {
+				if (*it.base()==rExist) {
+					*it=r;
+					replaced=true;
+					break;
+				}
+			}
+			delete rExist;
+		}
 	}
 	mPropertyMap[rName]=r;
+	if (!replaced) {
+		mPropertyList.push_back(r);
+	}
 }
 
 void Node::setPropertyString(const string& rName) {
@@ -266,6 +288,18 @@ PropertyBase* Node::getProperty(const string &rName) {
 		return r->second;
 	}
 	return nullptr;
+}
+
+unsigned long Node::getPropertyCount() {
+	return mPropertyList.size();
+}
+
+PropertyBase* Node::getPropertyFromIndex(unsigned long rIndex) {
+	PropertyBase* rv=nullptr;
+	if (rIndex<mPropertyList.size()) {
+		rv=mPropertyList[rIndex];
+	}
+	return rv;
 }
 
 

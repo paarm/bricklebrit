@@ -56,5 +56,15 @@ PropertyType PropertyBase::getPropertyType() {
 string PropertyBase::getSerialStart(string rTypeString) {
 	return string("")+"\"type\": \""+rTypeString+"\", ";
 }
+
+void PropertyBase::setPropertyName(const string& rPropertyName) {
+	mPropertyName=rPropertyName;
+}
+
+string PropertyBase::getPropertyName() {
+	return mPropertyName;
+}
+
+
 PropertyBase::~PropertyBase() {
 }

@@ -27,8 +27,12 @@ public:
 	void setNodeToTreeItem(QTreeWidgetItem* r, Node *rNode);
 	Node* getNodeFromTreeItem(QTreeWidgetItem* r);
 	void clear();
+	void setSceneEditable(bool isEditable);
 private slots:
 	void on_newNode_clicked();
+	//void onSelectionChanged();
+	void on_treeWidget_itemClicked(QTreeWidgetItem *item, int column);
+
 private:
 	Ui::SceneTreeDock *ui;
 	NewSceneNodeDialog *newSceneNodeDialog=nullptr;

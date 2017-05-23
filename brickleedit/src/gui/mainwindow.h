@@ -5,6 +5,7 @@
 #include "newproject/newprojectdialog.h"
 #include "newscene/newscenedialog.h"
 #include "scenetree/scenetreedock.h"
+#include "propertygrid/propertytreedock.h"
 
 class MainWindow : public QMainWindow
 {
@@ -12,7 +13,7 @@ private:
 	SceneGlWidget	*mSceneGlWidget=nullptr;
 	ToolBar			*mToolBar=nullptr;
 	SceneTreeDock	*mSceneTreeDock=nullptr;
-	QDockWidget		*mElementPropertyDock=nullptr;
+	PropertyTreeDock*mScenePropertyTreeDock=nullptr;
 	NewProjectDialog *mNewProjectDialog=nullptr;
 	NewSceneDialog  *mNewSceneDialog=nullptr;
 
@@ -34,5 +35,6 @@ public:
 	QAction*	getActionOpenScene();
 
 	SceneTreeDock& getSceneTreeDock();
+	PropertyTreeDock& getPropertyTreeDock();
 };
 
