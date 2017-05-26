@@ -10,6 +10,7 @@ private:
 	MainWindow *mMainWindow=nullptr;
 	GuiContext();
 	void sceneSwitched();
+	void projectSwitched();
 public:
 	static GuiContext& getInstance() {
 		static GuiContext rGuiContext;

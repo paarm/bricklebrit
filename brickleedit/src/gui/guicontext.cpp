@@ -137,7 +137,7 @@ bool GuiContext::createNewProject(const string& rProjectName, const string& rPro
 	bool rv=ProjectContext::getInstance().createNewProject(rProjectName, rProjectPathAbs, rProjectPathWithFileAbs);
 	if (rv) {
 		setWindowTitle();
-		sceneSwitched();
+		projectSwitched();
 	}
 	return rv;
 }
@@ -146,7 +146,7 @@ bool GuiContext::loadProject(const string&rProjectPathWithFileAbs) {
 	bool rv=ProjectContext::getInstance().loadProject(rProjectPathWithFileAbs);
 	if (rv) {
 		setWindowTitle();
-		sceneSwitched();
+		projectSwitched();
 	}
 	return rv;
 }
@@ -174,6 +174,11 @@ void GuiContext::onCreateNewNode(QString rNodeTypeName) {
 		}
 		getMainWindow().getSceneTreeDock().addNode(parent, rNode);
 	}
+}
+
+void GuiContext::projectSwitched() {
+	getMainWindow().getMenuBar().setProjectAvailable(ProjectContext::getInstance().getNodeProject());
+	sceneSwitched();
 }
 
 void GuiContext::sceneSwitched() {

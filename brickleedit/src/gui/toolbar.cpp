@@ -2,6 +2,7 @@
 #include "guicontext.h"
 
 ToolBar::ToolBar(const QString& title, QWidget* parent) : QToolBar (title, parent) {
+#if 0
 	{
 		QIcon icon;
 		icon.addFile(QStringLiteral(":/icons/project.png"), QSize(), QIcon::Normal, QIcon::Off);
@@ -31,7 +32,7 @@ ToolBar::ToolBar(const QString& title, QWidget* parent) : QToolBar (title, paren
 
 		addWidget(rToolButtonMenu);
 	}
-
+#endif
 
 
 #if 0

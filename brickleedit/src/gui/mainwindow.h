@@ -2,6 +2,7 @@
 #include <QtWidgets>
 #include "sceneglwidget.h"
 #include "toolbar.h"
+#include "menubar.h"
 #include "newproject/newprojectdialog.h"
 #include "newscene/newscenedialog.h"
 #include "scenetree/scenetreedock.h"
@@ -11,6 +12,7 @@ class MainWindow : public QMainWindow
 {
 private:
 	SceneGlWidget	*mSceneGlWidget=nullptr;
+	MenuBar			*mMenuBar=nullptr;
 	ToolBar			*mToolBar=nullptr;
 	SceneTreeDock	*mSceneTreeDock=nullptr;
 	PropertyTreeDock*mScenePropertyTreeDock=nullptr;
@@ -27,6 +29,7 @@ public:
 	explicit MainWindow(QWidget *parent = 0);
 	~MainWindow();
 	ToolBar& getToolBar();
+	MenuBar& getMenuBar();
 	NewProjectDialog& getNewProjectDialog();
 	NewSceneDialog& getNewSceneDialog();
 	QAction*	getActionNewProject();

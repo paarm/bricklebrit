@@ -7,12 +7,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 	setWindowTitle("Brickleedit");
 
-	mActionNewProject = new QAction(QIcon(":/icons/new.png"), tr("&New Project..."), this);
+	mActionNewProject = new QAction(QIcon(":/icons/new.png"), tr("New Project..."), this);
 	//mActionNewProject->setShortcuts(QKeySequence::Open);
 	mActionNewProject->setStatusTip(tr("Create a new Project"));
 	QObject::connect(mActionNewProject, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onNewProjectClicked);
 
-	mActionOpenProject = new QAction(QIcon(":/icons/open.png"), tr("&Open Project..."), this);
+	mActionOpenProject = new QAction(QIcon(":/icons/open.png"), tr("Open Project..."), this);
 	//mActionOpenProject->setShortcuts(QKeySequence::Open);
 	mActionOpenProject->setStatusTip(tr("Open a existing Project"));
 	QObject::connect(mActionOpenProject, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onOpenProjectClicked);
@@ -39,6 +39,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	// GL Widget
 	mSceneGlWidget=new SceneGlWidget(this);
 	this->setCentralWidget(mSceneGlWidget);
+	// Menue Bar
+	mMenuBar=new MenuBar(this);
+	this->setMenuBar(mMenuBar);
+
 	// Toolbar
 	mToolBar=new ToolBar("Tools", this);
 	this->addToolBar(mToolBar);
@@ -83,11 +87,12 @@ QAction*	MainWindow::getActionOpenScene() {
 	return mActionOpenScene;
 }
 
-
-
-
 ToolBar& MainWindow::getToolBar() {
 	return *mToolBar;
+}
+
+MenuBar& MainWindow::getMenuBar() {
+	return *mMenuBar;
 }
 
 NewProjectDialog& MainWindow::getNewProjectDialog() {

@@ -15,6 +15,8 @@ Project {
         files: [
             "src/gui/guicontext.cpp",
             "src/gui/guicontext.h",
+            "src/gui/menubar.cpp",
+            "src/gui/menubar.h",
             "src/gui/newproject/newprojectdialog.cpp",
             "src/gui/newproject/newprojectdialog.h",
             "src/gui/newproject/newprojectdialog.ui",
