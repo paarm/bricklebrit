@@ -1,11 +1,12 @@
 #pragma once
 #include <QObject>
-#include "currentprojectinfo.h"
+#include "nodemanager.h"
+
 
 class ProjectContext
 {
 private:
-	CurrentProjectInfo		mCurrentProjectInfo;
+	NodeManager		mNodeManager;
 
 	ProjectContext();
 public:
@@ -14,19 +15,22 @@ public:
 		return rProjectContext;
 	}
 	~ProjectContext();
-	bool createNewProject(const string& rProjectName, const string& rProjectPathAbs, const string&rProjectPathWithFileAbs);
-	bool loadProject(const string&rProjectPathWithFileAbs);
-	void closeProject(bool rPersistBefore);
-
-	bool createNewScene(const string& rSceneName, const string& rScenePathAbs, const string&rScenePathWithFileAbs);
-	bool loadCurrentScene(const string&rScenePathWithFileAbs);
-	void closeCurrentScene(bool rPersistBefore);
-	bool isCurrentSceneAvailable();
-
-
+	bool createNew(NodeInfoType rNodeInfoType, const string& rName, const string& rPathAbs, const string&rPathWithFileAbs);
+	bool load(NodeInfoType rNodeInfoType, const string&rPathWithFileAbs);
+	void save();
+	void close(bool rPersistBefore);
+	bool isProjectAvailable();
+	bool isSceneAvailable();
+	bool isResourceAvailableByName(const string &rName);
+	bool isResourceAvailableByPath(const string &rPathWithFileAbs);
 	string getProjectPathAbs();
+	string getScenePathAbs();
+	string getResourcePathAndFileAbsByName(const string& rName);
 	NodeProject *getNodeProject();
-	string getCurrentScenePathAbs();
-	NodeScene *getNodeCurrentScene();
+	NodeScene *getNodeScene();
+	NodeResource *getNodeResourceByName(const string& rName);
+	NodeResource *getNodeResourceByPath(const string& rPathWithFileAbs);
+	void setCurrentResource(NodeResource *rNodeResource);
+	NodeResource* getCurrentResource();
 };
 

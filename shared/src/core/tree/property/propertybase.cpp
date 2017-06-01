@@ -7,6 +7,8 @@ PropertyType getPropertyTypeFromName(const string &rType) {
 		return PropertyType::Int;
 	} else if (rType=="String") {
 		return PropertyType::String;
+	} else if (rType=="Ref") {
+		return PropertyType::Ref;
 	} else if (rType=="Float") {
 		return PropertyType::Float;
 	} else if (rType=="RectInt") {
@@ -30,6 +32,8 @@ const string getPropertyStringFromPropertyType(const PropertyType& rPropertyType
 		return "Int";
 	} else if (rPropertyType==PropertyType::String) {
 		return "String";
+	} else if (rPropertyType==PropertyType::Ref) {
+		return "Ref";
 	} else if (rPropertyType==PropertyType::Float) {
 		return "Float";
 	} else if (rPropertyType==PropertyType::RectInt) {

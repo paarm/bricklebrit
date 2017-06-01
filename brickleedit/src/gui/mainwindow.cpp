@@ -17,6 +17,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	mActionOpenProject->setStatusTip(tr("Open a existing Project"));
 	QObject::connect(mActionOpenProject, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onOpenProjectClicked);
 
+	mActionSaveProject = new QAction(/*QIcon(":/icons/open.png"),*/ tr("Save Project..."), this);
+	//mActionOpenProject->setShortcuts(QKeySequence::Open);
+	mActionSaveProject->setStatusTip(tr("Save the Project"));
+	QObject::connect(mActionSaveProject, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onSaveProjectClicked);
+
+	mActionCloseProject = new QAction(/*QIcon(":/icons/open.png"), */tr("Close Project"), this);
+	//mActionOpenProject->setShortcuts(QKeySequence::Open);
+	mActionCloseProject->setStatusTip(tr("Close a existing Project"));
+	QObject::connect(mActionCloseProject, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onCloseProjectClicked);
+
 	mActionNewScene = new QAction(QIcon(":/icons/new.png"), tr("&New Scene..."), this);
 	mActionNewScene->setShortcuts(QKeySequence::New);
 	mActionNewScene->setStatusTip(tr("Create a new Scene"));
@@ -27,6 +37,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	mActionOpenScene->setStatusTip(tr("Open a existing Scene"));
 	QObject::connect(mActionOpenScene, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onOpenSceneClicked);
 
+	mActionNewResource = new QAction(QIcon(":/icons/new.png"), tr("&New Resource..."), this);
+	mActionNewResource->setShortcuts(QKeySequence::New);
+	mActionNewResource->setStatusTip(tr("Create a new Resource"));
+	QObject::connect(mActionNewResource, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onNewResourceClicked);
+
+	mActionOpenResource = new QAction(QIcon(":/icons/open.png"), tr("&Open Resource..."), this);
+	mActionOpenResource->setShortcuts(QKeySequence::Open);
+	mActionOpenResource->setStatusTip(tr("Open a existing Resource"));
+	QObject::connect(mActionOpenResource, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onOpenResourceClicked);
 
 
 //	QAction			*mActionOpenProject=nullptr;
@@ -52,6 +71,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	// Scene Properties Dock
 	mScenePropertyTreeDock=new PropertyTreeDock(this);
 	this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, mScenePropertyTreeDock);
+
+	setProjectAvailable(false);
+	setProjectRequireSave(false);
 #if 0
 	QWidget	*panel=new QWidget(mSceneTreeDock);
 	QVBoxLayout *vTreeLayout = new QVBoxLayout();
@@ -80,11 +102,24 @@ QAction*	MainWindow::getActionNewProject() {
 QAction*	MainWindow::getActionOpenProject() {
 	return mActionOpenProject;
 }
+QAction*	MainWindow::getActionCloseProject() {
+	return mActionCloseProject;
+}
+QAction*	MainWindow::getActionSaveProject() {
+	return mActionSaveProject;
+}
 QAction*	MainWindow::getActionNewScene() {
 	return mActionNewScene;
 }
 QAction*	MainWindow::getActionOpenScene() {
 	return mActionOpenScene;
+}
+
+QAction*	MainWindow::getActionNewResource() {
+	return mActionNewResource;
+}
+QAction*	MainWindow::getActionOpenResource() {
+	return mActionOpenResource;
 }
 
 ToolBar& MainWindow::getToolBar() {
@@ -104,10 +139,25 @@ NewProjectDialog& MainWindow::getNewProjectDialog() {
 
 NewSceneDialog& MainWindow::getNewSceneDialog() {
 	if (mNewSceneDialog==nullptr) {
-		mNewSceneDialog=new NewSceneDialog(this);
+		mNewSceneDialog=new NewSceneDialog(NodeInfoType::Scene, this);
 	}
 	return *mNewSceneDialog;
 }
+
+NewSceneDialog& MainWindow::getNewResourceDialog() {
+	if (mNewResourceDialog==nullptr) {
+		mNewResourceDialog=new NewSceneDialog(NodeInfoType::Resource, this);
+	}
+	return *mNewResourceDialog;
+}
+
+void MainWindow::setProjectAvailable(bool isAvailable) {
+	getActionCloseProject()->setEnabled(isAvailable);
+}
+void MainWindow::setProjectRequireSave(bool rRequireSave) {
+	getActionSaveProject()->setEnabled(rRequireSave);
+}
+
 
 SceneTreeDock& MainWindow::getSceneTreeDock() {
 	return *mSceneTreeDock;

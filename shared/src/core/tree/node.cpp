@@ -97,7 +97,7 @@ NodeType getNodeTypeFromString(const string &rNodeTypeString) {
 Node::Node(bool rCreateNewId) {
 	mNodeType=NodeType::Node;
 	if (rCreateNewId) {
-		setId(NodeIdGenerator::getInstance().getNextNumber());
+		setId(NodeIdGenerator::getInstance().allocateNextNumber());
 	}
 	setName();
 }
@@ -250,6 +250,13 @@ void Node::setPropertyInt(const string& rName, const int &rValue) {
 	setProperty(rName, new PropertyInt(rValue));
 }
 
+void Node::setPropertyRef(const string& rName) {
+	setProperty(rName, new PropertyRef());
+}
+void Node::setPropertyRef(const string& rName, const Ref &rValue) {
+	setProperty(rName, new PropertyRef(rValue));
+}
+
 void Node::setPropertyRectInt(const string& rName) {
 	setProperty(rName, new PropertyRectInt());
 }
@@ -331,6 +338,14 @@ PropertyInt* Node::getPropertyInt(const string &rName) {
 	PropertyBase *p=getProperty(rName);
 	if (p && p->getPropertyType()==PropertyType::Int) {
 		return static_cast<PropertyInt*>(p);
+	}
+	return nullptr;
+}
+
+PropertyRef* Node::getPropertyRef(const string &rName) {
+	PropertyBase *p=getProperty(rName);
+	if (p && p->getPropertyType()==PropertyType::Ref) {
+		return static_cast<PropertyRef*>(p);
 	}
 	return nullptr;
 }
@@ -520,10 +535,10 @@ void Node::deserializeSelf(JSONValue *rJSONValueParent) {
 					if (p) {
 						p->deserializeValue(rJSONValue);
 						setProperty(rName, p);
-						if (rPropertyType==PropertyType::Int && rName=="Id") {
-							PropertyInt *rId=static_cast<PropertyInt*>(p);
-							NodeIdGenerator::getInstance().updateLatestNumberIfHigher(rId->value);
-						}
+						//if (rPropertyType==PropertyType::Int && rName=="Id") {
+						//	PropertyInt *rId=static_cast<PropertyInt*>(p);
+						//	NodeIdGenerator::getInstance().updateLatestNumberIfHigher(rId->value);
+						//}
 					}
 				}
 			}

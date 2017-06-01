@@ -18,11 +18,16 @@ private:
 	PropertyTreeDock*mScenePropertyTreeDock=nullptr;
 	NewProjectDialog *mNewProjectDialog=nullptr;
 	NewSceneDialog  *mNewSceneDialog=nullptr;
+	NewSceneDialog *mNewResourceDialog=nullptr;
 
 	QAction			*mActionNewProject=nullptr;
 	QAction			*mActionOpenProject=nullptr;
+	QAction			*mActionSaveProject=nullptr;
+	QAction			*mActionCloseProject=nullptr;
 	QAction			*mActionNewScene=nullptr;
 	QAction			*mActionOpenScene=nullptr;
+	QAction			*mActionNewResource=nullptr;
+	QAction			*mActionOpenResource=nullptr;
 
 	Q_OBJECT
 public:
@@ -32,12 +37,20 @@ public:
 	MenuBar& getMenuBar();
 	NewProjectDialog& getNewProjectDialog();
 	NewSceneDialog& getNewSceneDialog();
+	NewSceneDialog& getNewResourceDialog();
 	QAction*	getActionNewProject();
 	QAction*	getActionOpenProject();
+	QAction*	getActionSaveProject();
+	QAction*	getActionCloseProject();
 	QAction*	getActionNewScene();
 	QAction*	getActionOpenScene();
+	QAction*	getActionNewResource();
+	QAction*	getActionOpenResource();
 
 	SceneTreeDock& getSceneTreeDock();
 	PropertyTreeDock& getPropertyTreeDock();
+
+	void setProjectAvailable(bool isAvailable);
+	void setProjectRequireSave(bool rRequireSave);
 };
 

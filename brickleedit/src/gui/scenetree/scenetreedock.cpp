@@ -7,7 +7,15 @@ SceneTreeDock::SceneTreeDock(QWidget *parent) :
 	ui(new Ui::SceneTreeDock)
 {
 	ui->setupUi(this);
+	ui->sceneMenu->addAction(GuiContext::getInstance().getMainWindow().getActionNewScene());
+	ui->sceneMenu->addAction(GuiContext::getInstance().getMainWindow().getActionOpenScene());
+
+	ui->resourceMenu->addAction(GuiContext::getInstance().getMainWindow().getActionNewResource());
+	ui->resourceMenu->addAction(GuiContext::getInstance().getMainWindow().getActionOpenResource());
+
 	setSceneEditable(false);
+	setResourceEditable(false);
+	setProjectAvailable(false);
 }
 
 SceneTreeDock::~SceneTreeDock()
@@ -15,13 +23,27 @@ SceneTreeDock::~SceneTreeDock()
 	delete ui;
 }
 
-void SceneTreeDock::clear() {
+void SceneTreeDock::clearScene() {
 	ui->treeWidget->clear();
 	setSceneEditable(false);
 }
 
+void SceneTreeDock::clearResource() {
+	ui->treeWidgetResources->clear();
+	setResourceEditable(false);
+}
+
 void SceneTreeDock::setSceneEditable(bool isEditable) {
 	ui->newNode->setEnabled(isEditable);
+}
+
+void SceneTreeDock::setResourceEditable(bool isEditable) {
+	ui->newResource->setEnabled(isEditable);
+}
+
+void SceneTreeDock::setProjectAvailable(bool isActive) {
+	ui->sceneMenu->setEnabled(isActive);
+	ui->resourceMenu->setEnabled(isActive);
 }
 
 void SceneTreeDock::on_newNode_clicked()
@@ -85,13 +107,20 @@ QTreeWidgetItem* SceneTreeDock::searchNode(QTreeWidgetItem *parent, Node* rNode)
 	return rv;
 }
 
-QTreeWidgetItem* SceneTreeDock::addNode(QTreeWidgetItem *parent, Node* rNode) {
+QTreeWidgetItem* SceneTreeDock::addSceneNode(QTreeWidgetItem *parent, Node* rNode) {
+	return addNodeX(parent, rNode, ui->treeWidget);
+}
+QTreeWidgetItem* SceneTreeDock::addResourceNode(QTreeWidgetItem *parent, Node* rNode) {
+	return addNodeX(parent, rNode, ui->treeWidgetResources);
+}
+
+QTreeWidgetItem* SceneTreeDock::addNodeX(QTreeWidgetItem *parent, Node* rNode, QTreeWidget* rQTreeWidget) {
 	QTreeWidgetItem* r=nullptr;
 	if (rNode) {
 		if (parent) {
 			r=new QTreeWidgetItem(parent);
 		} else {
-			r=new QTreeWidgetItem(ui->treeWidget);
+			r=new QTreeWidgetItem(rQTreeWidget);
 		}
 		// Type + ID
 		string rType=getNodeTypeAsString(rNode->getNodeType());
@@ -105,7 +134,7 @@ QTreeWidgetItem* SceneTreeDock::addNode(QTreeWidgetItem *parent, Node* rNode) {
 			parent->addChild(r);
 			parent->setExpanded(true);
 		} else {
-			ui->treeWidget->addTopLevelItem(r);
+			rQTreeWidget->addTopLevelItem(r);
 			r->setExpanded(true);
 		}
 		if (rNode->getChildCount()>0) {
@@ -113,7 +142,7 @@ QTreeWidgetItem* SceneTreeDock::addNode(QTreeWidgetItem *parent, Node* rNode) {
 			for (unsigned long i=0;i<count;i++) {
 				Node *rNodeChild=rNode->getNodeFromIndex(i);
 				if (rNodeChild) {
-					addNode(r, rNodeChild);
+					addNodeX(r, rNodeChild, rQTreeWidget);
 				}
 			}
 		}

@@ -6,48 +6,78 @@ ProjectContext::ProjectContext() {
 ProjectContext::~ProjectContext() {
 }
 
-void ProjectContext::closeProject(bool rPersistBefore) {
-	mCurrentProjectInfo.closeProject(rPersistBefore);
+void ProjectContext::save() {
+	mNodeManager.save(NodeInfoType::Project);
+	mNodeManager.save(NodeInfoType::Scene);
+	mNodeManager.save(NodeInfoType::Resource);
 }
 
-bool ProjectContext::createNewProject(const string& rProjectName, const string& rProjectPathAbs, const string &rProjectPathWithFileAbs) {
-	return mCurrentProjectInfo.createNewProject(rProjectName, rProjectPathAbs, rProjectPathWithFileAbs);
+void ProjectContext::close(bool rPersistBefore) {
+	if (rPersistBefore) {
+		save();
+	}
+	mNodeManager.close(NodeInfoType::Project);
 }
 
-bool ProjectContext::loadProject(const string&rProjectPathWithFileAbs) {
-	return mCurrentProjectInfo.loadProject(rProjectPathWithFileAbs);
+bool ProjectContext::load(NodeInfoType rNodeInfoType, const string&rProjectPathWithFileAbs) {
+	return mNodeManager.load(rNodeInfoType, rProjectPathWithFileAbs);
 }
 
-string ProjectContext::getProjectPathAbs() {
-	return mCurrentProjectInfo.getProjectPathAbs();
+
+bool ProjectContext::createNew(NodeInfoType rNodeInfoType, const string& rName, const string& rPathAbs, const string &rPathWithFileAbs) {
+	return mNodeManager.createNew(rNodeInfoType, rName, rPathAbs, rPathWithFileAbs);
+}
+
+
+bool ProjectContext::isProjectAvailable() {
+	return mNodeManager.getNodeProject();
+}
+
+bool ProjectContext::isSceneAvailable() {
+	return mNodeManager.getNodeScene();
+}
+
+bool ProjectContext::isResourceAvailableByName(const string &rName) {
+	return mNodeManager.getNodeResourceByName(rName);
+}
+
+bool ProjectContext::isResourceAvailableByPath(const string &rPathWithFileAbs) {
+	return mNodeManager.getNodeResourceByPath(rPathWithFileAbs);
 }
 
 NodeProject *ProjectContext::getNodeProject() {
-	return mCurrentProjectInfo.getNodeProject();
+	return mNodeManager.getNodeProject();
 }
 
-string ProjectContext::getCurrentScenePathAbs() {
-	return mCurrentProjectInfo.getCurrentSceneInfo().getScenePathAbs();
+NodeScene *ProjectContext::getNodeScene() {
+	return mNodeManager.getNodeScene();
 }
 
-NodeScene *ProjectContext::getNodeCurrentScene() {
-	return mCurrentProjectInfo.getCurrentSceneInfo().getNodeScene();
+NodeResource *ProjectContext::getNodeResourceByName(const string& rName) {
+	return mNodeManager.getNodeResourceByName(rName);
 }
 
-bool ProjectContext::isCurrentSceneAvailable() {
-	return mCurrentProjectInfo.getCurrentSceneInfo().isSceneAvailable();
+NodeResource *ProjectContext::getNodeResourceByPath(const string& rPathWithFileAbs) {
+	return mNodeManager.getNodeResourceByPath(rPathWithFileAbs);
 }
 
-void ProjectContext::closeCurrentScene(bool rPersistBefore) {
-	mCurrentProjectInfo.getCurrentSceneInfo().closeScene(rPersistBefore);
+string ProjectContext::getProjectPathAbs() {
+	return mNodeManager.getProjectPathAbs();
 }
 
-bool ProjectContext::createNewScene(const string& rSceneName, const string& rScenePathAbs, const string &rScenePathWithFileAbs) {
-	return mCurrentProjectInfo.getCurrentSceneInfo().createNewScene(rSceneName, rScenePathAbs, rScenePathWithFileAbs);
+string ProjectContext::getScenePathAbs() {
+	return mNodeManager.getScenePathAbs();
 }
 
-bool ProjectContext::loadCurrentScene(const string&rScenePathWithFileAbs) {
-	return mCurrentProjectInfo.getCurrentSceneInfo().loadScene(rScenePathWithFileAbs);
+string ProjectContext::getResourcePathAndFileAbsByName(const string& rName) {
+	return mNodeManager.getResourcePathAndFileAbsByName(rName);
 }
 
+void ProjectContext::setCurrentResource(NodeResource *rNodeResource) {
+	mNodeManager.setCurrentResource(rNodeResource);
+}
+
+NodeResource* ProjectContext::getCurrentResource() {
+	return mNodeManager.getCurrentResource();
+}
 

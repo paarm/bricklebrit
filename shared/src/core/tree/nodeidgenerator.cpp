@@ -4,16 +4,20 @@
 NodeIdGenerator::NodeIdGenerator() {
 }
 
-void NodeIdGenerator::resetNumber() {
-	mLatestNumber=0;
+void NodeIdGenerator::resetNumber(int number) {
+	mNextNumber=number;
 }
 
-void NodeIdGenerator::updateLatestNumberIfHigher(int rNumber) {
-	mLatestNumber=std::max(mLatestNumber, rNumber);
+//void NodeIdGenerator::updateLatestNumberIfHigher(int rNumber) {
+//	mNextNumber=std::max(mNextNumber, rNumber);
+//}
+
+int NodeIdGenerator::allocateNextNumber() {
+	mNextNumber++;
+	return mNextNumber-1;
 }
 
-int NodeIdGenerator::getNextNumber() {
-	mLatestNumber++;
-	return mLatestNumber;
+int NodeIdGenerator::getNextFreeNumber() {
+	return mNextNumber;
 }
 

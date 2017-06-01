@@ -23,11 +23,16 @@ public:
 	Node* getSelectedNode();
 
 	QTreeWidgetItem* searchNode(QTreeWidgetItem *parent, Node* rNode);
-	QTreeWidgetItem* addNode(QTreeWidgetItem *parent, Node* rNode);
+	QTreeWidgetItem* addSceneNode(QTreeWidgetItem *parent, Node* rNode);
+	QTreeWidgetItem* addResourceNode(QTreeWidgetItem *parent, Node* rNode);
+
 	void setNodeToTreeItem(QTreeWidgetItem* r, Node *rNode);
 	Node* getNodeFromTreeItem(QTreeWidgetItem* r);
-	void clear();
+	void clearScene();
+	void clearResource();
 	void setSceneEditable(bool isEditable);
+	void setResourceEditable(bool isEditable);
+	void setProjectAvailable(bool isActive);
 private slots:
 	void on_newNode_clicked();
 	//void onSelectionChanged();
@@ -36,6 +41,7 @@ private slots:
 private:
 	Ui::SceneTreeDock *ui;
 	NewSceneNodeDialog *newSceneNodeDialog=nullptr;
+	QTreeWidgetItem* addNodeX(QTreeWidgetItem *parent, Node* rNode, QTreeWidget* rQTreeWidget);
 };
 
 #endif // SCENETREEDOCK_H

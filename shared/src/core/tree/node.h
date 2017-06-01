@@ -77,6 +77,8 @@ public:
 	void setPropertyBool(const string& rName, const bool &rValue);
 	void setPropertyInt(const string& rName);
 	void setPropertyInt(const string& rName, const int &rValue);
+	void setPropertyRef(const string& rName);
+	void setPropertyRef(const string& rName, const Ref &rValue);
 	void setPropertyRectInt(const string& rName);
 	void setPropertyRectInt(const string& rName, const RectInt &rValue);
 	void setPropertyRectFloat(const string& rName);
@@ -92,6 +94,7 @@ public:
 	PropertyFloat* getPropertyFloat(const string &rName);
 	PropertyBool* getPropertyBool(const string &rName);
 	PropertyInt* getPropertyInt(const string &rName);
+	PropertyRef* getPropertyRef(const string &rName);
 	PropertyRectInt* getPropertyRectInt(const string &rName);
 	PropertyRectFloat* getPropertyRectFloat(const string &rName);
 	PropertyPointInt* getPropertyPointInt(const string &rName);
@@ -131,14 +134,14 @@ public:
 class NodeProject : public Node {
 private:
 public:
-	PROPERTY_STRING_GETSET(ProjectName)
 	PROPERTY_STRING_GETSET(StartScene)
+	PROPERTY_INT_GETSET(NextFreeId)
 	PROPERTY_LIST_GETSET(ListTest)
 
 	NodeProject(bool rCreateNewId) : Node(rCreateNewId) {
 		mNodeType=NodeType::Project;
-		setProjectName("");
 		setStartScene("");
+		setNextFreeId(0);
 		setListTest();
 	}
 
@@ -184,7 +187,7 @@ private:
 public:
 	PROPERTY_BOOL_GETSET(IsAnimated)
 	// if isAnimated==true
-		PROPERTY_STRING_GETSET(Texture)
+		PROPERTY_REF_GETSET(TextureRef)
 		PROPERTY_RECTINT_GETSET(TextureSourceRect)
 	// else
 		PROPERTY_STRING_GETSET(DefaultAnimation)
@@ -194,7 +197,7 @@ public:
 	NodeSprite(bool rCreateNewId) : Node2d(rCreateNewId) {
 		mNodeType=NodeType::Sprite;
 		setIsAnimated(false);
-		setTexture();
+		setTextureRef();
 		setTextureSourceRect();
 		setDefaultAnimation();
 	}
@@ -218,13 +221,13 @@ public:
 
 
 
-class NodeTextureAtlas : public NodeResource {
+class NodeTextureAtlas : public Node {
 private:
 public:
 	PROPERTY_STRING_GETSET(Name)
 	PROPERTY_STRING_GETSET(Texture)
 
-	NodeTextureAtlas(bool rCreateNewId) : NodeResource(rCreateNewId) {
+	NodeTextureAtlas(bool rCreateNewId) : Node(rCreateNewId) {
 		mNodeType=NodeType::TextureAtlas;
 		setName();
 		setTexture();
@@ -234,14 +237,14 @@ public:
 	}
 };
 
-class NodeTextureAtlasFrame : public NodeResource {
+class NodeTextureAtlasFrame : public Node {
 private:
 public:
 	PROPERTY_STRING_GETSET(Name)
 	PROPERTY_RECTINT_GETSET(TextureSourceRect)
 	PROPERTY_INT_GETSET(Rotation)
 
-	NodeTextureAtlasFrame(bool rCreateNewId) : NodeResource(rCreateNewId) {
+	NodeTextureAtlasFrame(bool rCreateNewId) : Node(rCreateNewId) {
 		mNodeType=NodeType::TextureAtlasFrame;
 		setName();
 		setTextureSourceRect();
@@ -252,12 +255,12 @@ public:
 	}
 };
 
-class NodeAnimationSet : public NodeResource {
+class NodeAnimationSet : public Node {
 private:
 public:
 	PROPERTY_STRING_GETSET(Name)
 
-	NodeAnimationSet(bool rCreateNewId) : NodeResource(rCreateNewId) {
+	NodeAnimationSet(bool rCreateNewId) : Node(rCreateNewId) {
 		mNodeType=NodeType::AnimationSet;
 		setName();
 	}
@@ -266,13 +269,13 @@ public:
 	}
 };
 
-class NodeAnimationSetFrameTexture : public NodeResource {
+class NodeAnimationSetFrameTexture : public Node {
 private:
 public:
 	PROPERTY_STRING_GETSET(Name)
 	PROPERTY_STRING_GETSET(Texture)
 	PROPERTY_RECTINT_GETSET(TextureSourceRect)
-	NodeAnimationSetFrameTexture(bool rCreateNewId) : NodeResource(rCreateNewId) {
+	NodeAnimationSetFrameTexture(bool rCreateNewId) : Node(rCreateNewId) {
 		mNodeType=NodeType::AnimationSetFrameTexture;
 		setName();
 		setTexture();
@@ -282,13 +285,13 @@ public:
 	}
 };
 
-class NodeAnimationSetFrameTextureAtlas : public NodeResource {
+class NodeAnimationSetFrameTextureAtlas : public Node {
 private:
 public:
 	PROPERTY_STRING_GETSET(Name)
 	PROPERTY_STRING_GETSET(TextureAtlasName)
 	PROPERTY_STRING_GETSET(TextureAtlasFrameName)
-	NodeAnimationSetFrameTextureAtlas(bool rCreateNewId) : NodeResource(rCreateNewId) {
+	NodeAnimationSetFrameTextureAtlas(bool rCreateNewId) : Node(rCreateNewId) {
 		mNodeType=NodeType::AnimationSetFrameTextureAtlas;
 		setName();
 		setTextureAtlasName();

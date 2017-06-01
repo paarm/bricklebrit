@@ -9,6 +9,7 @@ enum class PropertyType {
 	Bool,
 	String,
 	Float,
+	Ref,
 	RectInt,
 	RectFloat,
 	PointInt,
@@ -85,6 +86,17 @@ void set##fieldName() { \
 } \
 const int& get##fieldName() { \
 	return getPropertyInt (#fieldName)->value; \
+}
+
+#define PROPERTY_REF_GETSET(fieldName) \
+void set##fieldName(const Ref& r##fieldName) { \
+	setPropertyRef (#fieldName, r##fieldName); \
+} \
+void set##fieldName() { \
+	setPropertyRef (#fieldName); \
+} \
+const Ref& get##fieldName() { \
+	return getPropertyRef (#fieldName)->value; \
 }
 
 #define PROPERTY_RECTINT_GETSET(fieldName) \

@@ -6,10 +6,10 @@ class MenuBar : public QMenuBar
 {
 private:
 	QMenu			*mProjectMenu=nullptr;
-	QMenu			*mSceneMenu=nullptr;
+	//QMenu			*mSceneMenu=nullptr;
 public:
 	MenuBar(QWidget *parent = Q_NULLPTR);
-	void setProjectAvailable(bool isEditable);
+	//void setProjectAvailable(bool isEditable);
 };
 
 #endif // MENUBAR_H

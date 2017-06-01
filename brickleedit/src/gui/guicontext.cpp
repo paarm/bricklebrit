@@ -51,10 +51,10 @@ QString GuiContext::fromVirtualPath(const QString &rPathAbs) {
 
 void GuiContext::setWindowTitle() {
 	string rPartTitle="";
-	if (ProjectContext::getInstance().getNodeProject()) {
-		rPartTitle+=ProjectContext::getInstance().getNodeProject()->getProjectName();
-		if (ProjectContext::getInstance().getNodeCurrentScene()) {
-			rPartTitle+=" ["+ProjectContext::getInstance().getNodeCurrentScene()->getName()+"]";
+	if (ProjectContext::getInstance().isProjectAvailable()) {
+		rPartTitle+=ProjectContext::getInstance().getNodeProject()->getName();
+		if (ProjectContext::getInstance().isSceneAvailable()) {
+			rPartTitle+=" ["+ProjectContext::getInstance().getNodeScene()->getName()+"]";
 		}
 		rPartTitle+=" - ";
 	}
@@ -80,16 +80,30 @@ void GuiContext::onOpenProjectClicked() {
 	}
 }
 
+void GuiContext::onCloseProjectClicked() {
+	if (ProjectContext::getInstance().getNodeProject()) {
+		ProjectContext::getInstance().close(true);
+		projectSwitched();
+		setWindowTitle();
+	}
+}
+
+void GuiContext::onSaveProjectClicked() {
+	if (ProjectContext::getInstance().getNodeProject()) {
+		ProjectContext::getInstance().save();
+	}
+}
+
 void GuiContext::onNewSceneClicked() {
 	if (!ProjectContext::getInstance().getNodeProject()) {
 		QMessageBox::warning(&getMainWindow(), tr("Error"), tr("Please open existing project or create a new project first"), QMessageBox::Ok);
 	} else {
-		if (ProjectContext::getInstance().isCurrentSceneAvailable()) {
-			getMainWindow().getNewSceneDialog().setScenePath(toVirtualPath(QString::fromStdString(ProjectContext::getInstance().getCurrentScenePathAbs())));
+		if (ProjectContext::getInstance().isSceneAvailable()) {
+			getMainWindow().getNewSceneDialog().setScenePath(toVirtualPath(QString::fromStdString(ProjectContext::getInstance().getScenePathAbs())));
 		} else {
 			getMainWindow().getNewSceneDialog().setScenePath(getVirtualProjectPath());
 		}
-		getMainWindow().getNewSceneDialog().setSceneName("New Scene");
+		getMainWindow().getNewSceneDialog().setName("New Scene");
 		getMainWindow().getNewSceneDialog().show();
 	}
 }
@@ -99,8 +113,8 @@ void GuiContext::onOpenSceneClicked() {
 		QMessageBox::warning(&getMainWindow(), tr("Error"), tr("Please open existing project or create a new project first"), QMessageBox::Ok);
 	} else {
 		QString path=getVirtualProjectPath();
-		if (ProjectContext::getInstance().isCurrentSceneAvailable()) {
-			path=QString::fromStdString(ProjectContext::getInstance().getCurrentScenePathAbs());
+		if (ProjectContext::getInstance().isSceneAvailable()) {
+			path=QString::fromStdString(ProjectContext::getInstance().getScenePathAbs());
 		} else {
 			getMainWindow().getNewSceneDialog().setScenePath(getVirtualProjectPath());
 		}
@@ -124,7 +138,7 @@ void GuiContext::onOpenSceneClicked() {
 }
 
 bool GuiContext::loadCurrentScene(const string&rScenePathWithFileAbs) {
-	bool rv=ProjectContext::getInstance().loadCurrentScene(rScenePathWithFileAbs);
+	bool rv=ProjectContext::getInstance().load(NodeInfoType::Scene, rScenePathWithFileAbs);
 	if (rv) {
 		setWindowTitle();
 		sceneSwitched();
@@ -132,9 +146,64 @@ bool GuiContext::loadCurrentScene(const string&rScenePathWithFileAbs) {
 	return rv;
 }
 
+void GuiContext::onOpenResourceClicked() {
+	if (!ProjectContext::getInstance().getNodeProject()) {
+		QMessageBox::warning(&getMainWindow(), tr("Error"), tr("Please open existing project or create a new project first"), QMessageBox::Ok);
+	} else {
+		QString path=getVirtualProjectPath();
+		//if (ProjectContext::getInstance().isSceneAvailable()) {
+		//	path=QString::fromStdString(ProjectContext::getInstance().getScenePathAbs());
+		//} else {
+		//	getMainWindow().getNewSceneDialog().setScenePath(getVirtualProjectPath());
+		//}
+		getMainWindow().getNewResourceDialog().setScenePath(getVirtualProjectPath());
+
+		QString file = QFileDialog::getOpenFileName(&getMainWindow(), tr("Open Resource"),
+													path,
+													 "*.brres",
+													 nullptr,
+													 QFileDialog::DontResolveSymlinks);
+
+		if (!file.isEmpty()) {
+			if (!file.startsWith(QString::fromStdString(ProjectContext::getInstance().getProjectPathAbs()))) {
+				QMessageBox::warning(&getMainWindow(), tr("Error"), tr("Resource is not inside the Project directory"), QMessageBox::Ok);
+			} else {
+				if (!loadCurrentResource(file.toStdString())) {
+					QMessageBox::warning(&getMainWindow(), tr("Error"), tr("Resource not found"), QMessageBox::Ok);
+				}
+			}
+		}
+	}
+}
+
+bool GuiContext::loadCurrentResource(const string&rPathWithFileAbs) {
+	bool rv=ProjectContext::getInstance().load(NodeInfoType::Resource, rPathWithFileAbs);
+	NodeResource *rNodeResource=nullptr;
+	if (rv) {
+		rNodeResource=ProjectContext::getInstance().getNodeResourceByPath(rPathWithFileAbs);
+	}
+	ProjectContext::getInstance().setCurrentResource(rNodeResource);
+	resourceSwitched();
+	return rv;
+}
+
+void GuiContext::onNewResourceClicked() {
+	if (!ProjectContext::getInstance().getNodeProject()) {
+		QMessageBox::warning(&getMainWindow(), tr("Error"), tr("Please open existing project or create a new project first"), QMessageBox::Ok);
+	} else {
+		//if (ProjectContext::getInstance().isSceneAvailable()) {
+		//	getMainWindow().getNewSceneDialog().setScenePath(toVirtualPath(QString::fromStdString(ProjectContext::getInstance().getScenePathAbs())));
+		//} else {
+		//}
+		getMainWindow().getNewResourceDialog().setScenePath(getVirtualProjectPath());
+		getMainWindow().getNewResourceDialog().setName("New Resource");
+		getMainWindow().getNewResourceDialog().show();
+	}
+}
+
 
 bool GuiContext::createNewProject(const string& rProjectName, const string& rProjectPathAbs, const string&rProjectPathWithFileAbs) {
-	bool rv=ProjectContext::getInstance().createNewProject(rProjectName, rProjectPathAbs, rProjectPathWithFileAbs);
+	bool rv=ProjectContext::getInstance().createNew(NodeInfoType::Project, rProjectName, rProjectPathAbs, rProjectPathWithFileAbs);
 	if (rv) {
 		setWindowTitle();
 		projectSwitched();
@@ -143,7 +212,7 @@ bool GuiContext::createNewProject(const string& rProjectName, const string& rPro
 }
 
 bool GuiContext::loadProject(const string&rProjectPathWithFileAbs) {
-	bool rv=ProjectContext::getInstance().loadProject(rProjectPathWithFileAbs);
+	bool rv=ProjectContext::getInstance().load(NodeInfoType::Project, rProjectPathWithFileAbs);
 	if (rv) {
 		setWindowTitle();
 		projectSwitched();
@@ -152,11 +221,26 @@ bool GuiContext::loadProject(const string&rProjectPathWithFileAbs) {
 }
 
 bool GuiContext::createNewScene(const string& rSceneName, const string& rScenePathAbs, const string&rScenePathWithFileAbs) {
-	bool rv=ProjectContext::getInstance().createNewScene(rSceneName, rScenePathAbs, rScenePathWithFileAbs);
+	bool rv=ProjectContext::getInstance().createNew(NodeInfoType::Scene, rSceneName, rScenePathAbs, rScenePathWithFileAbs);
 	if (rv) {
 		setWindowTitle();
 		sceneSwitched();
 	}
+	return rv;
+}
+
+bool GuiContext::createNewResource(const string& rName, const string& rPathAbs, const string&rPathWithFileAbs) {
+	bool rv=true;
+	NodeResource *rNodeResource=ProjectContext::getInstance().getNodeResourceByPath(rPathWithFileAbs);
+	if (rNodeResource==nullptr) {
+		rv=ProjectContext::getInstance().createNew(NodeInfoType::Resource, rName, rPathAbs, rPathWithFileAbs);
+		if (rv) {
+			rNodeResource=ProjectContext::getInstance().getNodeResourceByPath(rPathWithFileAbs);
+		}
+	}
+	ProjectContext::getInstance().setCurrentResource(rNodeResource);
+	resourceSwitched();
+
 	return rv;
 }
 
@@ -172,23 +256,35 @@ void GuiContext::onCreateNewNode(QString rNodeTypeName) {
 				parentNode->addChildNode(rNode);
 			}
 		}
-		getMainWindow().getSceneTreeDock().addNode(parent, rNode);
+		getMainWindow().getSceneTreeDock().addSceneNode(parent, rNode);
 	}
 }
 
 void GuiContext::projectSwitched() {
-	getMainWindow().getMenuBar().setProjectAvailable(ProjectContext::getInstance().getNodeProject());
+	getMainWindow().setProjectAvailable(ProjectContext::getInstance().getNodeProject());
+	getMainWindow().setProjectRequireSave(ProjectContext::getInstance().getNodeProject()); // TODO own mechanism
+	getMainWindow().getSceneTreeDock().setProjectAvailable(ProjectContext::getInstance().getNodeProject());
 	sceneSwitched();
 }
 
 void GuiContext::sceneSwitched() {
-	getMainWindow().getSceneTreeDock().clear();
-	NodeScene* rNodeScene=ProjectContext::getInstance().getNodeCurrentScene();
+	getMainWindow().getSceneTreeDock().clearScene();
+	NodeScene* rNodeScene=ProjectContext::getInstance().getNodeScene();
 	if (rNodeScene) {
 		getMainWindow().getSceneTreeDock().setSceneEditable(true);
-		getMainWindow().getSceneTreeDock().addNode(nullptr, rNodeScene);
+		getMainWindow().getSceneTreeDock().addSceneNode(nullptr, rNodeScene);
 	}
 	switchProperties(true, nullptr);
+}
+
+void GuiContext::resourceSwitched() {
+	getMainWindow().getSceneTreeDock().clearResource();
+	NodeResource* rNodeResource=ProjectContext::getInstance().getCurrentResource();
+	if (rNodeResource) {
+		getMainWindow().getSceneTreeDock().setResourceEditable(true);
+		getMainWindow().getSceneTreeDock().addResourceNode(nullptr, rNodeResource);
+	}
+	//switchProperties(true, nullptr);
 }
 
 void GuiContext::switchProperties(bool isSceneProperty, Node* rNode) {

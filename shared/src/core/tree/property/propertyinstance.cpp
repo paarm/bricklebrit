@@ -5,6 +5,7 @@
 #include "property_point.h"
 #include "property_rect.h"
 #include "property_list.h"
+#include "property_ref.h"
 
 PropertyBase* getPropertyInstanceByType(PropertyType rPropertyType) {
 	PropertyBase* p=nullptr;
@@ -14,6 +15,8 @@ PropertyBase* getPropertyInstanceByType(PropertyType rPropertyType) {
 		p=new PropertyFloat();
 	} else if (rPropertyType==PropertyType::Int) {
 		p=new PropertyInt(0);
+	} else if (rPropertyType==PropertyType::Ref) {
+		p=new PropertyRef();
 	} else if (rPropertyType==PropertyType::String) {
 		p=new PropertyString();
 	} else if (rPropertyType==PropertyType::PointInt) {

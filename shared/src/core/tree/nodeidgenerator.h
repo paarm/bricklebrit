@@ -3,7 +3,7 @@
 class NodeIdGenerator
 {
 private:
-	int			mLatestNumber=0;
+	int			mNextNumber=0;
 	NodeIdGenerator();
 
 public:
@@ -11,8 +11,9 @@ public:
 		static NodeIdGenerator rNodeIdGenerator;
 		return rNodeIdGenerator;
 	}
-	void resetNumber();
-	void updateLatestNumberIfHigher(int rNumber);
-	int getNextNumber();
+	void resetNumber(int number=0);
+	//void updateLatestNumberIfHigher(int rNumber);
+	int allocateNextNumber();
+	int getNextFreeNumber();
 };
 

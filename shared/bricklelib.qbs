@@ -33,6 +33,8 @@ Project {
             "src/core/tree/property/property_list.h",
             "src/core/tree/property/property_point.cpp",
             "src/core/tree/property/property_rect.cpp",
+            "src/core/tree/property/property_ref.cpp",
+            "src/core/tree/property/property_ref.h",
             "src/core/tree/property/property_string.cpp",
             "src/core/tree/property/propertybase.h",
             "src/core/tree/property/propertybase.cpp",
