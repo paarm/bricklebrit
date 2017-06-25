@@ -49,23 +49,43 @@ void SceneTreeDock::setProjectAvailable(bool isActive) {
 void SceneTreeDock::on_newNode_clicked()
 {
 	if (newSceneNodeDialog==nullptr) {
-		newSceneNodeDialog=new NewSceneNodeDialog(this);
+		newSceneNodeDialog=new NewSceneNodeDialog(NodeInfoType::Scene, this);
 		QObject::connect(newSceneNodeDialog, &NewSceneNodeDialog::newNodeSelected, &GuiContext::getInstance(), &GuiContext::onCreateNewNode);
 	}
 	newSceneNodeDialog->show();
 }
 
-QTreeWidgetItem* SceneTreeDock::getSelectedItem() {
+void SceneTreeDock::on_newResource_clicked()
+{
+	if (newResourceNodeDialog==nullptr) {
+		newResourceNodeDialog=new NewSceneNodeDialog(NodeInfoType::Resource, this);
+		QObject::connect(newResourceNodeDialog, &NewSceneNodeDialog::newNodeSelected, &GuiContext::getInstance(), &GuiContext::onCreateNewNode);
+	}
+	newResourceNodeDialog->show();
+}
+
+int SceneTreeDock::getActiveTreeTabIndex() {
+	return ui->tabWidget->currentIndex();
+}
+
+QTreeWidgetItem* SceneTreeDock::getSelectedItem(NodeInfoType rNodeInfoType) {
 	QTreeWidgetItem* rv=nullptr;
-	QList<QTreeWidgetItem*>selectedItems=ui->treeWidget->selectedItems();
-	if (!selectedItems.isEmpty()) {
-		rv=selectedItems[0];
+	if (rNodeInfoType==NodeInfoType::Scene) {
+		QList<QTreeWidgetItem*>selectedItems=ui->treeWidget->selectedItems();
+		if (!selectedItems.isEmpty()) {
+			rv=selectedItems[0];
+		}
+	} else if (rNodeInfoType==NodeInfoType::Resource) {
+		QList<QTreeWidgetItem*>selectedItems=ui->treeWidgetResources->selectedItems();
+		if (!selectedItems.isEmpty()) {
+			rv=selectedItems[0];
+		}
 	}
 	return rv;
 }
 
-Node* SceneTreeDock::getSelectedNode() {
-	QTreeWidgetItem*r=getSelectedItem();
+Node* SceneTreeDock::getSelectedNode(NodeInfoType rNodeInfoType) {
+	QTreeWidgetItem*r=getSelectedItem(rNodeInfoType);
 	Node *rv=nullptr;
 	if (r) {
 		rv=getNodeFromTreeItem(r);
@@ -107,11 +127,12 @@ QTreeWidgetItem* SceneTreeDock::searchNode(QTreeWidgetItem *parent, Node* rNode)
 	return rv;
 }
 
-QTreeWidgetItem* SceneTreeDock::addSceneNode(QTreeWidgetItem *parent, Node* rNode) {
-	return addNodeX(parent, rNode, ui->treeWidget);
-}
-QTreeWidgetItem* SceneTreeDock::addResourceNode(QTreeWidgetItem *parent, Node* rNode) {
-	return addNodeX(parent, rNode, ui->treeWidgetResources);
+QTreeWidgetItem* SceneTreeDock::addNode(QTreeWidgetItem *parent, Node* rNode, NodeInfoType rNodeInfoType) {
+	if (rNodeInfoType==NodeInfoType::Scene) {
+		return addNodeX(parent, rNode, ui->treeWidget);
+	} else {
+		return addNodeX(parent, rNode, ui->treeWidgetResources);
+	}
 }
 
 QTreeWidgetItem* SceneTreeDock::addNodeX(QTreeWidgetItem *parent, Node* rNode, QTreeWidget* rQTreeWidget) {
@@ -150,10 +171,31 @@ QTreeWidgetItem* SceneTreeDock::addNodeX(QTreeWidgetItem *parent, Node* rNode, Q
 	return r;
 }
 
-
-
 void SceneTreeDock::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)
 {
 	Node* rNode=getNodeFromTreeItem(item);
-	GuiContext::getInstance().switchProperties(true, rNode);
+	GuiContext::getInstance().switchProperties(rNode, NodeInfoType::Scene);
 }
+
+void SceneTreeDock::on_treeWidgetResources_itemClicked(QTreeWidgetItem *item, int column)
+{
+	Node* rNode=getNodeFromTreeItem(item);
+	GuiContext::getInstance().switchProperties(rNode, NodeInfoType::Resource);
+}
+
+void SceneTreeDock::on_tabWidget_currentChanged(int index)
+{
+	NodeInfoType rNodeInfoType=NodeInfoType::Scene;
+	Node* rNode=nullptr;
+	if (index==0) {
+		rNodeInfoType=NodeInfoType::Scene;
+	} else {
+		rNodeInfoType=NodeInfoType::Resource;
+	}
+	rNode=getSelectedNode(rNodeInfoType);
+	if (rNode) {
+		// do not switch if in the current tab nothing is selected/available -> do not remove the current property if anyone is currently outlined
+		GuiContext::getInstance().switchProperties(rNode, rNodeInfoType);
+	}
+}
+

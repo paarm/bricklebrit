@@ -17,6 +17,7 @@ enum class NodeType {
 	Sprite,
 // Resource
 	Resource,
+	Texture,
 	Project,
 	Scene,
 	SceneRef,
@@ -219,6 +220,18 @@ public:
 	}
 };
 
+class NodeTexture : public Node {
+private:
+public:
+	PROPERTY_STRING_GETSET(Path)
+	NodeTexture(bool rCreateNewId) : Node(rCreateNewId) {
+		mNodeType=NodeType::Texture;
+		setPath("");
+	}
+
+	NodeTexture() : NodeTexture(true) {
+	}
+};
 
 
 class NodeTextureAtlas : public Node {

@@ -12,7 +12,7 @@ void ProjectContext::save() {
 	mNodeManager.save(NodeInfoType::Resource);
 }
 
-void ProjectContext::close(bool rPersistBefore) {
+void ProjectContext::closeProject(bool rPersistBefore) {
 	if (rPersistBefore) {
 		save();
 	}

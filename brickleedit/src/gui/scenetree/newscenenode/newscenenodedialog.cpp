@@ -1,15 +1,23 @@
 #include "newscenenodedialog.h"
 #include "ui_newscenenodedialog.h"
 
-NewSceneNodeDialog::NewSceneNodeDialog(QWidget *parent) :
+NewSceneNodeDialog::NewSceneNodeDialog(NodeInfoType rNodeInfoType, QWidget *parent) :
 	QDialog(parent),
+	mNodeInfoType(rNodeInfoType),
 	ui(new Ui::NewSceneNodeDialog)
 {
 	ui->setupUi(this);
-	QListWidgetItem *rSprite=new QListWidgetItem();
-	rSprite->setIcon(QIcon(":/icons/new.png"));
-	rSprite->setText("Sprite");
-	ui->listWidget->addItem(rSprite);
+	if (rNodeInfoType==NodeInfoType::Scene) {
+		QListWidgetItem *rSprite=new QListWidgetItem();
+		rSprite->setIcon(QIcon(":/icons/new.png"));
+		rSprite->setText("Sprite");
+		ui->listWidget->addItem(rSprite);
+	} else {
+		QListWidgetItem *r=new QListWidgetItem();
+		r->setIcon(QIcon(":/icons/new.png"));
+		r->setText("Texture");
+		ui->listWidget->addItem(r);
+	}
 }
 
 NewSceneNodeDialog::~NewSceneNodeDialog()
@@ -22,7 +30,7 @@ void NewSceneNodeDialog::on_listWidget_doubleClicked(const QModelIndex &index)
 	QList<QListWidgetItem*>itemList=ui->listWidget->selectedItems();
 	for (QListWidgetItem* item : itemList) {
 		item->setBackgroundColor(QColor::fromRgbF(30,30,30));
-		emit newNodeSelected(item->text());
+		emit newNodeSelected(item->text(), mNodeInfoType);
 	}
 	close();
 	//QListWidgetItem *item = ui->listWidget->currentItem();

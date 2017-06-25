@@ -19,12 +19,11 @@ class SceneTreeDock : public QDockWidget
 public:
 	explicit SceneTreeDock(QWidget *parent = 0);
 	~SceneTreeDock();
-	QTreeWidgetItem* getSelectedItem();
-	Node* getSelectedNode();
+	QTreeWidgetItem* getSelectedItem(NodeInfoType rNodeInfoType);
+	Node* getSelectedNode(NodeInfoType rNodeInfoType);
 
 	QTreeWidgetItem* searchNode(QTreeWidgetItem *parent, Node* rNode);
-	QTreeWidgetItem* addSceneNode(QTreeWidgetItem *parent, Node* rNode);
-	QTreeWidgetItem* addResourceNode(QTreeWidgetItem *parent, Node* rNode);
+	QTreeWidgetItem* addNode(QTreeWidgetItem *parent, Node* rNode, NodeInfoType rNodeInfoType);
 
 	void setNodeToTreeItem(QTreeWidgetItem* r, Node *rNode);
 	Node* getNodeFromTreeItem(QTreeWidgetItem* r);
@@ -33,14 +32,24 @@ public:
 	void setSceneEditable(bool isEditable);
 	void setResourceEditable(bool isEditable);
 	void setProjectAvailable(bool isActive);
+	int getActiveTreeTabIndex();
+
 private slots:
 	void on_newNode_clicked();
 	//void onSelectionChanged();
 	void on_treeWidget_itemClicked(QTreeWidgetItem *item, int column);
 
+	void on_treeWidgetResources_itemClicked(QTreeWidgetItem *item, int column);
+
+	void on_tabWidget_currentChanged(int index);
+
+	void on_newResource_clicked();
+
 private:
 	Ui::SceneTreeDock *ui;
 	NewSceneNodeDialog *newSceneNodeDialog=nullptr;
+	NewSceneNodeDialog *newResourceNodeDialog=nullptr;
+
 	QTreeWidgetItem* addNodeX(QTreeWidgetItem *parent, Node* rNode, QTreeWidget* rQTreeWidget);
 };
 

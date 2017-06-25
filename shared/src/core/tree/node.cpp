@@ -21,6 +21,8 @@ Node * getInstanceFromNodeType(NodeType &rNodeType, bool rCreateNewId) {
 			return getXInstanceFromNodeType<NodeSprite>(rCreateNewId);
 		case NodeType::Resource:
 			return getXInstanceFromNodeType<NodeResource>(rCreateNewId);
+		case NodeType::Texture:
+			return getXInstanceFromNodeType<NodeTexture>(rCreateNewId);
 		case NodeType::Scene:
 			return getXInstanceFromNodeType<NodeScene>(rCreateNewId);
 		case NodeType::SceneRef:
@@ -56,6 +58,7 @@ static NodeLookupTable gNodeLookupTable[]={
 	{NodeType::Sprite						,"Sprite"},
 // resources
 	{NodeType::Resource						,"Resource"},
+	{NodeType::Texture						,"Texture"},
 	{NodeType::Project						,"Project"},
 	{NodeType::Scene						,"Scene"},
 	{NodeType::SceneRef						,"SceneRef"},

@@ -32,7 +32,7 @@ public:
 	QString getVirtualProjectPath();
 	QString fromVirtualPath(const QString &rPathAbs);
 	QString toVirtualPath(const QString &rPathAbs);
-	void switchProperties(bool isSceneProperty, Node* rNode);
+	void switchProperties(Node* rNode, NodeInfoType rNodeInfoType);
 public slots:
 	void onNewProjectClicked();
 	void onOpenProjectClicked();
@@ -43,6 +43,6 @@ public slots:
 	void onNewResourceClicked();
 	void onOpenResourceClicked();
 	// Scene Tree
-	void onCreateNewNode(QString rNodeTypeName);
+	void onCreateNewNode(QString rNodeTypeName, NodeInfoType rNodeInfoType);
 };
 

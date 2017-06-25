@@ -18,7 +18,7 @@ public:
 	bool createNew(NodeInfoType rNodeInfoType, const string& rName, const string& rPathAbs, const string&rPathWithFileAbs);
 	bool load(NodeInfoType rNodeInfoType, const string&rPathWithFileAbs);
 	void save();
-	void close(bool rPersistBefore);
+	void closeProject(bool rPersistBefore);
 	bool isProjectAvailable();
 	bool isSceneAvailable();
 	bool isResourceAvailableByName(const string &rName);

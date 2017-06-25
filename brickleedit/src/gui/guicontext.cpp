@@ -82,7 +82,7 @@ void GuiContext::onOpenProjectClicked() {
 
 void GuiContext::onCloseProjectClicked() {
 	if (ProjectContext::getInstance().getNodeProject()) {
-		ProjectContext::getInstance().close(true);
+		ProjectContext::getInstance().closeProject(true);
 		projectSwitched();
 		setWindowTitle();
 	}
@@ -244,8 +244,8 @@ bool GuiContext::createNewResource(const string& rName, const string& rPathAbs, 
 	return rv;
 }
 
-void GuiContext::onCreateNewNode(QString rNodeTypeName) {
-	QTreeWidgetItem *parent=getMainWindow().getSceneTreeDock().getSelectedItem();
+void GuiContext::onCreateNewNode(QString rNodeTypeName, NodeInfoType rNodeInfoType) {
+	QTreeWidgetItem *parent=getMainWindow().getSceneTreeDock().getSelectedItem(rNodeInfoType);
 	NodeType rNodeType=getNodeTypeFromString(rNodeTypeName.toStdString());
 	Node*rNode=getInstanceFromNodeType(rNodeType, true);
 	if (rNode) {
@@ -256,7 +256,7 @@ void GuiContext::onCreateNewNode(QString rNodeTypeName) {
 				parentNode->addChildNode(rNode);
 			}
 		}
-		getMainWindow().getSceneTreeDock().addSceneNode(parent, rNode);
+		getMainWindow().getSceneTreeDock().addNode(parent, rNode, rNodeInfoType);
 	}
 }
 
@@ -265,6 +265,7 @@ void GuiContext::projectSwitched() {
 	getMainWindow().setProjectRequireSave(ProjectContext::getInstance().getNodeProject()); // TODO own mechanism
 	getMainWindow().getSceneTreeDock().setProjectAvailable(ProjectContext::getInstance().getNodeProject());
 	sceneSwitched();
+	resourceSwitched();
 }
 
 void GuiContext::sceneSwitched() {
@@ -272,9 +273,9 @@ void GuiContext::sceneSwitched() {
 	NodeScene* rNodeScene=ProjectContext::getInstance().getNodeScene();
 	if (rNodeScene) {
 		getMainWindow().getSceneTreeDock().setSceneEditable(true);
-		getMainWindow().getSceneTreeDock().addSceneNode(nullptr, rNodeScene);
+		getMainWindow().getSceneTreeDock().addNode(nullptr, rNodeScene, NodeInfoType::Scene);
 	}
-	switchProperties(true, nullptr);
+	switchProperties(nullptr, NodeInfoType::Scene);
 }
 
 void GuiContext::resourceSwitched() {
@@ -282,14 +283,12 @@ void GuiContext::resourceSwitched() {
 	NodeResource* rNodeResource=ProjectContext::getInstance().getCurrentResource();
 	if (rNodeResource) {
 		getMainWindow().getSceneTreeDock().setResourceEditable(true);
-		getMainWindow().getSceneTreeDock().addResourceNode(nullptr, rNodeResource);
+		getMainWindow().getSceneTreeDock().addNode(nullptr, rNodeResource, NodeInfoType::Resource);
 	}
-	//switchProperties(true, nullptr);
+	switchProperties(nullptr, NodeInfoType::Resource);
 }
 
-void GuiContext::switchProperties(bool isSceneProperty, Node* rNode) {
-	if (isSceneProperty) {
-		getMainWindow().getPropertyTreeDock().setPropertiesForNode(rNode);
-	}
+void GuiContext::switchProperties(Node* rNode, NodeInfoType rNodeInfoType) {
+	getMainWindow().getPropertyTreeDock().setPropertiesForNode(rNode);
 }
 
