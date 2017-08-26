@@ -7,6 +7,7 @@ class ProjectContext
 {
 private:
 	NodeManager		mNodeManager;
+	TextureManager	mTextureManager;
 
 	ProjectContext();
 public:
@@ -32,5 +33,7 @@ public:
 	NodeResource *getNodeResourceByPath(const string& rPathWithFileAbs);
 	void setCurrentResource(NodeResource *rNodeResource);
 	NodeResource* getCurrentResource();
+	string getCurrentResourcePathAbs();
+	BTexturePng *getTexture(const string &rPathRelativeToProject);
 };
 

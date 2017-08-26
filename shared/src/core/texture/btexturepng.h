@@ -13,7 +13,7 @@ class BTexturePng
 private:
 	bool	loaded=false;
 	std::vector<unsigned char> image;
-	GLuint glTextureId=0;
+    GLuint glTextureId=0;
 public:
 	unsigned width=0, height=0;
 
@@ -33,7 +33,7 @@ public:
 	}
 
 	void bind() {
-		if (loaded) {
+        if (loaded) {
 			if (glTextureId==0) {
 				glEnable(GL_TEXTURE_2D);
 				glGenTextures(1, &glTextureId);
@@ -49,7 +49,7 @@ public:
 					glBindTexture(GL_TEXTURE_2D, glTextureId);
 				}
 			}
-		}
+        }
 	}
 };
 

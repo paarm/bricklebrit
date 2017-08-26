@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	QObject::connect(mActionOpenProject, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onOpenProjectClicked);
 
 	mActionSaveProject = new QAction(/*QIcon(":/icons/open.png"),*/ tr("Save Project..."), this);
-	//mActionOpenProject->setShortcuts(QKeySequence::Open);
+    mActionSaveProject->setShortcuts(QKeySequence::Save);
 	mActionSaveProject->setStatusTip(tr("Save the Project"));
 	QObject::connect(mActionSaveProject, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onSaveProjectClicked);
 

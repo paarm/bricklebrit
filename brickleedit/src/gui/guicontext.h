@@ -2,7 +2,6 @@
 #include "mainwindow.h"
 #include "../project/projectcontext.h"
 #include <QObject>
-
 class GuiContext : public QObject
 {
 private:

@@ -4,4 +4,4 @@
 #include "thirdparty/simplejson/JSONValue.h"
 #include "thirdparty/lodepng/lodepng.h"
 #include "jsonparser/jsonparser.h"
-#include "texture/btexturepng.h"
+#include "texture/texturemanager.h"

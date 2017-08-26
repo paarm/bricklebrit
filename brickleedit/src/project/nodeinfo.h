@@ -67,7 +67,7 @@ public:
 		mPathInfo.pathWithFileAbs=rPathWithFileAbs;
 		mNode=new T;
 		mNode->setName(rName);
-		//rv=Node::persistNode(mNode, rPathWithFileAbs);
+        //rv=Node::persistNode(mNode, rPathWithFileAbs);
 		return rv;
 	}
 

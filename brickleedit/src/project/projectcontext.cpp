@@ -17,17 +17,29 @@ void ProjectContext::closeProject(bool rPersistBefore) {
 		save();
 	}
 	mNodeManager.close(NodeInfoType::Project);
+	mTextureManager.clear();
 }
 
 bool ProjectContext::load(NodeInfoType rNodeInfoType, const string&rProjectPathWithFileAbs) {
-	return mNodeManager.load(rNodeInfoType, rProjectPathWithFileAbs);
+	bool rv=false;
+	mTextureManager.clear();
+
+	rv=mNodeManager.load(rNodeInfoType, rProjectPathWithFileAbs);
+	if (rv) {
+		mTextureManager.setBasePath(this->getProjectPathAbs());
+	}
+	return rv;
 }
 
 
 bool ProjectContext::createNew(NodeInfoType rNodeInfoType, const string& rName, const string& rPathAbs, const string &rPathWithFileAbs) {
-	return mNodeManager.createNew(rNodeInfoType, rName, rPathAbs, rPathWithFileAbs);
+	bool rv=false;
+	rv=mNodeManager.createNew(rNodeInfoType, rName, rPathAbs, rPathWithFileAbs);
+	if (rv) {
+		mTextureManager.setBasePath(this->getProjectPathAbs());
+	}
+	return rv;
 }
-
 
 bool ProjectContext::isProjectAvailable() {
 	return mNodeManager.getNodeProject();
@@ -79,5 +91,12 @@ void ProjectContext::setCurrentResource(NodeResource *rNodeResource) {
 
 NodeResource* ProjectContext::getCurrentResource() {
 	return mNodeManager.getCurrentResource();
+}
+string ProjectContext::getCurrentResourcePathAbs() {
+	return mNodeManager.getCurrentResourcePathAbs();
+}
+
+BTexturePng *ProjectContext::getTexture(const string &rPathRelativeToProject) {
+	return mTextureManager.getTexture(rPathRelativeToProject);
 }
 

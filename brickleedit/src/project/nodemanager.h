@@ -9,6 +9,7 @@ private:
 	NodeInfo<NodeScene>				mNodeScene{2};
 	vector<NodeInfo<NodeResource>>	mNodeResource;
 	NodeResource*					mNodeResourceCurrent=nullptr;
+    NodeInfo<NodeResource>          *mNodeResourceCurrentInfo=nullptr;
 public:
 	NodeManager();
 	~NodeManager();
@@ -25,5 +26,6 @@ public:
 	string getResourcePathAndFileAbsByName(const string &rName);
 	void setCurrentResource(NodeResource *rNodeResource);
 	NodeResource* getCurrentResource();
+    string getCurrentResourcePathAbs();
 };
 

@@ -7,11 +7,11 @@ Project {
     ]
 
     Product {
-        destinationDirectory: FileInfo.joinPaths(project.sourceDirectory,"bin")
+        //destinationDirectory: FileInfo.joinPaths(project.sourceDirectory,"bin")
         type: "application"
         name: "brickleedit"
         cpp.includePaths: ["."]
-        cpp.staticLibraries: "GLEW"
+        //cpp.staticLibraries: "GLEW"
         files: [
             "src/gui/guicontext.cpp",
             "src/gui/guicontext.h",
@@ -55,7 +55,7 @@ Project {
         ]
         Depends {
             name: "Qt";
-            submodules: ["gui", "widgets", "openglextensions"]
+            submodules: ["gui", "opengl", "widgets", "openglextensions"]
         }
         Depends{
             name: "bricklelib"

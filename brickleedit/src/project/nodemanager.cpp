@@ -12,6 +12,7 @@ NodeManager::~NodeManager() {
 bool NodeManager::createNew(NodeInfoType rNodeInfoType, const string& rName, const string& rPathAbs, const string&rPathWithFileAbs) {
 	switch (rNodeInfoType) {
 	case NodeInfoType::Project:
+		NodeIdGenerator::getInstance().resetNumber(0);
 		return mNodeProject.createNew(rName, rPathAbs, rPathWithFileAbs);
 	case NodeInfoType::Scene:
 		return mNodeScene.createNew(rName, rPathAbs, rPathWithFileAbs);
@@ -88,6 +89,7 @@ void NodeManager::close(NodeInfoType rNodeInfoType) {
 void NodeManager::save(NodeInfoType rNodeInfoType) {
 	switch (rNodeInfoType) {
 	case NodeInfoType::Project:
+		mNodeProject.getNode()->setNextFreeId(NodeIdGenerator::getInstance().getNextFreeNumber());
 		mNodeProject.save();
 		break;
 	case NodeInfoType::Scene:
@@ -108,6 +110,7 @@ string NodeManager::getProjectPathAbs() {
 string NodeManager::getScenePathAbs() {
 	return mNodeScene.getPathAbs();
 }
+
 
 string NodeManager::getResourcePathAndFileAbsByName(const string &rName) {
 	string rv="";
@@ -153,10 +156,24 @@ NodeResource *NodeManager::getNodeResourceByPath(const string &rPathWithFileAbs)
 
 void NodeManager::setCurrentResource(NodeResource *rNodeResource) {
 	mNodeResourceCurrent=rNodeResource;
+	mNodeResourceCurrentInfo=nullptr;
+	for (auto& r : mNodeResource) {
+		if (r.getNode()==rNodeResource) {
+			mNodeResourceCurrentInfo=&r;
+		}
+	}
 }
 
 NodeResource* NodeManager::getCurrentResource() {
 	return mNodeResourceCurrent;
+}
+
+string NodeManager::getCurrentResourcePathAbs() {
+	string rv="";
+	if (mNodeResourceCurrentInfo) {
+		rv=mNodeResourceCurrentInfo->getPathAbs();
+	}
+	return rv;
 }
 
 

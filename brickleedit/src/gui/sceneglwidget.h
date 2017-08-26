@@ -8,6 +8,7 @@
 #include <QPainter>
 #include <QOpenGLTexture>
 #include <bricklelib.h>
+#include "../project/projectcontext.h"
 
 struct TVertex {
 	float u;
@@ -39,7 +40,7 @@ public:
 
 protected:
 	QImage *mImage;
-	QOpenGLTexture *texture;
+    //QOpenGLTexture *texture;
 	BTexturePng bTexture;
 	GLuint vbonum;
 	void initializeGL()
@@ -52,7 +53,7 @@ protected:
 		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 		glEnable(GL_COLOR_MATERIAL);
 
-		texture= new QOpenGLTexture(QImage("data/assets/test.bmp"));
+        //texture= new QOpenGLTexture(QImage("data/assets/test.bmp"));
 
 		bTexture.load("data/assets/gravity.png");
 #if 0
@@ -152,8 +153,9 @@ protected:
 			glVertex3f( 0.0,  50, 0);
 		glEnd();
 
-		glColor3f(1.0,1.0, 1.0);
-		glEnable(GL_TEXTURE_2D);
+        glColor3f(1.0,1.0, 1.0);
+        glEnable(GL_TEXTURE_2D);
+#if 0
 		texture->bind();
 		// Draw a textured quad
 
@@ -168,11 +170,10 @@ protected:
 		glEnd();
 		glPopMatrix();
 		texture->release();
-
+#endif
 		glPushMatrix();
 		glTranslatef(200, 0,0);
 		//glBindTexture(GL_TEXTURE_2D, texName);
-		bTexture.bind();
 		bTexture.bind();
 		glBegin(GL_QUADS);
 			glTexCoord2f(0, 0); glVertex3f(0, 0, 0);
@@ -184,8 +185,61 @@ protected:
 		//glBindTexture(GL_TEXTURE_2D, texName);
 
 
+		NodeScene *scene=ProjectContext::getInstance().getNodeScene();
+		if (scene) {
+			paintNode(scene);
+		}
+
 		glDisable(GL_TEXTURE_2D);
 
 	}
 
+	void paintNode(Node* rNode) {
+		glPushMatrix();
+		if (rNode->getNodeType()==NodeType::Sprite) {
+			NodeSprite *paintNode=(NodeSprite*)rNode;
+			int x=paintNode->getPosition().x;
+			int y=paintNode->getPosition().y;
+			int w=paintNode->getSize().width;
+			int h=paintNode->getSize().height;
+			int tx=paintNode->getTextureSourceRect().x;
+			int ty=paintNode->getTextureSourceRect().y;
+			int tw=paintNode->getTextureSourceRect().width;
+			int th=paintNode->getTextureSourceRect().height;
+
+			Node *rNodeT=ProjectContext::getInstance().getCurrentResource()->getNodeWithNodeId(paintNode->getTextureRef().refid);
+			if (rNodeT && rNodeT->getNodeType()==NodeType::Texture) {
+				NodeTexture *rNodeTexture=(NodeTexture*)rNodeT;
+				BTexturePng *bTexture=ProjectContext::getInstance().getTexture(rNodeTexture->getPath());
+				if (bTexture) {
+					glTranslatef(x, y,0);
+					bTexture->bind();
+
+					glBegin(GL_QUADS);
+						glTexCoord2f(0, 0); glVertex3f(0, 0, 0);
+						glTexCoord2f(0, 1); glVertex3f(0, h, 0);
+						glTexCoord2f(1, 1); glVertex3f(w, h, 0);
+						glTexCoord2f(1, 0); glVertex3f(w, 0, 0);
+					glEnd();
+				}
+			}
+#if 0
+			//glBindTexture(GL_TEXTURE_2D, texName);
+			bTexture.bind();
+			glBegin(GL_QUADS);
+				glTexCoord2f(0, 0); glVertex3f(0, 0, 0);
+				glTexCoord2f(0, 1); glVertex3f(0, 100, 0);
+				glTexCoord2f(1, 1); glVertex3f(100, 100, 0);
+				glTexCoord2f(1, 0); glVertex3f(100, 0, 0);
+			glEnd();
+#endif
+		}
+		unsigned long count=rNode->getChildCount();
+		unsigned long i;
+		for (i=0;i<count;i++) {
+			Node *child=rNode->getNodeFromIndex(i);
+			paintNode(child);
+		}
+		glPopMatrix();
+	}
 };

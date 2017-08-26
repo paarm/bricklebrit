@@ -67,6 +67,7 @@ public:
 	void deleteNode(Node *rNodeToDelete);
 	unsigned long getChildCount();
 	Node* getNodeFromIndex(unsigned long rIndex);
+	Node* getNodeWithNodeId(int rIndex);
 
 
 	NodeType& getNodeType();
@@ -135,13 +136,19 @@ public:
 class NodeProject : public Node {
 private:
 public:
+	PROPERTY_STRING_GETSET(ScenesSubPath)
+	PROPERTY_STRING_GETSET(ResourcesSubPath)
 	PROPERTY_STRING_GETSET(StartScene)
+	PROPERTY_STRING_GETSET(ProjectResource)
 	PROPERTY_INT_GETSET(NextFreeId)
 	PROPERTY_LIST_GETSET(ListTest)
 
 	NodeProject(bool rCreateNewId) : Node(rCreateNewId) {
 		mNodeType=NodeType::Project;
+		setScenesSubPath("");
+		setResourcesSubPath("");
 		setStartScene("");
+		setProjectResource("");
 		setNextFreeId(0);
 		setListTest();
 	}

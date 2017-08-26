@@ -6,6 +6,7 @@ Project {
         destinationDirectory: FileInfo.joinPaths(project.sourceDirectory,"bin")
         name: "bricklelib"
         cpp.cppFlags: "-std=c++11"
+        cpp.staticLibraries: "opengl32"
         files: [
             "src/bricklelib.h",
             "src/core/core.h",
@@ -14,6 +15,8 @@ Project {
             "src/core/jsonparser/jsonparserbase.h",
             "src/core/texture/btexturepng.cpp",
             "src/core/texture/btexturepng.h",
+            "src/core/texture/texturemanager.cpp",
+            "src/core/texture/texturemanager.h",
             "src/core/thirdparty/simplejson/JSON.cpp",
             "src/core/thirdparty/simplejson/JSON.h",
             "src/core/thirdparty/simplejson/JSONValue.cpp",
@@ -45,6 +48,8 @@ Project {
             "src/core/tree/property/property_float.h",
             "src/core/tree/property/propertyinstance.cpp",
             "src/core/tree/tree.h",
+            "src/core/utils/dirutil.cpp",
+            "src/core/utils/dirutil.h",
         ]
         Depends {
             name: "cpp"

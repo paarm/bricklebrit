@@ -140,6 +140,18 @@ Node* Node::getNodeFromIndex(unsigned long rIndex) {
 	return rv;
 }
 
+Node* Node::getNodeWithNodeId(int rIndex) {
+	Node *rv=nullptr;
+	for (auto *rNode : mNodes) {
+		if (rNode->getId()==rIndex) {
+			rv=rNode;
+			break;
+		}
+	}
+	return rv;
+}
+
+
 void Node::moveChildNode(Node* rNodeToMove) {
 	if (rNodeToMove!=this) {
 		Node* parent=rNodeToMove->getParent();

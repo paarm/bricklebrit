@@ -90,7 +90,13 @@ void GuiContext::onCloseProjectClicked() {
 
 void GuiContext::onSaveProjectClicked() {
 	if (ProjectContext::getInstance().getNodeProject()) {
-		ProjectContext::getInstance().save();
+        QDir tmp(QString::fromStdString(ProjectContext::getInstance().getProjectPathAbs()));
+        tmp.mkpath(".");
+        if (ProjectContext::getInstance().getNodeScene()) {
+            QDir tmp(QString::fromStdString(ProjectContext::getInstance().getScenePathAbs()));
+            tmp.mkpath(".");
+        }
+        ProjectContext::getInstance().save();
 	}
 }
 
@@ -205,15 +211,56 @@ void GuiContext::onNewResourceClicked() {
 bool GuiContext::createNewProject(const string& rProjectName, const string& rProjectPathAbs, const string&rProjectPathWithFileAbs) {
 	bool rv=ProjectContext::getInstance().createNew(NodeInfoType::Project, rProjectName, rProjectPathAbs, rProjectPathWithFileAbs);
 	if (rv) {
+        ProjectContext::getInstance().getNodeProject()->setScenesSubPath("scenes");
+        ProjectContext::getInstance().getNodeProject()->setStartScene("StartupScene.brscn");
+        ProjectContext::getInstance().getNodeProject()->setResourcesSubPath("resources");
+        ProjectContext::getInstance().getNodeProject()->setProjectResource("ProjectResource.brres");
+
+
 		setWindowTitle();
 		projectSwitched();
-	}
+
+        QDir tmp(QString::fromStdString(ProjectContext::getInstance().getProjectPathAbs()));
+        tmp.mkpath(".");
+        {
+            QString rScenePathAbs=QDir::cleanPath(QString::fromStdString(rProjectPathAbs)+QDir::separator()+QString::fromStdString(ProjectContext::getInstance().getNodeProject()->getScenesSubPath()));
+            QString rStartupSceneName=QString::fromStdString(ProjectContext::getInstance().getNodeProject()->getStartScene());
+            QString rStartupScenePathWithFileAbs = QDir(rScenePathAbs).filePath(rStartupSceneName);
+            createNewScene(rStartupSceneName.toStdString(), rScenePathAbs.toStdString(), rStartupScenePathWithFileAbs.toStdString());
+
+            if (ProjectContext::getInstance().getNodeScene()) {
+                QDir tmp(QString::fromStdString(ProjectContext::getInstance().getScenePathAbs()));
+                tmp.mkpath(".");
+            }
+        }
+        {
+            QString rResourcePathAbs=QDir::cleanPath(QString::fromStdString(rProjectPathAbs)+QDir::separator()+QString::fromStdString(ProjectContext::getInstance().getNodeProject()->getResourcesSubPath()));
+            QString rProjectResourceName=QString::fromStdString(ProjectContext::getInstance().getNodeProject()->getProjectResource());
+            QString rProjectResourcePathWithFileAbs = QDir(rResourcePathAbs).filePath(rProjectResourceName);
+            createNewResource(rProjectResourceName.toStdString(), rResourcePathAbs.toStdString(), rProjectResourcePathWithFileAbs.toStdString());
+            if (ProjectContext::getInstance().getCurrentResource()) {
+                QDir tmp(QString::fromStdString(ProjectContext::getInstance().getCurrentResourcePathAbs()));
+                tmp.mkpath(".");
+            }
+        }
+    }
 	return rv;
 }
 
 bool GuiContext::loadProject(const string&rProjectPathWithFileAbs) {
 	bool rv=ProjectContext::getInstance().load(NodeInfoType::Project, rProjectPathWithFileAbs);
 	if (rv) {
+        QString rScenePathAbs=QDir::cleanPath(QString::fromStdString(ProjectContext::getInstance().getProjectPathAbs())+QDir::separator()+QString::fromStdString(ProjectContext::getInstance().getNodeProject()->getScenesSubPath()));
+        QString rStartupSceneName=QString::fromStdString(ProjectContext::getInstance().getNodeProject()->getStartScene());
+        QString rStartupScenePathWithFileAbs = QDir(rScenePathAbs).filePath(rStartupSceneName);
+        loadCurrentScene(rStartupScenePathWithFileAbs.toStdString());
+
+        QString rResourcePathAbs=QDir::cleanPath(QString::fromStdString(ProjectContext::getInstance().getProjectPathAbs())+QDir::separator()+QString::fromStdString(ProjectContext::getInstance().getNodeProject()->getResourcesSubPath()));
+        QString rProjectResourceName=QString::fromStdString(ProjectContext::getInstance().getNodeProject()->getProjectResource());
+        QString rProjectResourcePathWithFileAbs = QDir(rResourcePathAbs).filePath(rProjectResourceName);
+
+        loadCurrentResource(rProjectResourcePathWithFileAbs.toStdString());
+
 		setWindowTitle();
 		projectSwitched();
 	}
