@@ -20,13 +20,13 @@ public:
 	MainWindow& getMainWindow();
 	void setWindowTitle();
 
-	bool createNewProject(const string& rProjectName, const string& rProjectPathAbs, const string&rProjectPathWithFileAbs);
+	bool createNewProject(const string& rProjectPathAbs, const string& rProjectName);
 	bool loadProject(const string&rProjectPathWithFileAbs);
 
-	bool createNewScene(const string& rSceneName, const string& rScenePathAbs, const string&rScenePathWithFileAbs);
-	bool createNewResource(const string& rName, const string& rPathAbs, const string&rPathWithFileAbs);
-	bool loadCurrentScene(const string&rScenePathWithFileAbs);
-	bool loadCurrentResource(const string&rPathWithFileAbs);
+	bool createNewScene(const string& rSceneName);
+	bool createNewResource(const string& rName);
+	bool loadCurrentScene(const string&rName);
+	bool loadCurrentResource(const string&rName);
 
 	QString getVirtualProjectPath();
 	QString fromVirtualPath(const QString &rPathAbs);

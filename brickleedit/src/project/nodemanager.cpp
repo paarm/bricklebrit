@@ -9,22 +9,25 @@ NodeManager::~NodeManager() {
 	close(NodeInfoType::Resource);
 }
 
-bool NodeManager::createNew(NodeInfoType rNodeInfoType, const string& rName, const string& rPathAbs, const string&rPathWithFileAbs) {
+bool NodeManager::createNewProject(const string& rName) {
+	NodeIdGenerator::getInstance().resetNumber(0);
+	return mNodeProject.createNew(rName);
+}
+
+bool NodeManager::createNew(NodeInfoType rNodeInfoType, const string& rName) {
 	switch (rNodeInfoType) {
-	case NodeInfoType::Project:
-		NodeIdGenerator::getInstance().resetNumber(0);
-		return mNodeProject.createNew(rName, rPathAbs, rPathWithFileAbs);
 	case NodeInfoType::Scene:
-		return mNodeScene.createNew(rName, rPathAbs, rPathWithFileAbs);
+		return mNodeScene.createNew(rName);
 	case NodeInfoType::Resource:
 		mNodeResource.emplace_back(3);
 		NodeInfo<NodeResource>& rNodeResource=mNodeResource.back();
-		return rNodeResource.createNew(rName, rPathAbs, rPathWithFileAbs);
+		return rNodeResource.createNew(rName);
 	}
 	return false;
 }
 
-bool NodeManager::load(NodeInfoType rNodeInfoType, const string&rPathWithFileAbs) {
+bool NodeManager::load(NodeInfoType rNodeInfoType, const string& rProjectPathAbs, const string &rName) {
+	string rPathWithFileAbs=DirUtil::concatPath(rProjectPathAbs, rName);
 	switch (rNodeInfoType) {
 	case NodeInfoType::Project:
 		if (mNodeProject.load(rPathWithFileAbs)) {
@@ -45,7 +48,7 @@ bool NodeManager::load(NodeInfoType rNodeInfoType, const string&rPathWithFileAbs
 		break;
 	case NodeInfoType::Resource:
 		for (auto& r : mNodeResource) {
-			if (r.getPathWithFileAbs()==rPathWithFileAbs) {
+			if (r.getNode()->getName()==rName) {
 				// already loaded
 				return true;
 			}
@@ -86,43 +89,22 @@ void NodeManager::close(NodeInfoType rNodeInfoType) {
 	}
 }
 
-void NodeManager::save(NodeInfoType rNodeInfoType) {
+void NodeManager::save(NodeInfoType rNodeInfoType, const string& rProjectPathAbs) {
 	switch (rNodeInfoType) {
 	case NodeInfoType::Project:
 		mNodeProject.getNode()->setNextFreeId(NodeIdGenerator::getInstance().getNextFreeNumber());
-		mNodeProject.save();
+		mNodeProject.save(rProjectPathAbs);
 		break;
 	case NodeInfoType::Scene:
-		mNodeScene.save();
+		mNodeScene.save(rProjectPathAbs);
 		break;
 	case NodeInfoType::Resource:
 		for (auto& r : mNodeResource) {
-			r.save();
+			r.save(rProjectPathAbs);
 		}
 		break;
 	}
 }
-
-string NodeManager::getProjectPathAbs() {
-	return mNodeProject.getPathAbs();
-}
-
-string NodeManager::getScenePathAbs() {
-	return mNodeScene.getPathAbs();
-}
-
-
-string NodeManager::getResourcePathAndFileAbsByName(const string &rName) {
-	string rv="";
-	for (auto& r : mNodeResource) {
-		if (r.getNode()->getName()==rName) {
-			rv=r.getPathWithFileAbs();
-			break;
-		}
-	}
-	return rv;
-}
-
 
 NodeProject *NodeManager::getNodeProject() {
 	return mNodeProject.getNode();
@@ -143,7 +125,7 @@ NodeResource *NodeManager::getNodeResourceByName(const string &rName) {
 	return rv;
 }
 
-NodeResource *NodeManager::getNodeResourceByPath(const string &rPathWithFileAbs) {
+/*NodeResource *NodeManager::getNodeResourceByPath(const string &rPathWithFileAbs) {
 	NodeResource *rv=nullptr;
 	for (auto& r : mNodeResource) {
 		if (r.getPathWithFileAbs()==rPathWithFileAbs) {
@@ -152,7 +134,7 @@ NodeResource *NodeManager::getNodeResourceByPath(const string &rPathWithFileAbs)
 		}
 	}
 	return rv;
-}
+}*/
 
 void NodeManager::setCurrentResource(NodeResource *rNodeResource) {
 	mNodeResourceCurrent=rNodeResource;
@@ -166,14 +148,6 @@ void NodeManager::setCurrentResource(NodeResource *rNodeResource) {
 
 NodeResource* NodeManager::getCurrentResource() {
 	return mNodeResourceCurrent;
-}
-
-string NodeManager::getCurrentResourcePathAbs() {
-	string rv="";
-	if (mNodeResourceCurrentInfo) {
-		rv=mNodeResourceCurrentInfo->getPathAbs();
-	}
-	return rv;
 }
 
 

@@ -4,29 +4,9 @@
 #include <bricklelib.h>
 #include <QFileInfo>
 
-struct PathInfo {
-	string			pathAbs="";
-	string			pathWithFileAbs="";
-	void clear() {
-		pathAbs="";
-		pathWithFileAbs="";
-	}
-};
-/*
-template <typename T>
-class NodeInfoBase {
-	virtual void	close(bool rPersistBefore)=0;
-	virtual void	save()=0;
-	virtual bool	createNew(const string& rName, const string& rPathAbs, const string &rPathWithFileAbs)=0;
-	virtual bool	load(const string&rPathWithFileAbs)=0;
-	virtual string	getPathAbs()=0;
-	virtual T*		getNode()=0;
-};*/
-
 template <typename T>
 class NodeInfo/* : public NodeInfoBase<T>*/ {
 private:
-	PathInfo	mPathInfo;
 	T*			mNode=nullptr;
 	int			mDummy;
 public:
@@ -40,15 +20,14 @@ public:
 	NodeInfo& operator=(NodeInfo const&)=delete;
 
 	NodeInfo(NodeInfo && rOld) {
-		mPathInfo=rOld.mPathInfo;
 		mNode=rOld.mNode;
 		mDummy=rOld.mDummy;
 		rOld.mNode=nullptr;
 	}
 
-	void save() {
+	void save(const string& rProjectPathAbs) {
 		if (mNode) {
-			Node::persistNode(mNode, mPathInfo.pathWithFileAbs);
+			Node::persistNode(mNode, DirUtil::concatPath(rProjectPathAbs, mNode->getName()));
 		}
 	}
 
@@ -57,29 +36,25 @@ public:
 			delete mNode;
 			mNode=nullptr;
 		}
-		mPathInfo.clear();
 	}
 
-	bool createNew(const string& rName, const string& rPathAbs, const string &rPathWithFileAbs) {
+	bool createNew(const string& rName) {
 		bool rv=true;
 		close();
-		mPathInfo.pathAbs=rPathAbs;
-		mPathInfo.pathWithFileAbs=rPathWithFileAbs;
 		mNode=new T;
 		mNode->setName(rName);
-        //rv=Node::persistNode(mNode, rPathWithFileAbs);
 		return rv;
 	}
 
 	bool load(const string&rPathWithFileAbs) {
 		bool rv=false;
 		close();
-		mPathInfo.pathWithFileAbs=rPathWithFileAbs;
+		//mPathInfo.pathWithFileAbs=rPathWithFileAbs;
 
-		QFileInfo fi(QString::fromStdString(mPathInfo.pathWithFileAbs));
+		QFileInfo fi(QString::fromStdString(rPathWithFileAbs));
 		if (fi.exists() && fi.isFile()) {
-			QString path=fi.absolutePath();
-			mPathInfo.pathAbs=path.toStdString();
+			//QString path=fi.absolutePath();
+			//mPathInfo.pathAbs=path.toStdString();
 			Node *rNode=Node::unpersistNode(fi.absoluteFilePath().toStdString());
 			if (rNode) {
 				mNode=static_cast<T*>(rNode);
@@ -87,14 +62,6 @@ public:
 			}
 		}
 		return rv;
-	}
-
-	string getPathAbs() {
-		return mPathInfo.pathAbs;
-	}
-
-	string getPathWithFileAbs() {
-		return mPathInfo.pathWithFileAbs;
 	}
 
 	T* getNode() {

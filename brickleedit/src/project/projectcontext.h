@@ -6,6 +6,7 @@
 class ProjectContext
 {
 private:
+	string			mProjectPathAbs;
 	NodeManager		mNodeManager;
 	TextureManager	mTextureManager;
 
@@ -16,24 +17,20 @@ public:
 		return rProjectContext;
 	}
 	~ProjectContext();
-	bool createNew(NodeInfoType rNodeInfoType, const string& rName, const string& rPathAbs, const string&rPathWithFileAbs);
-	bool load(NodeInfoType rNodeInfoType, const string&rPathWithFileAbs);
+	bool createNewProject(const string& rProjectPathAbs, const string& rName);
+	bool createNew(NodeInfoType rNodeInfoType, const string& rName);
+	bool load(NodeInfoType rNodeInfoType, const string& rProjectPathAbs, const string& rName);
 	void save();
 	void closeProject(bool rPersistBefore);
 	bool isProjectAvailable();
 	bool isSceneAvailable();
 	bool isResourceAvailableByName(const string &rName);
-	bool isResourceAvailableByPath(const string &rPathWithFileAbs);
 	string getProjectPathAbs();
-	string getScenePathAbs();
-	string getResourcePathAndFileAbsByName(const string& rName);
 	NodeProject *getNodeProject();
 	NodeScene *getNodeScene();
 	NodeResource *getNodeResourceByName(const string& rName);
-	NodeResource *getNodeResourceByPath(const string& rPathWithFileAbs);
 	void setCurrentResource(NodeResource *rNodeResource);
 	NodeResource* getCurrentResource();
-	string getCurrentResourcePathAbs();
 	BTexturePng *getTexture(const string &rPathRelativeToProject);
 };
 

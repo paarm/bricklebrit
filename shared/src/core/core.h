@@ -5,3 +5,4 @@
 #include "thirdparty/lodepng/lodepng.h"
 #include "jsonparser/jsonparser.h"
 #include "texture/texturemanager.h"
+#include "utils/dirutil.h"

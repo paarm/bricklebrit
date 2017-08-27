@@ -7,9 +7,9 @@ ProjectContext::~ProjectContext() {
 }
 
 void ProjectContext::save() {
-	mNodeManager.save(NodeInfoType::Project);
-	mNodeManager.save(NodeInfoType::Scene);
-	mNodeManager.save(NodeInfoType::Resource);
+	mNodeManager.save(NodeInfoType::Project,mProjectPathAbs);
+	mNodeManager.save(NodeInfoType::Scene,mProjectPathAbs);
+	mNodeManager.save(NodeInfoType::Resource,mProjectPathAbs);
 }
 
 void ProjectContext::closeProject(bool rPersistBefore) {
@@ -17,27 +17,37 @@ void ProjectContext::closeProject(bool rPersistBefore) {
 		save();
 	}
 	mNodeManager.close(NodeInfoType::Project);
+	mProjectPathAbs="";
 	mTextureManager.clear();
 }
 
-bool ProjectContext::load(NodeInfoType rNodeInfoType, const string&rProjectPathWithFileAbs) {
+bool ProjectContext::load(NodeInfoType rNodeInfoType, const string&rProjectPathAbs, const string&rName) {
 	bool rv=false;
-	mTextureManager.clear();
 
-	rv=mNodeManager.load(rNodeInfoType, rProjectPathWithFileAbs);
+	rv=mNodeManager.load(rNodeInfoType, rProjectPathAbs, rName);
 	if (rv) {
+		if (rNodeInfoType==NodeInfoType::Project) {
+			mTextureManager.clear();
+			mProjectPathAbs=rProjectPathAbs;
+			mTextureManager.setBasePath(this->getProjectPathAbs());
+		}
+	}
+	return rv;
+}
+
+bool ProjectContext::createNewProject(const string& rProjectPathAbs, const string& rName) {
+	bool rv=false;
+	rv=mNodeManager.createNewProject(rName);
+	if (rv) {
+		mProjectPathAbs=rProjectPathAbs;
 		mTextureManager.setBasePath(this->getProjectPathAbs());
 	}
 	return rv;
 }
 
-
-bool ProjectContext::createNew(NodeInfoType rNodeInfoType, const string& rName, const string& rPathAbs, const string &rPathWithFileAbs) {
+bool ProjectContext::createNew(NodeInfoType rNodeInfoType, const string& rName) {
 	bool rv=false;
-	rv=mNodeManager.createNew(rNodeInfoType, rName, rPathAbs, rPathWithFileAbs);
-	if (rv) {
-		mTextureManager.setBasePath(this->getProjectPathAbs());
-	}
+	rv=mNodeManager.createNew(rNodeInfoType, rName);
 	return rv;
 }
 
@@ -53,10 +63,6 @@ bool ProjectContext::isResourceAvailableByName(const string &rName) {
 	return mNodeManager.getNodeResourceByName(rName);
 }
 
-bool ProjectContext::isResourceAvailableByPath(const string &rPathWithFileAbs) {
-	return mNodeManager.getNodeResourceByPath(rPathWithFileAbs);
-}
-
 NodeProject *ProjectContext::getNodeProject() {
 	return mNodeManager.getNodeProject();
 }
@@ -69,20 +75,8 @@ NodeResource *ProjectContext::getNodeResourceByName(const string& rName) {
 	return mNodeManager.getNodeResourceByName(rName);
 }
 
-NodeResource *ProjectContext::getNodeResourceByPath(const string& rPathWithFileAbs) {
-	return mNodeManager.getNodeResourceByPath(rPathWithFileAbs);
-}
-
 string ProjectContext::getProjectPathAbs() {
-	return mNodeManager.getProjectPathAbs();
-}
-
-string ProjectContext::getScenePathAbs() {
-	return mNodeManager.getScenePathAbs();
-}
-
-string ProjectContext::getResourcePathAndFileAbsByName(const string& rName) {
-	return mNodeManager.getResourcePathAndFileAbsByName(rName);
+	return mProjectPathAbs;
 }
 
 void ProjectContext::setCurrentResource(NodeResource *rNodeResource) {
@@ -91,9 +85,6 @@ void ProjectContext::setCurrentResource(NodeResource *rNodeResource) {
 
 NodeResource* ProjectContext::getCurrentResource() {
 	return mNodeManager.getCurrentResource();
-}
-string ProjectContext::getCurrentResourcePathAbs() {
-	return mNodeManager.getCurrentResourcePathAbs();
 }
 
 BTexturePng *ProjectContext::getTexture(const string &rPathRelativeToProject) {

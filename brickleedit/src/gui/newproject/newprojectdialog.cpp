@@ -49,13 +49,17 @@ void NewProjectDialog::on_okButton_clicked()
 	if (getProjectName().toStdString().size()==0 || getProjectPath().size()==0) {
 		QMessageBox::warning(this, tr("Error"), tr("Project Name and Project Path are required"), QMessageBox::Ok);
 	} else {
-		QString pathWithFile = QDir(getProjectPath()).filePath("brickleroot.brprj");
+		QString rProjectName=getProjectName();
+		if (!rProjectName.endsWith("brprj")) {
+			rProjectName+=".brprj";
+		}
+		QString pathWithFile = QDir(getProjectPath()).filePath(rProjectName);
 		QFileInfo check_file(pathWithFile);
 		// check if file exists and if yes: Is it really a file and no directory?
 		if (check_file.exists() && check_file.isFile()) {
 			QMessageBox::warning(this, tr("Error"), tr("A Project exists already in this folder"), QMessageBox::Ok);
 		} else {
-			if (!GuiContext::getInstance().createNewProject(getProjectName().toStdString(), getProjectPath().toStdString(), pathWithFile.toStdString())) {
+			if (!GuiContext::getInstance().createNewProject(getProjectPath().toStdString(), rProjectName.toStdString())) {
 				QMessageBox::warning(this, tr("Error"), tr("Could not create Project"), QMessageBox::Ok);
 			} else {
 				close();

@@ -60,14 +60,15 @@ void NewSceneDialog::on_okButton_clicked()
 					QMessageBox::warning(this, tr("Error"), tr("Resource is not inside the Project directory"), QMessageBox::Ok);
 				}
 			} else {
+				string rName=DirUtil::subPart1FromPart2(ProjectContext::getInstance().getProjectPathAbs(), pathWithFile.toStdString());
 				if (mNodeInfoType==NodeInfoType::Scene) {
-					if (!GuiContext::getInstance().createNewScene(getName().toStdString(), rScenePathAbs.toStdString(), pathWithFile.toStdString())) {
+					if (!GuiContext::getInstance().createNewScene(rName)) {
 						QMessageBox::warning(this, tr("Error"), tr("Could not create Scene"), QMessageBox::Ok);
 					} else {
 						close();
 					}
 				} else {
-					if (!GuiContext::getInstance().createNewResource(getName().toStdString(), rScenePathAbs.toStdString(), pathWithFile.toStdString())) {
+					if (!GuiContext::getInstance().createNewResource(rName)) {
 						QMessageBox::warning(this, tr("Error"), tr("Could not create Resource"), QMessageBox::Ok);
 					} else {
 						close();
