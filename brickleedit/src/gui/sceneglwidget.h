@@ -41,21 +41,22 @@ public:
 protected:
 	QImage *mImage;
     //QOpenGLTexture *texture;
-	BTexturePng bTexture;
+	//BTexturePng bTexture;
 	GLuint vbonum;
 	void initializeGL()
 	{
 		initializeOpenGLFunctions();
 		glClearColor(0,0,0,1);
-		glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_DEPTH_TEST);
 		glEnable(GL_LIGHT0);
 		glEnable(GL_LIGHTING);
-		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+		//glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 		glEnable(GL_COLOR_MATERIAL);
-
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         //texture= new QOpenGLTexture(QImage("data/assets/test.bmp"));
 
-		bTexture.load("data/assets/gravity.png");
+		//bTexture.load("data/assets/gravity.png");
 #if 0
 		glEnable(GL_TEXTURE_2D);
 		unsigned error = lodepng::decode(image, lwidth, lheight, "data/assets/testhg.png");
@@ -170,7 +171,6 @@ protected:
 		glEnd();
 		glPopMatrix();
 		texture->release();
-#endif
 		glPushMatrix();
 		glTranslatef(200, 0,0);
 		//glBindTexture(GL_TEXTURE_2D, texName);
@@ -183,8 +183,13 @@ protected:
 		glEnd();
 		glPopMatrix();
 		//glBindTexture(GL_TEXTURE_2D, texName);
+#endif
 
 
+
+		glEnable(GL_TEXTURE_2D);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		NodeScene *scene=ProjectContext::getInstance().getNodeScene();
 		if (scene) {
 			paintNode(scene);

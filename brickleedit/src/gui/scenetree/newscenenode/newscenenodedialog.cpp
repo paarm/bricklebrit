@@ -29,9 +29,14 @@ void NewSceneNodeDialog::on_listWidget_doubleClicked(const QModelIndex &index)
 {
 	QList<QListWidgetItem*>itemList=ui->listWidget->selectedItems();
 	for (QListWidgetItem* item : itemList) {
-		item->setBackgroundColor(QColor::fromRgbF(30,30,30));
+		//item->setBackgroundColor(QColor::fromRgbF(30,30,30));
 		emit newNodeSelected(item->text(), mNodeInfoType);
 	}
 	close();
 	//QListWidgetItem *item = ui->listWidget->currentItem();
+}
+
+void NewSceneNodeDialog::on_cancelButton_clicked()
+{
+	close();
 }

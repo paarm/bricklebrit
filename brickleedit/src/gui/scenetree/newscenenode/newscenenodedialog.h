@@ -19,6 +19,8 @@ public:
 
 private slots:
 	void on_listWidget_doubleClicked(const QModelIndex &index);
+	void on_cancelButton_clicked();
+
 signals:
 	void newNodeSelected(QString rNodeTypeName, NodeInfoType rNodeInfoType);
 private:
