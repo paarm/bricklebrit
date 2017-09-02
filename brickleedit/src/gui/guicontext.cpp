@@ -340,5 +340,54 @@ void GuiContext::resourceSwitched() {
 
 void GuiContext::switchProperties(Node* rNode, NodeInfoType rNodeInfoType) {
 	getMainWindow().getPropertyTreeDock().setPropertiesForNode(rNode);
+	if (rNodeInfoType==NodeInfoType::Scene) {
+		replaceSelectedSceneNode(rNode);
+		updateGlWidget();
+	}
 }
 
+void GuiContext::updateGlWidget() {
+	getMainWindow().getSceneGlWidget().update();
+}
+
+void GuiContext::clearSelectedSceneNodes() {
+	mSelectedSceneNodes.clear();
+}
+
+void GuiContext::clearSelectedSceneNode(Node *rDeselectedNode) {
+	if (rDeselectedNode!=nullptr) {
+		const auto &it=std::find_if(mSelectedSceneNodes.begin(), mSelectedSceneNodes.end(), [rDeselectedNode] (Node* entry) {
+			return rDeselectedNode==entry;
+		}
+		);
+		if (it!=mSelectedSceneNodes.end()) {
+			mSelectedSceneNodes.erase(it);
+		}
+	}
+}
+
+bool GuiContext::isSceneNodeSelected(Node* rTestNode) {
+	bool rv=false;
+	if (rTestNode!=nullptr) {
+		for(auto rNode : mSelectedSceneNodes) {
+			if (rNode==rTestNode) {
+				rv=true;
+				break;
+			}
+		}
+	}
+	return rv;
+}
+
+void GuiContext::replaceSelectedSceneNode(Node *rSelectedNode) {
+	clearSelectedSceneNodes();
+	setSceneNodeAsSelected(rSelectedNode);
+}
+
+void GuiContext::setSceneNodeAsSelected(Node* rSelectedNode) {
+	if (!isSceneNodeSelected(rSelectedNode)) {
+		if (rSelectedNode!=nullptr) {
+			mSelectedSceneNodes.push_back(rSelectedNode);
+		}
+	}
+}

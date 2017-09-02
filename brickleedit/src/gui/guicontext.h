@@ -7,6 +7,7 @@ class GuiContext : public QObject
 private:
 	Q_OBJECT
 	MainWindow *mMainWindow=nullptr;
+	vector<Node*>	mSelectedSceneNodes;
 	GuiContext();
 	void sceneSwitched();
 	void resourceSwitched();
@@ -32,6 +33,13 @@ public:
 	QString fromVirtualPath(const QString &rPathAbs);
 	QString toVirtualPath(const QString &rPathAbs);
 	void switchProperties(Node* rNode, NodeInfoType rNodeInfoType);
+	void updateGlWidget();
+
+	void clearSelectedSceneNodes();
+	void clearSelectedSceneNode(Node *rDeselectedNode);
+	void replaceSelectedSceneNode(Node *rSelectedNode);
+	bool isSceneNodeSelected(Node*);
+	void setSceneNodeAsSelected(Node*);
 public slots:
 	void onNewProjectClicked();
 	void onOpenProjectClicked();

@@ -49,6 +49,7 @@ public:
 
 	SceneTreeDock& getSceneTreeDock();
 	PropertyTreeDock& getPropertyTreeDock();
+	SceneGlWidget& getSceneGlWidget();
 
 	void setProjectAvailable(bool isAvailable);
 	void setProjectRequireSave(bool rRequireSave);

@@ -167,4 +167,7 @@ PropertyTreeDock& MainWindow::getPropertyTreeDock() {
 	return *mScenePropertyTreeDock;
 }
 
+SceneGlWidget& MainWindow::getSceneGlWidget() {
+	return *mSceneGlWidget;
+}
 

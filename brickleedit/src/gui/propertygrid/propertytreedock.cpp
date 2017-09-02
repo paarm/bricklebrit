@@ -1,6 +1,6 @@
 #include "propertytreedock.h"
 #include "ui_propertytreedock.h"
-
+#include "../guicontext.h"
 
 PropertyTreeDock::PropertyTreeDock(QWidget *parent) :
 	QDockWidget(parent),
@@ -136,6 +136,7 @@ bool PropertyTreeDock::onPropertyChange(PropertyInfo* rPropertyInfo, QString dat
 				PropertyList *pp=static_cast<PropertyList*>(p);
 				rv=true;
 			}
+			GuiContext::getInstance().updateGlWidget();
 		}
 	}
 	return rv;
@@ -228,6 +229,7 @@ void PropertyTreeDock::setPropertiesForNode(Node* rNode) {
 					r->setFlags(r->flags()|Qt::ItemIsEditable);
 				} else if (rPropertyType==PropertyType::Float) {
 					PropertyFloat *pp=static_cast<PropertyFloat*>(p);
+					r->setFlags(r->flags()|Qt::ItemIsEditable);
 				} else if (rPropertyType==PropertyType::Ref) {
 					PropertyRef *pp=static_cast<PropertyRef*>(p);
 					addSubProperty(rNode, p, pp->getPropertyName(), r, pp->value.reffile, "File");
@@ -240,12 +242,18 @@ void PropertyTreeDock::setPropertiesForNode(Node* rNode) {
 					addSubProperty(rNode, p, pp->getPropertyName(), r, std::to_string(pp->value.height), "Height");
 				} else if (rPropertyType==PropertyType::RectFloat) {
 					PropertyRectFloat *pp=static_cast<PropertyRectFloat*>(p);
+					addSubProperty(rNode, p, pp->getPropertyName(), r, std::to_string(pp->value.x), "X");
+					addSubProperty(rNode, p, pp->getPropertyName(), r, std::to_string(pp->value.y), "Y");
+					addSubProperty(rNode, p, pp->getPropertyName(), r, std::to_string(pp->value.width), "Width");
+					addSubProperty(rNode, p, pp->getPropertyName(), r, std::to_string(pp->value.height), "Height");
 				} else if (rPropertyType==PropertyType::PointInt) {
 					PropertyPointInt *pp=static_cast<PropertyPointInt*>(p);
 					addSubProperty(rNode, p, pp->getPropertyName(), r, std::to_string(pp->value.x), "X");
 					addSubProperty(rNode, p, pp->getPropertyName(), r, std::to_string(pp->value.y), "Y");
 				} else if (rPropertyType==PropertyType::PointFloat) {
 					PropertyPointFloat *pp=static_cast<PropertyPointFloat*>(p);
+					addSubProperty(rNode, p, pp->getPropertyName(), r, std::to_string(pp->value.x), "X");
+					addSubProperty(rNode, p, pp->getPropertyName(), r, std::to_string(pp->value.y), "Y");
 				} else if (rPropertyType==PropertyType::List) {
 					PropertyList *pp=static_cast<PropertyList*>(p);
 				}

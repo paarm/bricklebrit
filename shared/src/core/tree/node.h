@@ -161,9 +161,10 @@ class Node2d : public Node {
 private:
 public:
 	PROPERTY_POINTINT_GETSET(Position)
-	PROPERTY_RECTINT_GETSET(Size)
+	PROPERTY_POINTINT_GETSET(Size)
 	PROPERTY_POINTFLOAT_GETSET(Scale)
 	PROPERTY_FLOAT_GETSET(Rotation)
+	PROPERTY_BOOL_GETSET(EditorSelected)
 
 	Node2d(bool rCreateNewId) : Node(rCreateNewId) {
 		mNodeType=NodeType::Node2d;
@@ -171,6 +172,7 @@ public:
 		setSize();
 		setScale(PointFloat(1.0,1.0));
 		setRotation();
+		setEditorSelected(false);
 	}
 
 	Node2d() : Node2d(true) {
