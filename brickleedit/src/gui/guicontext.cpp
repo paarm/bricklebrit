@@ -339,11 +339,16 @@ void GuiContext::resourceSwitched() {
 }
 
 void GuiContext::switchProperties(Node* rNode, NodeInfoType rNodeInfoType) {
-	getMainWindow().getPropertyTreeDock().setPropertiesForNode(rNode);
+	getMainWindow().getPropertyTreeDock().setPropertiesForNode(rNode, rNodeInfoType);
 	if (rNodeInfoType==NodeInfoType::Scene) {
 		replaceSelectedSceneNode(rNode);
 		updateGlWidget();
 	}
+}
+
+void GuiContext::currentPropertyValueChanged(Node* rNode, NodeInfoType rNodeInfoType) {
+	getMainWindow().getSceneTreeDock().updateNodeName(rNode, rNodeInfoType);
+	updateGlWidget();
 }
 
 void GuiContext::updateGlWidget() {

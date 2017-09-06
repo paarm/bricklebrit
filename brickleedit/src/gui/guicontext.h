@@ -34,6 +34,7 @@ public:
 	QString toVirtualPath(const QString &rPathAbs);
 	void switchProperties(Node* rNode, NodeInfoType rNodeInfoType);
 	void updateGlWidget();
+	void currentPropertyValueChanged(Node* rNode, NodeInfoType rNodeInfoType);
 
 	void clearSelectedSceneNodes();
 	void clearSelectedSceneNode(Node *rDeselectedNode);

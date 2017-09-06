@@ -33,6 +33,8 @@ public:
 	void setResourceEditable(bool isEditable);
 	void setProjectAvailable(bool isActive);
 	int getActiveTreeTabIndex();
+	void updateAllNodeNames(NodeInfoType rNodeInfoType);
+	void updateNodeName(Node* rUpdateNode, NodeInfoType rNodeInfoType);
 
 private slots:
 	void on_newNode_clicked();
@@ -45,12 +47,18 @@ private slots:
 
 	void on_newResource_clicked();
 
+	void on_treeWidgetResources_itemDoubleClicked(QTreeWidgetItem *item, int column);
+
 private:
 	Ui::SceneTreeDock *ui;
 	NewSceneNodeDialog *newSceneNodeDialog=nullptr;
 	NewSceneNodeDialog *newResourceNodeDialog=nullptr;
 
 	QTreeWidgetItem* addNodeX(QTreeWidgetItem *parent, Node* rNode, QTreeWidget* rQTreeWidget);
+	void updateAllNodeNamesX(QTreeWidgetItem *parent);
+	bool updateNodeNameX(QTreeWidgetItem *parent, Node* rUpdateNode);
+	void setNodeName(QTreeWidgetItem *item, const string& rName);
+
 };
 
 #endif // SCENETREEDOCK_H
