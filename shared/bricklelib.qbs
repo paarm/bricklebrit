@@ -31,6 +31,8 @@ Project {
             "src/core/tree/property/property_bool.cpp",
             "src/core/tree/property/property_bool.h",
             "src/core/tree/property/property_float.cpp",
+            "src/core/tree/property/property_frameref.cpp",
+            "src/core/tree/property/property_frameref.h",
             "src/core/tree/property/property_int.cpp",
             "src/core/tree/property/property_list.cpp",
             "src/core/tree/property/property_list.h",

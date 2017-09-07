@@ -1,6 +1,7 @@
 #include "scenetreedock.h"
 #include "ui_scenetreedock.h"
 #include "../guicontext.h"
+#include "../textureframeeditor/textureframeeditor.h"
 
 SceneTreeDock::SceneTreeDock(QWidget *parent) :
 	QDockWidget(parent),
@@ -110,21 +111,76 @@ void SceneTreeDock::setNodeToTreeItem(QTreeWidgetItem* r, Node *rNode) {
 	}
 }
 
-QTreeWidgetItem* SceneTreeDock::searchNode(QTreeWidgetItem *parent, Node* rNode) {
-	int count=parent->childCount();
-	QTreeWidgetItem* rv=nullptr;
-	for (int i=0;i<count;i++) {
-		QTreeWidgetItem *r=parent->child(i);
-		// test something
-	}
-	if (!rv) {
-		for (int i=0;i<count && !rv;i++) {
-			QTreeWidgetItem *r=parent->child(i);
-			rv=searchNode(r, rNode);
+void SceneTreeDock::deleteChilds(QTreeWidgetItem *parent) {
+	if (parent) {
+		int cnt=parent->childCount();
+		for (int i=cnt-1;i>=0;i--) {
+			QTreeWidgetItem *child=parent->child(i);
+			if (child) {
+				parent->removeChild(child);
+				delete child;
+			}
 		}
 	}
+}
 
+QTreeWidgetItem* SceneTreeDock::searchTreeWidgetItemByNode(QTreeWidgetItem *parent, Node* rNode) {
+	QTreeWidgetItem* rv=nullptr;
+
+	if (parent && getNodeFromTreeItem(parent)==rNode) {
+		rv=parent;
+	}
+	if (!rv) {
+		int count=parent->childCount();
+		for (int i=0;i<count;i++) {
+			QTreeWidgetItem *r=parent->child(i);
+			if (r && getNodeFromTreeItem(r)==rNode) {
+				rv=r;
+			}
+		}
+	}
+	if (!rv) {
+		int count=parent->childCount();
+		for (int i=0;i<count && !rv;i++) {
+			QTreeWidgetItem *r=parent->child(i);
+			rv=searchTreeWidgetItemByNode(r, rNode);
+		}
+	}
 	return rv;
+}
+
+QTreeWidget* SceneTreeDock::getTreeWidgetFromNodeInfoType(NodeInfoType rNodeInfoType) {
+	QTreeWidget* rv=nullptr;
+	if (rNodeInfoType==NodeInfoType::Scene) {
+		rv=ui->treeWidget;
+	} else {
+		rv=ui->treeWidgetResources;
+	}
+	return rv;
+}
+
+void SceneTreeDock::updateChildNodes(Node* rNode, NodeInfoType rNodeInfoType) {
+	QTreeWidget* rQTreeWidget=getTreeWidgetFromNodeInfoType(rNodeInfoType);
+	if (rQTreeWidget) {
+		int count=rQTreeWidget->topLevelItemCount();
+		QTreeWidgetItem* rQTreeWidgetItem_found=nullptr;
+		for (int i=0;i<count && !rQTreeWidgetItem_found;i++) {
+			QTreeWidgetItem* p=rQTreeWidget->topLevelItem(i);
+
+			rQTreeWidgetItem_found=searchTreeWidgetItemByNode(p,rNode);
+		}
+		if (rQTreeWidgetItem_found) {
+			deleteChilds(rQTreeWidgetItem_found);
+
+			int childNodes=rNode->getChildCount();
+			for (int i=0;i<childNodes;i++) {
+				Node *rNodeChild=rNode->getNodeFromIndex(i);
+				if (rNodeChild) {
+					addNode(rQTreeWidgetItem_found, rNodeChild, rNodeInfoType);
+				}
+			}
+		}
+	}
 }
 
 void SceneTreeDock::updateAllNodeNamesX(QTreeWidgetItem *parent) {
@@ -218,6 +274,10 @@ QTreeWidgetItem* SceneTreeDock::addNodeX(QTreeWidgetItem *parent, Node* rNode, Q
 			QPushButton *rButton=new QPushButton("...",rQTreeWidget);
 			rButton->setToolTip(tr("Edit Frames..."));
 			rButton->setFixedWidth(rButton->fontMetrics().width(" ... "));
+			connect(rButton, &QPushButton::clicked, this, [rButton, rNode, this]() {
+				TextureFrameEditor *rTextureFrameEditor=new TextureFrameEditor(rNode, this);
+				rTextureFrameEditor->show();
+			});
 			rQTreeWidget->setItemWidget(r, 2, rButton);
 		}
 

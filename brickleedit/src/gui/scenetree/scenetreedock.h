@@ -22,7 +22,7 @@ public:
 	QTreeWidgetItem* getSelectedItem(NodeInfoType rNodeInfoType);
 	Node* getSelectedNode(NodeInfoType rNodeInfoType);
 
-	QTreeWidgetItem* searchNode(QTreeWidgetItem *parent, Node* rNode);
+	QTreeWidgetItem* searchTreeWidgetItemByNode(QTreeWidgetItem *parent, Node* rNode);
 	QTreeWidgetItem* addNode(QTreeWidgetItem *parent, Node* rNode, NodeInfoType rNodeInfoType);
 
 	void setNodeToTreeItem(QTreeWidgetItem* r, Node *rNode);
@@ -35,6 +35,7 @@ public:
 	int getActiveTreeTabIndex();
 	void updateAllNodeNames(NodeInfoType rNodeInfoType);
 	void updateNodeName(Node* rUpdateNode, NodeInfoType rNodeInfoType);
+	void updateChildNodes(Node* rNode, NodeInfoType rNodeInfoType);
 
 private slots:
 	void on_newNode_clicked();
@@ -53,11 +54,12 @@ private:
 	Ui::SceneTreeDock *ui;
 	NewSceneNodeDialog *newSceneNodeDialog=nullptr;
 	NewSceneNodeDialog *newResourceNodeDialog=nullptr;
-
+	QTreeWidget* getTreeWidgetFromNodeInfoType(NodeInfoType rNodeInfoType);
 	QTreeWidgetItem* addNodeX(QTreeWidgetItem *parent, Node* rNode, QTreeWidget* rQTreeWidget);
 	void updateAllNodeNamesX(QTreeWidgetItem *parent);
 	bool updateNodeNameX(QTreeWidgetItem *parent, Node* rUpdateNode);
 	void setNodeName(QTreeWidgetItem *item, const string& rName);
+	void deleteChilds(QTreeWidgetItem *parent);
 
 };
 

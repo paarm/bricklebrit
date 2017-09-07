@@ -108,10 +108,6 @@ void SceneGlWidget::paintNode(Node* rNode) {
 		float w2=w/2.0;
 		int h=paintNode->getSize().y;
 		float h2=h/2.0;
-		int tx=paintNode->getTextureSourceRect().x;
-		int ty=paintNode->getTextureSourceRect().y;
-		int tw=paintNode->getTextureSourceRect().width;
-		int th=paintNode->getTextureSourceRect().height;
 		int angle=paintNode->getRotation();
 		if (angle>360.0) {
 			angle=angle/360.0;
@@ -120,11 +116,32 @@ void SceneGlWidget::paintNode(Node* rNode) {
 		}
 
 
-		Node *rNodeT=ProjectContext::getInstance().getCurrentResource()->getNodeWithNodeId(paintNode->getTextureRef().refid);
+		Node *rNodeT=ProjectContext::getInstance().getCurrentResource()->getNodeWithNodeId(paintNode->getFrameRef().textureid);
 		if (rNodeT && rNodeT->getNodeType()==NodeType::Texture) {
 			NodeTexture *rNodeTexture=(NodeTexture*)rNodeT;
 			BTexturePng *bTexture=ProjectContext::getInstance().getTexture(rNodeTexture->getPath());
 			if (bTexture) {
+				float tx=0.0;
+				float ty=0.0;
+				float tw=1.0;
+				float th=1.0;
+
+				if (paintNode->getFrameRef().frame.size()>0) {
+					Node *rNodeFrameX=rNodeTexture->getChildNodeWithName(paintNode->getFrameRef().frame);
+					if (rNodeFrameX && rNodeFrameX->getNodeType()==NodeType::TextureFrame) {
+						NodeTextureFrame *rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeFrameX);
+						if (rNodeTextureFrame->getFrame().width>0 && rNodeTextureFrame->getFrame().height>0) {
+							if (rNodeTextureFrame->getFrame().x>0) {
+								tx=((float)rNodeTextureFrame->getFrame().x)/((float)bTexture->width);
+							}
+							if (rNodeTextureFrame->getFrame().y>0) {
+								ty=((float)rNodeTextureFrame->getFrame().y)/((float)bTexture->height);
+							}
+							tw=(((float)rNodeTextureFrame->getFrame().x)+((float)rNodeTextureFrame->getFrame().width))/((float)bTexture->width);
+							th=(((float)rNodeTextureFrame->getFrame().y)+((float)rNodeTextureFrame->getFrame().height))/((float)bTexture->height);
+						}
+					}
+				}
 				//glTranslatef(0, 0, 0);
 				glTranslatef(x, y, 0.0);
 				glRotatef(angle, 0.0, 0.0, 1.0);
@@ -135,10 +152,14 @@ void SceneGlWidget::paintNode(Node* rNode) {
 				bTexture->bind();
 
 				glBegin(GL_QUADS);
-					glTexCoord2f(0, 0); glVertex3f(-w2, -h2, 0);
-					glTexCoord2f(0, 1); glVertex3f(-w2,  h2, 0);
-					glTexCoord2f(1, 1); glVertex3f( w2,  h2, 0);
-					glTexCoord2f(1, 0); glVertex3f( w2, -h2, 0);
+					//glTexCoord2f(0, 0); glVertex3f(-w2, -h2, 0);
+					//glTexCoord2f(0, 1); glVertex3f(-w2,  h2, 0);
+					//glTexCoord2f(1, 1); glVertex3f( w2,  h2, 0);
+					//glTexCoord2f(1, 0); glVertex3f( w2, -h2, 0);
+					glTexCoord2f(tx, ty); glVertex3f(-w2, -h2, 0);
+					glTexCoord2f(tx, th); glVertex3f(-w2,  h2, 0);
+					glTexCoord2f(tw, th); glVertex3f( w2,  h2, 0);
+					glTexCoord2f(tw, ty); glVertex3f( w2, -h2, 0);
 				glEnd();
 				glDisable(GL_TEXTURE_2D);
 

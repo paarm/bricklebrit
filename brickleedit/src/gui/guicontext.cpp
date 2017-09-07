@@ -310,6 +310,11 @@ void GuiContext::onCreateNewNode(QString rNodeTypeName, NodeInfoType rNodeInfoTy
 	}
 }
 
+void GuiContext::updateChildNodes(Node *rNode_parent, NodeInfoType rNodeInfoType) {
+	getMainWindow().getSceneTreeDock().updateChildNodes(rNode_parent, rNodeInfoType);
+	updateGlWidget();
+}
+
 void GuiContext::projectSwitched() {
 	getMainWindow().setProjectAvailable(ProjectContext::getInstance().getNodeProject());
 	getMainWindow().setProjectRequireSave(ProjectContext::getInstance().getNodeProject()); // TODO own mechanism

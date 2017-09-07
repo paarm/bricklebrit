@@ -10,6 +10,7 @@ enum class PropertyType {
 	String,
 	Float,
 	Ref,
+	FrameRef,
 	RectInt,
 	RectFloat,
 	PointInt,
@@ -62,7 +63,7 @@ void set##fieldName(const float& r##fieldName) { \
 void set##fieldName() { \
 	setPropertyFloat (#fieldName); \
 } \
-const float& get##fieldName() { \
+float& get##fieldName() { \
 	return getPropertyFloat (#fieldName)->value; \
 }
 
@@ -73,7 +74,7 @@ void set##fieldName(const bool& r##fieldName) { \
 void set##fieldName() { \
 	setPropertyBool (#fieldName); \
 } \
-const bool& get##fieldName() { \
+bool& get##fieldName() { \
 	return getPropertyBool (#fieldName)->value; \
 }
 
@@ -84,7 +85,7 @@ void set##fieldName(const int& r##fieldName) { \
 void set##fieldName() { \
 	setPropertyInt (#fieldName); \
 } \
-const int& get##fieldName() { \
+int& get##fieldName() { \
 	return getPropertyInt (#fieldName)->value; \
 }
 
@@ -95,8 +96,19 @@ void set##fieldName(const Ref& r##fieldName) { \
 void set##fieldName() { \
 	setPropertyRef (#fieldName); \
 } \
-const Ref& get##fieldName() { \
+Ref& get##fieldName() { \
 	return getPropertyRef (#fieldName)->value; \
+}
+
+#define PROPERTY_FRAMEREF_GETSET(fieldName) \
+void set##fieldName(const FrameRef& r##fieldName) { \
+	setPropertyFrameRef (#fieldName, r##fieldName); \
+} \
+void set##fieldName() { \
+	setPropertyFrameRef (#fieldName); \
+} \
+FrameRef& get##fieldName() { \
+	return getPropertyFrameRef (#fieldName)->value; \
 }
 
 #define PROPERTY_RECTINT_GETSET(fieldName) \
@@ -106,7 +118,7 @@ void set##fieldName(const RectInt& r##fieldName) { \
 void set##fieldName() { \
 	setPropertyRectInt (#fieldName); \
 } \
-const RectInt& get##fieldName() { \
+RectInt& get##fieldName() { \
 	return getPropertyRectInt (#fieldName)->value; \
 }
 
@@ -117,7 +129,7 @@ void set##fieldName(const RectFloat& r##fieldName) { \
 void set##fieldName() { \
 	setPropertyRectFloat (#fieldName); \
 } \
-const RectFloat& get##fieldName() { \
+RectFloat& get##fieldName() { \
 	return getPropertyRectFloat (#fieldName)->value; \
 }
 
@@ -128,7 +140,7 @@ void set##fieldName(const PointInt& r##fieldName) { \
 void set##fieldName() { \
 	setPropertyPointInt (#fieldName); \
 } \
-const PointInt& get##fieldName() { \
+PointInt& get##fieldName() { \
 	return getPropertyPointInt (#fieldName)->value; \
 }
 

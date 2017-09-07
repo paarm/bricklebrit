@@ -82,6 +82,24 @@ bool PropertyTreeDock::onPropertyChange(PropertyInfo* rPropertyInfo, QString dat
 					QString rPropertyString=propertyToString(p);
 					rPropertyInfo->getTreeWidgetItem()->setText(1,rPropertyString);
 				}
+			} else if (rPropertyType==PropertyType::FrameRef) {
+				PropertyFrameRef *pp=static_cast<PropertyFrameRef*>(p);
+				if (rPropertyInfo->getPropertySubName()=="ResourceFile") {
+					pp->value.resourcefile=data.toStdString();
+					rv=true;
+				} else if (rPropertyInfo->getPropertySubName()=="TextureId") {
+					rv=validatePropertyInt(data);
+					if (rv) {
+						pp->value.textureid=data.toInt();
+					}
+				} else if (rPropertyInfo->getPropertySubName()=="Frame") {
+					pp->value.frame=data.toStdString();
+					rv=true;
+				}
+				if (rv) {
+					QString rPropertyString=propertyToString(p);
+					rPropertyInfo->getTreeWidgetItem()->setText(1,rPropertyString);
+				}
 			} else if (rPropertyType==PropertyType::RectInt) {
 				PropertyRectInt *pp=static_cast<PropertyRectInt*>(p);
 				if (rPropertyInfo->getPropertySubName()=="X") {
@@ -163,6 +181,13 @@ QString PropertyTreeDock::propertyToString(PropertyBase* p) {
 			rv=QString::fromStdString(
 						   "File="+pp->value.reffile+
 						   " | Id="+std::to_string(pp->value.refid));
+		} else if (rPropertyType==PropertyType::FrameRef) {
+			PropertyFrameRef *pp=static_cast<PropertyFrameRef*>(p);
+			rv=QString::fromStdString(
+						   "ResourceFile="+pp->value.resourcefile+
+							" | TextureId="+std::to_string(pp->value.textureid) +
+							" | Frame="+pp->value.frame
+						);
 		} else if (rPropertyType==PropertyType::RectInt) {
 			PropertyRectInt *pp=static_cast<PropertyRectInt*>(p);
 			rv=QString::fromStdString(
@@ -235,6 +260,11 @@ void PropertyTreeDock::setPropertiesForNode(Node* rNode, NodeInfoType rNodeInfoT
 					PropertyRef *pp=static_cast<PropertyRef*>(p);
 					addSubProperty(rNode, p, pp->getPropertyName(), r, pp->value.reffile, "File");
 					addSubProperty(rNode, p, pp->getPropertyName(), r, std::to_string(pp->value.refid), "Id");
+				} else if (rPropertyType==PropertyType::FrameRef) {
+					PropertyFrameRef *pp=static_cast<PropertyFrameRef*>(p);
+					addSubProperty(rNode, p, pp->getPropertyName(), r, pp->value.resourcefile, "ResourceFile");
+					addSubProperty(rNode, p, pp->getPropertyName(), r, std::to_string(pp->value.textureid), "TextureId");
+					addSubProperty(rNode, p, pp->getPropertyName(), r, pp->value.frame, "Frame");
 				} else if (rPropertyType==PropertyType::RectInt) {
 					PropertyRectInt *pp=static_cast<PropertyRectInt*>(p);
 					addSubProperty(rNode, p, pp->getPropertyName(), r, std::to_string(pp->value.x), "X");

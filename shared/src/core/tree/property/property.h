@@ -7,3 +7,4 @@
 #include "property_point.h"
 #include "property_list.h"
 #include "property_ref.h"
+#include "property_frameref.h"

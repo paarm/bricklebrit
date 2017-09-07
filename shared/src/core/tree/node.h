@@ -18,6 +18,7 @@ enum class NodeType {
 // Resource
 	Resource,
 	Texture,
+	TextureFrame,
 	Project,
 	Scene,
 	SceneRef,
@@ -68,7 +69,7 @@ public:
 	unsigned long getChildCount();
 	Node* getNodeFromIndex(unsigned long rIndex);
 	Node* getNodeWithNodeId(int rIndex);
-
+	Node* getChildNodeWithName(const string &rName);
 
 	NodeType& getNodeType();
 	void setPropertyString(const string& rName);
@@ -81,6 +82,8 @@ public:
 	void setPropertyInt(const string& rName, const int &rValue);
 	void setPropertyRef(const string& rName);
 	void setPropertyRef(const string& rName, const Ref &rValue);
+	void setPropertyFrameRef(const string& rName);
+	void setPropertyFrameRef(const string& rName, const FrameRef &rValue);
 	void setPropertyRectInt(const string& rName);
 	void setPropertyRectInt(const string& rName, const RectInt &rValue);
 	void setPropertyRectFloat(const string& rName);
@@ -97,6 +100,7 @@ public:
 	PropertyBool* getPropertyBool(const string &rName);
 	PropertyInt* getPropertyInt(const string &rName);
 	PropertyRef* getPropertyRef(const string &rName);
+	PropertyFrameRef* getPropertyFrameRef(const string &rName);
 	PropertyRectInt* getPropertyRectInt(const string &rName);
 	PropertyRectFloat* getPropertyRectFloat(const string &rName);
 	PropertyPointInt* getPropertyPointInt(const string &rName);
@@ -197,8 +201,7 @@ private:
 public:
 	PROPERTY_BOOL_GETSET(IsAnimated)
 	// if isAnimated==true
-		PROPERTY_REF_GETSET(TextureRef)
-		PROPERTY_RECTINT_GETSET(TextureSourceRect)
+		PROPERTY_FRAMEREF_GETSET(FrameRef)
 	// else
 		PROPERTY_STRING_GETSET(DefaultAnimation)
 	// end if
@@ -207,8 +210,7 @@ public:
 	NodeSprite(bool rCreateNewId) : Node2d(rCreateNewId) {
 		mNodeType=NodeType::Sprite;
 		setIsAnimated(false);
-		setTextureRef();
-		setTextureSourceRect();
+		setFrameRef();
 		setDefaultAnimation();
 	}
 
@@ -239,6 +241,19 @@ public:
 	}
 
 	NodeTexture() : NodeTexture(true) {
+	}
+};
+
+class NodeTextureFrame : public Node {
+private:
+public:
+	PROPERTY_RECTINT_GETSET(Frame)
+	NodeTextureFrame(bool rCreateNewId) : Node(rCreateNewId) {
+		mNodeType=NodeType::TextureFrame;
+		setFrame();
+	}
+
+	NodeTextureFrame() : NodeTextureFrame(true) {
 	}
 };
 

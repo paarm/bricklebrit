@@ -23,6 +23,8 @@ Node * getInstanceFromNodeType(NodeType &rNodeType, bool rCreateNewId) {
 			return getXInstanceFromNodeType<NodeResource>(rCreateNewId);
 		case NodeType::Texture:
 			return getXInstanceFromNodeType<NodeTexture>(rCreateNewId);
+		case NodeType::TextureFrame:
+			return getXInstanceFromNodeType<NodeTextureFrame>(rCreateNewId);
 		case NodeType::Scene:
 			return getXInstanceFromNodeType<NodeScene>(rCreateNewId);
 		case NodeType::SceneRef:
@@ -59,6 +61,7 @@ static NodeLookupTable gNodeLookupTable[]={
 // resources
 	{NodeType::Resource						,"Resource"},
 	{NodeType::Texture						,"Texture"},
+	{NodeType::TextureFrame					,"TextureFrame"},
 	{NodeType::Project						,"Project"},
 	{NodeType::Scene						,"Scene"},
 	{NodeType::SceneRef						,"SceneRef"},
@@ -119,6 +122,15 @@ Node::Node() : Node(true) {
 
 Node::~Node() {
 	deleteChildNodes();
+
+	for(auto &p : mPropertyMap) {
+		if (p.second) {
+			delete p.second;
+		}
+	}
+	mPropertyMap.clear();
+	mPropertyList.clear();
+
 }
 
 Node* Node::getParent() {
@@ -144,6 +156,17 @@ Node* Node::getNodeWithNodeId(int rIndex) {
 	Node *rv=nullptr;
 	for (auto *rNode : mNodes) {
 		if (rNode->getId()==rIndex) {
+			rv=rNode;
+			break;
+		}
+	}
+	return rv;
+}
+
+Node* Node::getChildNodeWithName(const string &rName) {
+	Node *rv=nullptr;
+	for (auto *rNode : mNodes) {
+		if (rNode->getName()==rName) {
 			rv=rNode;
 			break;
 		}
@@ -185,14 +208,6 @@ void Node::deleteChildNodes() {
 	}
 	mNodes.clear();
 	mNodes.shrink_to_fit();
-
-	for(auto &p : mPropertyMap) {
-		if (p.second) {
-			delete p.second;
-		}
-	}
-	mPropertyMap.clear();
-	mPropertyList.clear();
 }
 
 void Node::deleteNode(Node *rNodeToDelete) {
@@ -270,6 +285,13 @@ void Node::setPropertyRef(const string& rName) {
 }
 void Node::setPropertyRef(const string& rName, const Ref &rValue) {
 	setProperty(rName, new PropertyRef(rValue));
+}
+
+void Node::setPropertyFrameRef(const string& rName) {
+	setProperty(rName, new PropertyFrameRef());
+}
+void Node::setPropertyFrameRef(const string& rName, const FrameRef &rValue) {
+	setProperty(rName, new PropertyFrameRef(rValue));
 }
 
 void Node::setPropertyRectInt(const string& rName) {
@@ -361,6 +383,14 @@ PropertyRef* Node::getPropertyRef(const string &rName) {
 	PropertyBase *p=getProperty(rName);
 	if (p && p->getPropertyType()==PropertyType::Ref) {
 		return static_cast<PropertyRef*>(p);
+	}
+	return nullptr;
+}
+
+PropertyFrameRef* Node::getPropertyFrameRef(const string &rName) {
+	PropertyBase *p=getProperty(rName);
+	if (p && p->getPropertyType()==PropertyType::FrameRef) {
+		return static_cast<PropertyFrameRef*>(p);
 	}
 	return nullptr;
 }
