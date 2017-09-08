@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Edit Texture Frames</string>
   </property>
   <widget class="QPushButton" name="removeFrame">
    <property name="geometry">
@@ -36,7 +36,7 @@
     </rect>
    </property>
    <property name="title">
-    <string>Automatic X/Y Frames</string>
+    <string>Add automatic X/Y Frames</string>
    </property>
    <widget class="QWidget" name="layoutWidget1">
     <property name="geometry">
@@ -89,7 +89,7 @@
   <widget class="QPushButton" name="okButton">
    <property name="geometry">
     <rect>
-     <x>540</x>
+     <x>550</x>
      <y>530</y>
      <width>80</width>
      <height>26</height>
@@ -102,7 +102,7 @@
   <widget class="QPushButton" name="cancelButton">
    <property name="geometry">
     <rect>
-     <x>630</x>
+     <x>640</x>
      <y>530</y>
      <width>80</width>
      <height>26</height>
@@ -122,7 +122,7 @@
     </rect>
    </property>
    <property name="title">
-    <string>Single Frame</string>
+    <string>Add single Frame</string>
    </property>
    <widget class="QWidget" name="layoutWidget2">
     <property name="geometry">
@@ -240,68 +240,8 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>150</y>
-     <width>691</width>
-     <height>361</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" name="gridLayout">
-    <property name="sizeConstraint">
-     <enum>QLayout::SetNoConstraint</enum>
-    </property>
-    <item row="0" column="2">
-     <widget class="QLabel" name="previewImage">
-      <property name="minimumSize">
-       <size>
-        <width>150</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>No Texture available</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QTreeWidget" name="treeWidget">
-      <attribute name="headerDefaultSectionSize">
-       <number>80</number>
-      </attribute>
-      <column>
-       <property name="text">
-        <string>Frame #</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>X</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Y</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Width</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Height</string>
-       </property>
-      </column>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
      <y>20</y>
-     <width>691</width>
+     <width>701</width>
      <height>24</height>
     </rect>
    </property>
@@ -365,6 +305,74 @@
        </size>
       </property>
      </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>21</x>
+     <y>151</y>
+     <width>701</width>
+     <height>371</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <item>
+     <widget class="QTreeWidget" name="treeWidget">
+      <attribute name="headerDefaultSectionSize">
+       <number>80</number>
+      </attribute>
+      <column>
+       <property name="text">
+        <string>Frame #</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>X</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Y</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Width</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Height</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QLabel" name="previewImage">
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>No Texture available</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="previewFrame">
+        <property name="text">
+         <string>No Frame available</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>

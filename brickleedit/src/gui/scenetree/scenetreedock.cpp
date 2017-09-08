@@ -2,6 +2,7 @@
 #include "ui_scenetreedock.h"
 #include "../guicontext.h"
 #include "../textureframeeditor/textureframeeditor.h"
+#include "../animationframeeditor/animationframeeditor.h"
 
 SceneTreeDock::SceneTreeDock(QWidget *parent) :
 	QDockWidget(parent),
@@ -9,10 +10,8 @@ SceneTreeDock::SceneTreeDock(QWidget *parent) :
 {
 	ui->setupUi(this);
 	ui->sceneMenu->addAction(GuiContext::getInstance().getMainWindow().getActionNewScene());
-	ui->sceneMenu->addAction(GuiContext::getInstance().getMainWindow().getActionOpenScene());
 
 	ui->resourceMenu->addAction(GuiContext::getInstance().getMainWindow().getActionNewResource());
-	ui->resourceMenu->addAction(GuiContext::getInstance().getMainWindow().getActionOpenResource());
 
 	setSceneEditable(false);
 	setResourceEditable(false);
@@ -84,6 +83,21 @@ QTreeWidgetItem* SceneTreeDock::getSelectedItem(NodeInfoType rNodeInfoType) {
 	}
 	return rv;
 }
+
+QTreeWidgetItem* SceneTreeDock::getRootItem(NodeInfoType rNodeInfoType) {
+	QTreeWidgetItem* rv=nullptr;
+	if (rNodeInfoType==NodeInfoType::Scene) {
+		if (ui->treeWidget->topLevelItemCount()>0) {
+			rv=ui->treeWidget->topLevelItem(0);
+		}
+	} else if (rNodeInfoType==NodeInfoType::Resource) {
+		if (ui->treeWidgetResources->topLevelItemCount()>0) {
+			rv=ui->treeWidgetResources->topLevelItem(0);
+		}
+	}
+	return rv;
+}
+
 
 Node* SceneTreeDock::getSelectedNode(NodeInfoType rNodeInfoType) {
 	QTreeWidgetItem*r=getSelectedItem(rNodeInfoType);
@@ -234,9 +248,9 @@ void SceneTreeDock::updateNodeName(Node* rUpdateNode, NodeInfoType rNodeInfoType
 
 QTreeWidgetItem* SceneTreeDock::addNode(QTreeWidgetItem *parent, Node* rNode, NodeInfoType rNodeInfoType) {
 	if (rNodeInfoType==NodeInfoType::Scene) {
-		return addNodeX(parent, rNode, ui->treeWidget);
+		return addNodeX(parent, rNode, ui->treeWidget, true);
 	} else {
-		return addNodeX(parent, rNode, ui->treeWidgetResources);
+		return addNodeX(parent, rNode, ui->treeWidgetResources, false);
 	}
 }
 
@@ -246,7 +260,7 @@ void SceneTreeDock::setNodeName(QTreeWidgetItem *item, const string& rName) {
 	}
 }
 
-QTreeWidgetItem* SceneTreeDock::addNodeX(QTreeWidgetItem *parent, Node* rNode, QTreeWidget* rQTreeWidget) {
+QTreeWidgetItem* SceneTreeDock::addNodeX(QTreeWidgetItem *parent, Node* rNode, QTreeWidget* rQTreeWidget, bool expandTree) {
 	QTreeWidgetItem* r=nullptr;
 	if (rNode) {
 		if (parent) {
@@ -265,13 +279,15 @@ QTreeWidgetItem* SceneTreeDock::addNodeX(QTreeWidgetItem *parent, Node* rNode, Q
 		//r->setIcon(0, QIcon(":/icons/new.png"));
 		if (parent) {
 			parent->addChild(r);
-			parent->setExpanded(true);
+			if (expandTree) {
+				parent->setExpanded(true);
+			}
 		} else {
 			rQTreeWidget->addTopLevelItem(r);
 			r->setExpanded(true);
 		}
 		if (rNode->getNodeType()==NodeType::Texture) {
-			QPushButton *rButton=new QPushButton("...",rQTreeWidget);
+			QPushButton *rButton=new QPushButton("T",rQTreeWidget);
 			rButton->setToolTip(tr("Edit Frames..."));
 			rButton->setFixedWidth(rButton->fontMetrics().width(" ... "));
 			connect(rButton, &QPushButton::clicked, this, [rButton, rNode, this]() {
@@ -279,14 +295,24 @@ QTreeWidgetItem* SceneTreeDock::addNodeX(QTreeWidgetItem *parent, Node* rNode, Q
 				rTextureFrameEditor->show();
 			});
 			rQTreeWidget->setItemWidget(r, 2, rButton);
+		} else if (rNode->getNodeType()==NodeType::Animation) {
+			QPushButton *rButton=new QPushButton("A",rQTreeWidget);
+			rButton->setToolTip(tr("Edit Animation Frames..."));
+			rButton->setFixedWidth(rButton->fontMetrics().width(" ... "));
+			connect(rButton, &QPushButton::clicked, this, [rButton, rNode, this]() {
+				AnimationFrameEditor *rAnimationFrameEditor=new AnimationFrameEditor(rNode, this);
+				rAnimationFrameEditor->show();
+			});
+			rQTreeWidget->setItemWidget(r, 2, rButton);
 		}
+
 
 		if (rNode->getChildCount()>0) {
 			unsigned long count=rNode->getChildCount();
 			for (unsigned long i=0;i<count;i++) {
 				Node *rNodeChild=rNode->getNodeFromIndex(i);
 				if (rNodeChild) {
-					addNodeX(r, rNodeChild, rQTreeWidget);
+					addNodeX(r, rNodeChild, rQTreeWidget, expandTree);
 				}
 			}
 		}
@@ -296,24 +322,30 @@ QTreeWidgetItem* SceneTreeDock::addNodeX(QTreeWidgetItem *parent, Node* rNode, Q
 
 void SceneTreeDock::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)
 {
-	Node* rNode=getNodeFromTreeItem(item);
-	GuiContext::getInstance().switchProperties(rNode, NodeInfoType::Scene);
+	if (column>=0) {
+		Node* rNode=getNodeFromTreeItem(item);
+		GuiContext::getInstance().switchProperties(rNode, NodeInfoType::Scene);
+	}
 }
 
 void SceneTreeDock::on_treeWidgetResources_itemDoubleClicked(QTreeWidgetItem *item, int column)
 {
-	Node* rNode=getNodeFromTreeItem(item);
-	if (rNode) {
-		if (rNode->getNodeType()==NodeType::Texture) {
-			QMessageBox::information(this, "Brickleedit", "Das ist eine Texture");
+	if (column>=0) {
+		Node* rNode=getNodeFromTreeItem(item);
+		if (rNode) {
+			if (rNode->getNodeType()==NodeType::Texture) {
+				QMessageBox::information(this, "Brickleedit", "Das ist eine Texture");
+			}
 		}
 	}
 }
 
 void SceneTreeDock::on_treeWidgetResources_itemClicked(QTreeWidgetItem *item, int column)
 {
-	Node* rNode=getNodeFromTreeItem(item);
-	GuiContext::getInstance().switchProperties(rNode, NodeInfoType::Resource);
+	if (column>=0) {
+		Node* rNode=getNodeFromTreeItem(item);
+		GuiContext::getInstance().switchProperties(rNode, NodeInfoType::Resource);
+	}
 }
 
 void SceneTreeDock::on_tabWidget_currentChanged(int index)

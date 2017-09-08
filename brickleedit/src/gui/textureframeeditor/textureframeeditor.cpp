@@ -8,7 +8,7 @@ TextureFrameEditor::TextureFrameEditor(Node *rNode, QWidget *parent) :
 {
 	mNode=rNode;
 	ui->setupUi(this);
-	ui->treeWidget->setRootIsDecorated(true);
+	//ui->treeWidget->setRootIsDecorated(true);
 	setupNode();
 }
 
@@ -24,9 +24,9 @@ void TextureFrameEditor::setupNode() {
 			NodeTexture *rNodeTexture=static_cast<NodeTexture*>(mNode);
 			ui->textureName->setText(QString::fromStdString(rNodeTexture->getPath()));
 			if (mImage.load(QString::fromStdString(DirUtil::concatPath(ProjectContext::getInstance().getProjectPathAbs(), rNodeTexture->getPath())))) {
+				mImageLoaded=true;
 				mImageWidth=mImage.width();
 				mImageHeight=mImage.height();
-
 				mImageScaled=mImage.scaled(QSize(100,100),
 							  Qt::KeepAspectRatio);
 				ui->imageWidth->setText(QString::number(mImageWidth));
@@ -166,6 +166,19 @@ void TextureFrameEditor::on_addSingleFrame_clicked()
 	updateFrameView();
 }
 
+int TextureFrameEditor::getTextureFrameEntryIndexFromTreeWidgetItem(QTreeWidgetItem* rTreeWidgetItem) {
+	int idx=0;
+	int rv=-1;
+	for(auto&rTextureFrameEntry : mTextureFrameEntryList) {
+		if (rTextureFrameEntry.name==rTreeWidgetItem->text(0).toStdString()) {
+			rv=idx;
+			break;
+		}
+		idx++;
+	}
+	return rv;
+}
+
 void TextureFrameEditor::on_removeFrame_clicked()
 {
 	QList<QTreeWidgetItem*>selectedItems=ui->treeWidget->selectedItems();
@@ -203,3 +216,24 @@ void TextureFrameEditor::on_removeFrame_clicked()
 		}
 	}
 }
+
+void TextureFrameEditor::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)
+{
+	if (mImageLoaded && item && column>=0) {
+		int rIndex=getTextureFrameEntryIndexFromTreeWidgetItem(item);
+		if (rIndex>=0) {
+			TextureFrameEntry &rTextureFrameEntry=mTextureFrameEntryList.at(rIndex);
+			mImageFrame=mImage.copy(rTextureFrameEntry.x, rTextureFrameEntry.y, rTextureFrameEntry.w, rTextureFrameEntry.h);
+			mImageFrame=mImageFrame.scaled(QSize(100,100), Qt::KeepAspectRatio);
+			ui->previewFrame->setPixmap(mImageFrame);
+		}
+	}
+}
+
+/*void TextureFrameEditor::on_treeWidget_itemEntered(QTreeWidgetItem *item, int column)
+{
+}
+
+void TextureFrameEditor::on_treeWidget_itemActivated(QTreeWidgetItem *item, int column)
+{
+}*/

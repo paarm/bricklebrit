@@ -53,8 +53,8 @@ void GuiContext::setWindowTitle() {
 	string rPartTitle="";
 	if (ProjectContext::getInstance().isProjectAvailable()) {
 		rPartTitle+=ProjectContext::getInstance().getNodeProject()->getName();
-		if (ProjectContext::getInstance().isSceneAvailable()) {
-			rPartTitle+=" ["+ProjectContext::getInstance().getNodeScene()->getName()+"]";
+		if (getCurrentScene()) {
+			rPartTitle+=" ["+getCurrentScene()->getName()+"]";
 		}
 		rPartTitle+=" - ";
 	}
@@ -83,6 +83,8 @@ void GuiContext::onOpenProjectClicked() {
 void GuiContext::onCloseProjectClicked() {
 	if (ProjectContext::getInstance().getNodeProject()) {
 		ProjectContext::getInstance().closeProject(true);
+		setCurrentScene("");
+		setCurrentResource("");
 		projectSwitched();
 		setWindowTitle();
 	}
@@ -90,12 +92,6 @@ void GuiContext::onCloseProjectClicked() {
 
 void GuiContext::onSaveProjectClicked() {
 	if (ProjectContext::getInstance().getNodeProject()) {
-		//QDir tmp(QString::fromStdString(ProjectContext::getInstance().getProjectPathAbs()));
-		//tmp.mkpath(".");
-		//if (ProjectContext::getInstance().getNodeScene()) {
-		//   QDir tmp(QString::fromStdString(ProjectContext::getInstance().getScenePathAbs()));
-		//  tmp.mkpath(".");
-		//}
         ProjectContext::getInstance().save();
 	}
 }
@@ -104,114 +100,16 @@ void GuiContext::onNewSceneClicked() {
 	if (!ProjectContext::getInstance().getNodeProject()) {
 		QMessageBox::warning(&getMainWindow(), tr("Error"), tr("Please open existing project or create a new project first"), QMessageBox::Ok);
 	} else {
-		QString path=getVirtualProjectPath();
-		if (ProjectContext::getInstance().isSceneAvailable()) {
-			path=QString::fromStdString(DirUtil::trimFileName(DirUtil::concatPath(getVirtualProjectPath().toStdString(), ProjectContext::getInstance().getNodeScene()->getName())));
-		}
-		getMainWindow().getNewSceneDialog().setScenePath(path);
 		getMainWindow().getNewSceneDialog().setName("New Scene");
 		getMainWindow().getNewSceneDialog().show();
 	}
 }
 
-void GuiContext::onOpenSceneClicked() {
-	if (!ProjectContext::getInstance().getNodeProject()) {
-		QMessageBox::warning(&getMainWindow(), tr("Error"), tr("Please open existing project or create a new project first"), QMessageBox::Ok);
-	} else {
-		QString path=getVirtualProjectPath();
-		if (ProjectContext::getInstance().isSceneAvailable()) {
-			path=QString::fromStdString(DirUtil::trimFileName(DirUtil::concatPath(getVirtualProjectPath().toStdString(), ProjectContext::getInstance().getNodeScene()->getName())));
-		} else {
-			getMainWindow().getNewSceneDialog().setScenePath(getVirtualProjectPath());
-		}
-
-		QString file = QFileDialog::getOpenFileName(&getMainWindow(), tr("Open Scene"),
-													path,
-													 "*.brscn",
-													 nullptr,
-													 QFileDialog::DontResolveSymlinks);
-
-		if (!file.isEmpty()) {
-			if (!file.startsWith(QString::fromStdString(ProjectContext::getInstance().getProjectPathAbs()))) {
-				QMessageBox::warning(&getMainWindow(), tr("Error"), tr("Scene is not inside the Project directory"), QMessageBox::Ok);
-			} else {
-				string rName=DirUtil::subPart1FromPart2(ProjectContext::getInstance().getProjectPathAbs(), file.toStdString());
-				if (!loadCurrentScene(rName)) {
-					QMessageBox::warning(&getMainWindow(), tr("Error"), tr("Scene not found"), QMessageBox::Ok);
-				}
-			}
-		}
-	}
-}
-
-bool GuiContext::loadCurrentScene(const string&rName) {
-
-	bool rv=ProjectContext::getInstance().load(NodeInfoType::Scene, ProjectContext::getInstance().getProjectPathAbs(), rName);
-	if (rv) {
-		setWindowTitle();
-		sceneSwitched();
-	}
-	return rv;
-}
-
-void GuiContext::onOpenResourceClicked() {
-	if (!ProjectContext::getInstance().getNodeProject()) {
-		QMessageBox::warning(&getMainWindow(), tr("Error"), tr("Please open existing project or create a new project first"), QMessageBox::Ok);
-	} else {
-		QString path=getVirtualProjectPath();
-		if (ProjectContext::getInstance().getCurrentResource()) {
-			path=QString::fromStdString(DirUtil::trimFileName(DirUtil::concatPath(getVirtualProjectPath().toStdString(), ProjectContext::getInstance().getCurrentResource()->getName())));
-		}
-		//if (ProjectContext::getInstance().isSceneAvailable()) {
-		//	path=QString::fromStdString(ProjectContext::getInstance().getScenePathAbs());
-		//} else {
-		//	getMainWindow().getNewSceneDialog().setScenePath(getVirtualProjectPath());
-		//}
-		getMainWindow().getNewResourceDialog().setScenePath(getVirtualProjectPath());
-
-		QString file = QFileDialog::getOpenFileName(&getMainWindow(), tr("Open Resource"),
-													path,
-													 "*.brres",
-													 nullptr,
-													 QFileDialog::DontResolveSymlinks);
-
-		if (!file.isEmpty()) {
-			if (!file.startsWith(QString::fromStdString(ProjectContext::getInstance().getProjectPathAbs()))) {
-				QMessageBox::warning(&getMainWindow(), tr("Error"), tr("Resource is not inside the Project directory"), QMessageBox::Ok);
-			} else {
-				string rName=DirUtil::subPart1FromPart2(ProjectContext::getInstance().getProjectPathAbs(), file.toStdString());
-				if (!loadCurrentResource(rName)) {
-					QMessageBox::warning(&getMainWindow(), tr("Error"), tr("Resource not found"), QMessageBox::Ok);
-				}
-			}
-		}
-	}
-}
-
-bool GuiContext::loadCurrentResource(const string&rName) {
-	bool rv=ProjectContext::getInstance().load(NodeInfoType::Resource, ProjectContext::getInstance().getProjectPathAbs(), rName);
-	NodeResource *rNodeResource=nullptr;
-	if (rv) {
-		rNodeResource=ProjectContext::getInstance().getNodeResourceByName(rName);
-	}
-	ProjectContext::getInstance().setCurrentResource(rNodeResource);
-	resourceSwitched();
-	return rv;
-}
 
 void GuiContext::onNewResourceClicked() {
 	if (!ProjectContext::getInstance().getNodeProject()) {
 		QMessageBox::warning(&getMainWindow(), tr("Error"), tr("Please open existing project or create a new project first"), QMessageBox::Ok);
 	} else {
-		QString path=getVirtualProjectPath();
-		if (ProjectContext::getInstance().getCurrentResource()) {
-			path=QString::fromStdString(DirUtil::trimFileName(DirUtil::concatPath(getVirtualProjectPath().toStdString(), ProjectContext::getInstance().getCurrentResource()->getName())));
-		}
-		//if (ProjectContext::getInstance().isSceneAvailable()) {
-		//	getMainWindow().getNewSceneDialog().setScenePath(toVirtualPath(QString::fromStdString(ProjectContext::getInstance().getScenePathAbs())));
-		//} else {
-		//}
-		getMainWindow().getNewResourceDialog().setScenePath(path);
 		getMainWindow().getNewResourceDialog().setName("New Resource");
 		getMainWindow().getNewResourceDialog().show();
 	}
@@ -234,20 +132,11 @@ bool GuiContext::createNewProject(const string& rProjectPathAbs, const string& r
         tmp.mkpath(".");
         {
 			string rStartupSceneName=DirUtil::concatPath(ProjectContext::getInstance().getNodeProject()->getScenesSubPath(),ProjectContext::getInstance().getNodeProject()->getStartScene());
-			createNewScene(rStartupSceneName);
-
-            if (ProjectContext::getInstance().getNodeScene()) {
-				QDir tmp(QString::fromStdString(DirUtil::trimFileName(DirUtil::concatPath(ProjectContext::getInstance().getProjectPathAbs(), ProjectContext::getInstance().getNodeScene()->getName()))));
-                tmp.mkpath(".");
-            }
+			createNewScene(rStartupSceneName, true);
         }
         {
 			string rProjectResourceName=DirUtil::concatPath(ProjectContext::getInstance().getNodeProject()->getResourcesSubPath(),ProjectContext::getInstance().getNodeProject()->getProjectResource());
-			createNewResource(rProjectResourceName);
-            if (ProjectContext::getInstance().getCurrentResource()) {
-				QDir tmp(QString::fromStdString(DirUtil::trimFileName(DirUtil::concatPath(ProjectContext::getInstance().getProjectPathAbs(), ProjectContext::getInstance().getCurrentResource()->getName()))));
-                tmp.mkpath(".");
-            }
+			createNewResource(rProjectResourceName, true);
         }
     }
 	return rv;
@@ -259,43 +148,179 @@ bool GuiContext::loadProject(const string&rProjectPathWithFileAbs) {
 	string rProjectPathAbs=path.toStdString();
 	string rProjectName=fi.fileName().toStdString();
 
-	bool rv=ProjectContext::getInstance().load(NodeInfoType::Project, rProjectPathAbs, rProjectName);
+	bool rv=ProjectContext::getInstance().loadProject(rProjectPathAbs, rProjectName);
 	if (rv) {
-		loadCurrentScene(DirUtil::concatPath(ProjectContext::getInstance().getNodeProject()->getScenesSubPath(), ProjectContext::getInstance().getNodeProject()->getStartScene()));
-		loadCurrentResource(DirUtil::concatPath(ProjectContext::getInstance().getNodeProject()->getResourcesSubPath(), ProjectContext::getInstance().getNodeProject()->getProjectResource()));
-
+		vector<Node*> v=ProjectContext::getInstance().getNodeProject()->getChildNodesWithNodeType(NodeType::SceneInfo);
+		for(auto rNode :  v) {
+			if (rNode->getNodeType()==NodeType::SceneInfo) {
+				NodeSceneInfo* rNodeSceneInfo=static_cast<NodeSceneInfo*>(rNode);
+				if (rNodeSceneInfo->getIsDefault()) {
+					NodeScene*rNodeScene=getOrLoadSceneByName(rNodeSceneInfo->getPath());
+					if (rNodeScene) {
+						setCurrentScene(rNodeScene->getName());
+					}
+					break;
+				}
+			}
+		}
+		v=ProjectContext::getInstance().getNodeProject()->getChildNodesWithNodeType(NodeType::ResourceInfo);
+		for(auto rNode :  v) {
+			if (rNode->getNodeType()==NodeType::ResourceInfo) {
+				NodeResourceInfo* rNodeResourceInfo=static_cast<NodeResourceInfo*>(rNode);
+				if (rNodeResourceInfo->getIsDefault()) {
+					NodeResource*rNodeResource=getOrLoadResourceByName(rNodeResourceInfo->getPath());
+					if (rNodeResource) {
+						setCurrentResource(rNodeResource->getName());
+					}
+					break;
+				}
+			}
+		}
 		setWindowTitle();
 		projectSwitched();
 	}
 	return rv;
 }
 
-bool GuiContext::createNewScene(const string& rSceneName) {
-	bool rv=ProjectContext::getInstance().createNew(NodeInfoType::Scene, rSceneName);
+NodeSceneInfo* GuiContext::getSceneInfoByName(const string& rSceneName) {
+	NodeSceneInfo *rNodeSceneInfo=nullptr;
+	Node *rNode=ProjectContext::getInstance().getNodeProject()->getChildNodeWithNameAndNodeType(rSceneName, NodeType::SceneInfo);
+	if (rNode && rNode->getNodeType()==NodeType::SceneInfo) {
+		rNodeSceneInfo=static_cast<NodeSceneInfo*>(rNode);
+	}
+	return rNodeSceneInfo;
+}
+
+NodeScene* GuiContext::getOrLoadSceneByName(const string& rSceneName) {
+	NodeScene *rNodeScene=nullptr;
+	if (getSceneInfoByName(rSceneName)) {
+		rNodeScene=ProjectContext::getInstance().getNodeSceneByName(rSceneName);
+		if (!rNodeScene) {
+			if (ProjectContext::getInstance().load(NodeInfoType::Scene, rSceneName)) {
+				rNodeScene=ProjectContext::getInstance().getNodeSceneByName(rSceneName);
+			}
+		}
+	}
+	return rNodeScene;
+}
+
+bool GuiContext::createNewScene(const string& rSceneName, bool asDefault) {
+	bool rv=false;
+	if (getSceneInfoByName(rSceneName)) {
+		rv=true;
+	} else {
+		rv=ProjectContext::getInstance().createNew(NodeInfoType::Scene, rSceneName);
+		if (rv) {
+			NodeSceneInfo *rNodeSceneInfo=static_cast<NodeSceneInfo*>(getInstanceFromNodeType(NodeType::SceneInfo, true));
+			if (rNodeSceneInfo) {
+				rNodeSceneInfo->setName(rSceneName);
+				rNodeSceneInfo->setPath(rSceneName);
+				rNodeSceneInfo->setIsDefault(asDefault);
+				ProjectContext::getInstance().getNodeProject()->addChildNode(rNodeSceneInfo);
+			}
+			if (ProjectContext::getInstance().getNodeSceneByName(rSceneName)) {
+				QDir tmp(QString::fromStdString(DirUtil::trimFileName(DirUtil::concatPath(ProjectContext::getInstance().getProjectPathAbs(), rSceneName))));
+				tmp.mkpath(".");
+			}
+
+			setCurrentScene(rSceneName);
+			setWindowTitle();
+			sceneSwitched();
+		}
+	}
 	if (rv) {
-		setWindowTitle();
-		sceneSwitched();
 	}
 	return rv;
 }
 
-bool GuiContext::createNewResource(const string& rName) {
-	bool rv=true;
-	NodeResource *rNodeResource=ProjectContext::getInstance().getNodeResourceByName(rName);
-	if (rNodeResource==nullptr) {
-		rv=ProjectContext::getInstance().createNew(NodeInfoType::Resource, rName);
-		if (rv) {
-			rNodeResource=ProjectContext::getInstance().getNodeResourceByName(rName);
+void GuiContext::setCurrentScene(const string& rSceneName) {
+	mCurrentScene=nullptr;
+	if (rSceneName.size()>0) {
+		NodeScene *rNodeScene=ProjectContext::getInstance().getNodeSceneByName(rSceneName);
+		if (rNodeScene) {
+			mCurrentScene=rNodeScene;
 		}
 	}
-	ProjectContext::getInstance().setCurrentResource(rNodeResource);
-	resourceSwitched();
+}
 
+NodeScene* GuiContext::getCurrentScene() {
+	return mCurrentScene;
+}
+
+
+NodeResourceInfo* GuiContext::getResourceInfoByName(const string& rResourceName) {
+	NodeResourceInfo *rNodeResourceInfo=nullptr;
+	Node *rNode=ProjectContext::getInstance().getNodeProject()->getChildNodeWithNameAndNodeType(rResourceName, NodeType::ResourceInfo);
+	if (rNode && rNode->getNodeType()==NodeType::ResourceInfo) {
+		rNodeResourceInfo=static_cast<NodeResourceInfo*>(rNode);
+	}
+	return rNodeResourceInfo;
+}
+
+NodeResource* GuiContext::getOrLoadResourceByName(const string& rResourceName) {
+	NodeResource *rNodeResource=nullptr;
+	if (getResourceInfoByName(rResourceName)) {
+		rNodeResource=ProjectContext::getInstance().getNodeResourceByName(rResourceName);
+		if (!rNodeResource) {
+			if (ProjectContext::getInstance().load(NodeInfoType::Resource, rResourceName)) {
+				rNodeResource=ProjectContext::getInstance().getNodeResourceByName(rResourceName);
+			}
+		}
+	}
+	return rNodeResource;
+}
+
+bool GuiContext::createNewResource(const string& rName, bool asDefault) {
+	bool rv=false;
+	if (getResourceInfoByName(rName)) {
+		rv=true;
+	} else {
+		NodeResource *rNodeResource=ProjectContext::getInstance().getNodeResourceByName(rName);
+		if (rNodeResource==nullptr) {
+			rv=ProjectContext::getInstance().createNew(NodeInfoType::Resource, rName);
+			if (rv) {
+				NodeResourceInfo *rNodeResourceInfo=static_cast<NodeResourceInfo*>(getInstanceFromNodeType(NodeType::ResourceInfo, true));
+				if (rNodeResourceInfo) {
+					rNodeResourceInfo->setName(rName);
+					rNodeResourceInfo->setPath(rName);
+					rNodeResourceInfo->setIsDefault(asDefault);
+
+					ProjectContext::getInstance().getNodeProject()->addChildNode(rNodeResourceInfo);
+				}
+				if (ProjectContext::getInstance().getNodeResourceByName(rName)) {
+					QDir tmp(QString::fromStdString(DirUtil::trimFileName(DirUtil::concatPath(ProjectContext::getInstance().getProjectPathAbs(), rName))));
+					tmp.mkpath(".");
+				}
+
+				setCurrentResource(rName);
+				resourceSwitched();
+			}
+		}
+	}
 	return rv;
+}
+
+void GuiContext::setCurrentResource(const string& rResourceName) {
+	mCurrentResource=nullptr;
+	if (rResourceName.size()>0) {
+		NodeResource *rNodeResource=ProjectContext::getInstance().getNodeResourceByName(rResourceName);
+		if (rNodeResource) {
+			mCurrentResource=rNodeResource;
+		}
+	}
+}
+
+NodeResource* GuiContext::getCurrentResource() {
+	return mCurrentResource;
 }
 
 void GuiContext::onCreateNewNode(QString rNodeTypeName, NodeInfoType rNodeInfoType) {
-	QTreeWidgetItem *parent=getMainWindow().getSceneTreeDock().getSelectedItem(rNodeInfoType);
+	QTreeWidgetItem *parent=nullptr;
+	if (rNodeInfoType==NodeInfoType::Resource) {
+		parent=getMainWindow().getSceneTreeDock().getRootItem(rNodeInfoType);
+	} else {
+		parent=getMainWindow().getSceneTreeDock().getSelectedItem(rNodeInfoType);
+	}
 	NodeType rNodeType=getNodeTypeFromString(rNodeTypeName.toStdString());
 	Node*rNode=getInstanceFromNodeType(rNodeType, true);
 	if (rNode) {
@@ -325,7 +350,7 @@ void GuiContext::projectSwitched() {
 
 void GuiContext::sceneSwitched() {
 	getMainWindow().getSceneTreeDock().clearScene();
-	NodeScene* rNodeScene=ProjectContext::getInstance().getNodeScene();
+	NodeScene* rNodeScene=getCurrentScene();
 	if (rNodeScene) {
 		getMainWindow().getSceneTreeDock().setSceneEditable(true);
 		getMainWindow().getSceneTreeDock().addNode(nullptr, rNodeScene, NodeInfoType::Scene);
@@ -335,7 +360,7 @@ void GuiContext::sceneSwitched() {
 
 void GuiContext::resourceSwitched() {
 	getMainWindow().getSceneTreeDock().clearResource();
-	NodeResource* rNodeResource=ProjectContext::getInstance().getCurrentResource();
+	NodeResource* rNodeResource=getCurrentResource();
 	if (rNodeResource) {
 		getMainWindow().getSceneTreeDock().setResourceEditable(true);
 		getMainWindow().getSceneTreeDock().addNode(nullptr, rNodeResource, NodeInfoType::Resource);

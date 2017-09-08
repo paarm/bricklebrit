@@ -13,6 +13,9 @@ Project {
         cpp.includePaths: ["."]
         //cpp.staticLibraries: "GLEW"
         files: [
+            "src/gui/animationframeeditor/animationframeeditor.cpp",
+            "src/gui/animationframeeditor/animationframeeditor.h",
+            "src/gui/animationframeeditor/animationframeeditor.ui",
             "src/gui/guicontext.cpp",
             "src/gui/guicontext.h",
             "src/gui/menubar.cpp",

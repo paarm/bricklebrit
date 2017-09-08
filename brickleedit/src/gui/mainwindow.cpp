@@ -32,21 +32,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	mActionNewScene->setStatusTip(tr("Create a new Scene"));
 	QObject::connect(mActionNewScene, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onNewSceneClicked);
 
-	mActionOpenScene = new QAction(QIcon(":/icons/open.png"), tr("&Open Scene..."), this);
-	mActionOpenScene->setShortcuts(QKeySequence::Open);
-	mActionOpenScene->setStatusTip(tr("Open a existing Scene"));
-	QObject::connect(mActionOpenScene, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onOpenSceneClicked);
-
 	mActionNewResource = new QAction(QIcon(":/icons/new.png"), tr("&New Resource..."), this);
 	mActionNewResource->setShortcuts(QKeySequence::New);
 	mActionNewResource->setStatusTip(tr("Create a new Resource"));
 	QObject::connect(mActionNewResource, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onNewResourceClicked);
-
-	mActionOpenResource = new QAction(QIcon(":/icons/open.png"), tr("&Open Resource..."), this);
-	mActionOpenResource->setShortcuts(QKeySequence::Open);
-	mActionOpenResource->setStatusTip(tr("Open a existing Resource"));
-	QObject::connect(mActionOpenResource, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onOpenResourceClicked);
-
 
 //	QAction			*mActionOpenProject=nullptr;
 //	QAction			*mActionNewScene=nullptr;
@@ -111,15 +100,9 @@ QAction*	MainWindow::getActionSaveProject() {
 QAction*	MainWindow::getActionNewScene() {
 	return mActionNewScene;
 }
-QAction*	MainWindow::getActionOpenScene() {
-	return mActionOpenScene;
-}
 
 QAction*	MainWindow::getActionNewResource() {
 	return mActionNewResource;
-}
-QAction*	MainWindow::getActionOpenResource() {
-	return mActionOpenResource;
 }
 
 ToolBar& MainWindow::getToolBar() {

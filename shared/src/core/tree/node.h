@@ -20,11 +20,13 @@ enum class NodeType {
 	Texture,
 	TextureFrame,
 	Project,
+	ResourceInfo,
+	SceneInfo,
 	Scene,
 	SceneRef,
 	TextureAtlas,
 	TextureAtlasFrame,
-	AnimationSet,
+	Animation,
 	AnimationSetFrameTexture,
 	AnimationSetFrameTextureAtlas,
 
@@ -70,6 +72,8 @@ public:
 	Node* getNodeFromIndex(unsigned long rIndex);
 	Node* getNodeWithNodeId(int rIndex);
 	Node* getChildNodeWithName(const string &rName);
+	Node* getChildNodeWithNameAndNodeType(const string &rName, NodeType rNodeType);
+	vector<Node*> getChildNodesWithNodeType(NodeType rNodeType);
 
 	NodeType& getNodeType();
 	void setPropertyString(const string& rName);
@@ -124,7 +128,7 @@ NodeType getNodeTypeFromString(const string &rNodeTypeString);
 //Node * getInstanceFromNodeType(NodeType &rNodeType);
 template <typename T>
 T* getXInstanceFromNodeType(bool rCreateNewId);
-Node * getInstanceFromNodeType(NodeType &rNodeType, bool rCreateNewId);
+Node * getInstanceFromNodeType(NodeType rNodeType, bool rCreateNewId);
 
 
 class NodeRoot : public Node {
@@ -168,7 +172,6 @@ public:
 	PROPERTY_POINTINT_GETSET(Size)
 	PROPERTY_POINTFLOAT_GETSET(Scale)
 	PROPERTY_FLOAT_GETSET(Rotation)
-	PROPERTY_BOOL_GETSET(EditorSelected)
 
 	Node2d(bool rCreateNewId) : Node(rCreateNewId) {
 		mNodeType=NodeType::Node2d;
@@ -176,7 +179,6 @@ public:
 		setSize();
 		setScale(PointFloat(1.0,1.0));
 		setRotation();
-		setEditorSelected(false);
 	}
 
 	Node2d() : Node2d(true) {
@@ -228,6 +230,34 @@ public:
 	}
 
 	NodeResource() : NodeResource(true) {
+	}
+};
+
+class NodeResourceInfo : public Node {
+private:
+public:
+	PROPERTY_STRING_GETSET(Path)
+	PROPERTY_BOOL_GETSET(IsDefault)
+	NodeResourceInfo(bool rCreateNewId) : Node(rCreateNewId) {
+		mNodeType=NodeType::ResourceInfo;
+		setPath("");
+		setIsDefault(false);
+	}
+	NodeResourceInfo() : NodeResourceInfo(true) {
+	}
+};
+
+class NodeSceneInfo : public Node {
+private:
+public:
+	PROPERTY_STRING_GETSET(Path)
+	PROPERTY_BOOL_GETSET(IsDefault)
+	NodeSceneInfo(bool rCreateNewId) : Node(rCreateNewId) {
+		mNodeType=NodeType::SceneInfo;
+		setPath("");
+		setIsDefault(false);
+	}
+	NodeSceneInfo() : NodeSceneInfo(true) {
 	}
 };
 
@@ -292,17 +322,17 @@ public:
 	}
 };
 
-class NodeAnimationSet : public Node {
+class NodeAnimation : public Node {
 private:
 public:
 	PROPERTY_STRING_GETSET(Name)
 
-	NodeAnimationSet(bool rCreateNewId) : Node(rCreateNewId) {
-		mNodeType=NodeType::AnimationSet;
+	NodeAnimation(bool rCreateNewId) : Node(rCreateNewId) {
+		mNodeType=NodeType::Animation;
 		setName();
 	}
 
-	NodeAnimationSet() : NodeAnimationSet(true) {
+	NodeAnimation() : NodeAnimation(true) {
 	}
 };
 

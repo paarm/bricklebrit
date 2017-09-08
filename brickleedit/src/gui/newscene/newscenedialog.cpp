@@ -15,83 +15,45 @@ NewSceneDialog::~NewSceneDialog()
 	delete ui;
 }
 
-void NewSceneDialog::setName(const QString& rSceneName) {
-	ui->name->setText(rSceneName);
-}
-
 QString NewSceneDialog::getName() {
 	return ui->name->text().trimmed();
 }
 
-void NewSceneDialog::setScenePath(const QString& rScenePath) {
-	ui->path->setText(rScenePath);
-}
-
-QString NewSceneDialog::getScenePath() {
-	return ui->path->text().trimmed();
+void NewSceneDialog::setName(QString rName) {
+	ui->name->setText(rName);
 }
 
 void NewSceneDialog::on_okButton_clicked()
 {
-	QString rScenePathAbs=GuiContext::getInstance().fromVirtualPath(getScenePath());
-
-	if (getName().toStdString().size()==0 || rScenePathAbs.size()==0) {
-		QMessageBox::warning(this, tr("Error"), tr("Name and Path are required"), QMessageBox::Ok);
+	if (getName().toStdString().size()==0) {
+		QMessageBox::warning(this, tr("Error"), tr("Name required"), QMessageBox::Ok);
 	} else {
-		QString pathWithFile;
+		string rFullName="";
 		if (mNodeInfoType==NodeInfoType::Scene) {
-			pathWithFile = QDir(rScenePathAbs).filePath(getName()+".brscn");
-		} else {
-			pathWithFile = QDir(rScenePathAbs).filePath(getName()+".brres");
-		}
-		QFileInfo check_file(pathWithFile);
-		// check if file exists and if yes: Is it really a file and no directory?
-		if (check_file.exists() && check_file.isFile()) {
-			if (mNodeInfoType==NodeInfoType::Scene) {
-				QMessageBox::warning(this, tr("Error"), tr("A Scene with this Name exists already in this folder"), QMessageBox::Ok);
+			rFullName = DirUtil::concatPath(ProjectContext::getInstance().getNodeProject()->getScenesSubPath(),getName().toStdString());
+			rFullName+=".brscn";
+			if (GuiContext::getInstance().getSceneInfoByName(rFullName)) {
+				QMessageBox::warning(this, tr("Error"), tr("A Scene with this Name exists already"), QMessageBox::Ok);
+			} else if (!GuiContext::getInstance().createNewScene(rFullName, false)) {
+				QMessageBox::warning(this, tr("Error"), tr("Could not create Scene"), QMessageBox::Ok);
 			} else {
-				QMessageBox::warning(this, tr("Error"), tr("A Resource with this Name exists already in this folder"), QMessageBox::Ok);
+				close();
 			}
 		} else {
-			if (!rScenePathAbs.startsWith(QString::fromStdString(ProjectContext::getInstance().getProjectPathAbs()))) {
-				if (mNodeInfoType==NodeInfoType::Scene) {
-					QMessageBox::warning(this, tr("Error"), tr("Scene is not inside the Project directory"), QMessageBox::Ok);
-				} else {
-					QMessageBox::warning(this, tr("Error"), tr("Resource is not inside the Project directory"), QMessageBox::Ok);
-				}
+			rFullName = DirUtil::concatPath(ProjectContext::getInstance().getNodeProject()->getResourcesSubPath(),getName().toStdString());
+			rFullName+=".brres";
+			if (GuiContext::getInstance().getResourceInfoByName(rFullName)) {
+				QMessageBox::warning(this, tr("Error"), tr("A Resource with this Name exists already"), QMessageBox::Ok);
+			} else if (!GuiContext::getInstance().createNewResource(rFullName, false)) {
+				QMessageBox::warning(this, tr("Error"), tr("Could not create Resource"), QMessageBox::Ok);
 			} else {
-				string rName=DirUtil::subPart1FromPart2(ProjectContext::getInstance().getProjectPathAbs(), pathWithFile.toStdString());
-				if (mNodeInfoType==NodeInfoType::Scene) {
-					if (!GuiContext::getInstance().createNewScene(rName)) {
-						QMessageBox::warning(this, tr("Error"), tr("Could not create Scene"), QMessageBox::Ok);
-					} else {
-						close();
-					}
-				} else {
-					if (!GuiContext::getInstance().createNewResource(rName)) {
-						QMessageBox::warning(this, tr("Error"), tr("Could not create Resource"), QMessageBox::Ok);
-					} else {
-						close();
-					}
-				}
+				close();
 			}
 		}
 	}
-
 }
 
 void NewSceneDialog::on_cancelButton_clicked()
 {
 	close();
-}
-
-void NewSceneDialog::on_choosePath_clicked()
-{
-	QString dir = QFileDialog::getExistingDirectory(this, tr("Select new Scene path"),
-												 GuiContext::getInstance().fromVirtualPath(getScenePath()),
-												 QFileDialog::ShowDirsOnly
-												 | QFileDialog::DontResolveSymlinks);
-	if (!dir.isEmpty()) {
-		setScenePath(GuiContext::getInstance().toVirtualPath(dir));
-	}
 }

@@ -19,18 +19,15 @@ public:
 	~ProjectContext();
 	bool createNewProject(const string& rProjectPathAbs, const string& rName);
 	bool createNew(NodeInfoType rNodeInfoType, const string& rName);
-	bool load(NodeInfoType rNodeInfoType, const string& rProjectPathAbs, const string& rName);
+	bool loadProject(const string& rProjectPathAbs, const string& rName);
+	bool load(NodeInfoType rNodeInfoType, const string& rName);
 	void save();
 	void closeProject(bool rPersistBefore);
 	bool isProjectAvailable();
-	bool isSceneAvailable();
-	bool isResourceAvailableByName(const string &rName);
 	string getProjectPathAbs();
 	NodeProject *getNodeProject();
-	NodeScene *getNodeScene();
 	NodeResource *getNodeResourceByName(const string& rName);
-	void setCurrentResource(NodeResource *rNodeResource);
-	NodeResource* getCurrentResource();
+	NodeScene *getNodeSceneByName(const string& rName);
 	BTexturePng *getTexture(const string &rPathRelativeToProject);
 };
 

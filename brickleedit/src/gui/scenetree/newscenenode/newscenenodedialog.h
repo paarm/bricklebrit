@@ -25,7 +25,7 @@ signals:
 	void newNodeSelected(QString rNodeTypeName, NodeInfoType rNodeInfoType);
 private:
 	Ui::NewSceneNodeDialog *ui;
-	NodeInfoType		mNodeInfoType;
+	NodeInfoType		mNodeInfoType=NodeInfoType::Scene;
 };
 
 #endif // NEWSCENENODEDIALOG_H

@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include <bricklelib.h>
-
+#include <QTreeWidgetItem>
 namespace Ui {
 class TextureFrameEditor;
 }
@@ -51,16 +51,26 @@ private slots:
 
 	void on_removeFrame_clicked();
 
+	void on_treeWidget_itemClicked(QTreeWidgetItem *item, int column);
+
+	//void on_treeWidget_itemEntered(QTreeWidgetItem *item, int column);
+
+	//void on_treeWidget_itemActivated(QTreeWidgetItem *item, int column);
+
 private:
 	Ui::TextureFrameEditor *ui;
 	vector<TextureFrameEntry> mTextureFrameEntryList;
 	Node*	mNode=nullptr;
 	QPixmap  mImage;
 	QPixmap  mImageScaled;
-	int		 mImageWidth;
-	int		 mImageHeight;
+	QPixmap  mImageFrame;
+	int		 mImageWidth=0;
+	int		 mImageHeight=0;
+	bool	 mImageLoaded=false;
 	void setupNode();
 	void createFrame(const string&rName, int x, int y, int w, int h);
+	int getTextureFrameEntryIndexFromTreeWidgetItem(QTreeWidgetItem* rTreeWidgetItem);
+
 	void updateFrameView();
 
 };

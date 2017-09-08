@@ -89,7 +89,7 @@ void SceneGlWidget::paintGL()
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	NodeScene *scene=ProjectContext::getInstance().getNodeScene();
+	NodeScene *scene=GuiContext::getInstance().getCurrentScene();
 	if (scene) {
 		paintNode(scene);
 	}
@@ -116,7 +116,7 @@ void SceneGlWidget::paintNode(Node* rNode) {
 		}
 
 
-		Node *rNodeT=ProjectContext::getInstance().getCurrentResource()->getNodeWithNodeId(paintNode->getFrameRef().textureid);
+		Node *rNodeT=GuiContext::getInstance().getCurrentResource()->getNodeWithNodeId(paintNode->getFrameRef().textureid);
 		if (rNodeT && rNodeT->getNodeType()==NodeType::Texture) {
 			NodeTexture *rNodeTexture=(NodeTexture*)rNodeT;
 			BTexturePng *bTexture=ProjectContext::getInstance().getTexture(rNodeTexture->getPath());

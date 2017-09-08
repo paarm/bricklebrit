@@ -7,7 +7,7 @@ T* getXInstanceFromNodeType(bool rCreateNewId) {
 	return new T(rCreateNewId);
 }
 
-Node * getInstanceFromNodeType(NodeType &rNodeType, bool rCreateNewId) {
+Node * getInstanceFromNodeType(NodeType rNodeType, bool rCreateNewId) {
 	switch (rNodeType) {
 		case NodeType::Root:
 			return getXInstanceFromNodeType<NodeRoot>(rCreateNewId);
@@ -21,12 +21,16 @@ Node * getInstanceFromNodeType(NodeType &rNodeType, bool rCreateNewId) {
 			return getXInstanceFromNodeType<NodeSprite>(rCreateNewId);
 		case NodeType::Resource:
 			return getXInstanceFromNodeType<NodeResource>(rCreateNewId);
+		case NodeType::ResourceInfo:
+			return getXInstanceFromNodeType<NodeResourceInfo>(rCreateNewId);
 		case NodeType::Texture:
 			return getXInstanceFromNodeType<NodeTexture>(rCreateNewId);
 		case NodeType::TextureFrame:
 			return getXInstanceFromNodeType<NodeTextureFrame>(rCreateNewId);
 		case NodeType::Scene:
 			return getXInstanceFromNodeType<NodeScene>(rCreateNewId);
+		case NodeType::SceneInfo:
+			return getXInstanceFromNodeType<NodeSceneInfo>(rCreateNewId);
 		case NodeType::SceneRef:
 			return getXInstanceFromNodeType<Node>(rCreateNewId);
 
@@ -35,8 +39,8 @@ Node * getInstanceFromNodeType(NodeType &rNodeType, bool rCreateNewId) {
 		case NodeType::TextureAtlasFrame:
 			return getXInstanceFromNodeType<NodeTextureAtlasFrame>(rCreateNewId);
 
-		case NodeType::AnimationSet:
-			return getXInstanceFromNodeType<NodeAnimationSet>(rCreateNewId);
+		case NodeType::Animation:
+			return getXInstanceFromNodeType<NodeAnimation>(rCreateNewId);
 		case NodeType::AnimationSetFrameTexture:
 			return getXInstanceFromNodeType<NodeAnimationSetFrameTexture>(rCreateNewId);
 		case NodeType::AnimationSetFrameTextureAtlas:
@@ -60,16 +64,18 @@ static NodeLookupTable gNodeLookupTable[]={
 	{NodeType::Sprite						,"Sprite"},
 // resources
 	{NodeType::Resource						,"Resource"},
+	{NodeType::ResourceInfo					,"ResourceInfo"},
 	{NodeType::Texture						,"Texture"},
 	{NodeType::TextureFrame					,"TextureFrame"},
 	{NodeType::Project						,"Project"},
 	{NodeType::Scene						,"Scene"},
+	{NodeType::SceneInfo					,"SceneInfo"},
 	{NodeType::SceneRef						,"SceneRef"},
 // Texture Atlas
 	{NodeType::TextureAtlas					,"TextureAtlas"},
 	{NodeType::TextureAtlasFrame			,"TextureAtlasFrame"},
 // Animation Set
-	{NodeType::AnimationSet					,"AnimationSet"},
+	{NodeType::Animation					,"Animation"},
 	{NodeType::AnimationSetFrameTexture		,"AnimationSetFrameTexture"},
 	{NodeType::AnimationSetFrameTextureAtlas,"AnimationSetFrameTextureAtlas"},
 
@@ -173,6 +179,28 @@ Node* Node::getChildNodeWithName(const string &rName) {
 	}
 	return rv;
 }
+
+Node* Node::getChildNodeWithNameAndNodeType(const string &rName, NodeType rNodeType){
+	Node *rv=nullptr;
+	for (auto *rNode : mNodes) {
+		if (rNode->getNodeType()==rNodeType && rNode->getName()==rName) {
+			rv=rNode;
+			break;
+		}
+	}
+	return rv;
+}
+
+vector<Node*> Node::getChildNodesWithNodeType(NodeType rNodeType) {
+	vector<Node*> rv;
+	for (auto *rNode : mNodes) {
+		if (rNode->getNodeType()==rNodeType) {
+			rv.push_back(rNode);
+		}
+	}
+	return rv;
+}
+
 
 
 void Node::moveChildNode(Node* rNodeToMove) {

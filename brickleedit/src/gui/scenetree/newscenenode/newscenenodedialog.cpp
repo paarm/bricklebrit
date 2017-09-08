@@ -17,6 +17,10 @@ NewSceneNodeDialog::NewSceneNodeDialog(NodeInfoType rNodeInfoType, QWidget *pare
 		r->setIcon(QIcon(":/icons/new.png"));
 		r->setText("Texture");
 		ui->listWidget->addItem(r);
+		r=new QListWidgetItem();
+		r->setIcon(QIcon(":/icons/new.png"));
+		r->setText("Animation");
+		ui->listWidget->addItem(r);
 	}
 }
 

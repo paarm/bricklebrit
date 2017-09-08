@@ -8,6 +8,8 @@ private:
 	Q_OBJECT
 	MainWindow *mMainWindow=nullptr;
 	vector<Node*>	mSelectedSceneNodes;
+	NodeResource * mCurrentResource=nullptr;
+	NodeScene * mCurrentScene=nullptr;
 	GuiContext();
 	void sceneSwitched();
 	void resourceSwitched();
@@ -24,10 +26,17 @@ public:
 	bool createNewProject(const string& rProjectPathAbs, const string& rProjectName);
 	bool loadProject(const string&rProjectPathWithFileAbs);
 
-	bool createNewScene(const string& rSceneName);
-	bool createNewResource(const string& rName);
-	bool loadCurrentScene(const string&rName);
-	bool loadCurrentResource(const string&rName);
+	NodeSceneInfo* getSceneInfoByName(const string& rSceneName);
+	NodeScene* getOrLoadSceneByName(const string& rSceneName);
+	bool createNewScene(const string& rSceneName, bool asDefault);
+	void setCurrentScene(const string& rSceneName);
+	NodeScene* getCurrentScene();
+
+	NodeResourceInfo* getResourceInfoByName(const string& rResourceName);
+	NodeResource* getOrLoadResourceByName(const string& rResourceName);
+	bool createNewResource(const string& rName, bool asDefault);
+	void setCurrentResource(const string& rResourceName);
+	NodeResource* getCurrentResource();
 
 	QString getVirtualProjectPath();
 	QString fromVirtualPath(const QString &rPathAbs);
@@ -48,9 +57,7 @@ public slots:
 	void onSaveProjectClicked();
 	void onCloseProjectClicked();
 	void onNewSceneClicked();
-	void onOpenSceneClicked();
 	void onNewResourceClicked();
-	void onOpenResourceClicked();
 	// Scene Tree
 	void onCreateNewNode(QString rNodeTypeName, NodeInfoType rNodeInfoType);
 };

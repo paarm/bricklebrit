@@ -20,6 +20,7 @@ public:
 	explicit SceneTreeDock(QWidget *parent = 0);
 	~SceneTreeDock();
 	QTreeWidgetItem* getSelectedItem(NodeInfoType rNodeInfoType);
+	QTreeWidgetItem* getRootItem(NodeInfoType rNodeInfoType);
 	Node* getSelectedNode(NodeInfoType rNodeInfoType);
 
 	QTreeWidgetItem* searchTreeWidgetItemByNode(QTreeWidgetItem *parent, Node* rNode);
@@ -55,7 +56,7 @@ private:
 	NewSceneNodeDialog *newSceneNodeDialog=nullptr;
 	NewSceneNodeDialog *newResourceNodeDialog=nullptr;
 	QTreeWidget* getTreeWidgetFromNodeInfoType(NodeInfoType rNodeInfoType);
-	QTreeWidgetItem* addNodeX(QTreeWidgetItem *parent, Node* rNode, QTreeWidget* rQTreeWidget);
+	QTreeWidgetItem* addNodeX(QTreeWidgetItem *parent, Node* rNode, QTreeWidget* rQTreeWidget, bool expandTree);
 	void updateAllNodeNamesX(QTreeWidgetItem *parent);
 	bool updateNodeNameX(QTreeWidgetItem *parent, Node* rUpdateNode);
 	void setNodeName(QTreeWidgetItem *item, const string& rName);

@@ -25,9 +25,7 @@ private:
 	QAction			*mActionSaveProject=nullptr;
 	QAction			*mActionCloseProject=nullptr;
 	QAction			*mActionNewScene=nullptr;
-	QAction			*mActionOpenScene=nullptr;
 	QAction			*mActionNewResource=nullptr;
-	QAction			*mActionOpenResource=nullptr;
 
 	Q_OBJECT
 public:
@@ -43,9 +41,7 @@ public:
 	QAction*	getActionSaveProject();
 	QAction*	getActionCloseProject();
 	QAction*	getActionNewScene();
-	QAction*	getActionOpenScene();
 	QAction*	getActionNewResource();
-	QAction*	getActionOpenResource();
 
 	SceneTreeDock& getSceneTreeDock();
 	PropertyTreeDock& getPropertyTreeDock();

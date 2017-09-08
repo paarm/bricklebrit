@@ -6,10 +6,8 @@ class NodeManager
 {
 private:
 	NodeInfo<NodeProject>			mNodeProject{1};
-	NodeInfo<NodeScene>				mNodeScene{2};
 	vector<NodeInfo<NodeResource>>	mNodeResource;
-	NodeResource*					mNodeResourceCurrent=nullptr;
-    NodeInfo<NodeResource>          *mNodeResourceCurrentInfo=nullptr;
+	vector<NodeInfo<NodeScene>>		mNodeScene;
 public:
 	NodeManager();
 	~NodeManager();
@@ -19,10 +17,8 @@ public:
 	void save(NodeInfoType rNodeInfoType, const string& rProjectPathAbs);
 	void close(NodeInfoType rNodeInfoType);
 	NodeProject *getNodeProject();
-	NodeScene *getNodeScene();
+	NodeScene * getNodeSceneByName(const string &rName);
 	NodeResource * getNodeResourceByName(const string &rName);
 	string getProjectPathAbs();
-	void setCurrentResource(NodeResource *rNodeResource);
-	NodeResource* getCurrentResource();
 };
 
