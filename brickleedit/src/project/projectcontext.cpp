@@ -79,3 +79,107 @@ BTexturePng *ProjectContext::getTexture(const string &rPathRelativeToProject) {
 	return mTextureManager.getTexture(rPathRelativeToProject);
 }
 
+vector<string> ProjectContext::getFileNamesForType(NodeInfoType rNodeInfoType) {
+	vector<string> rv;
+	if (rNodeInfoType==NodeInfoType::Resource || rNodeInfoType==NodeInfoType::Scene) {
+		NodeType rNodeType=NodeType::ResourceInfo;
+		if (rNodeInfoType==NodeInfoType::Scene) {
+			rNodeType=NodeType::SceneInfo;
+		}
+		vector<Node*> v=getNodeProject()->getChildNodesWithNodeType(rNodeType);
+		for (auto rNode : v) {
+			if (rNodeInfoType==NodeInfoType::Scene) {
+				NodeSceneInfo *rNodeSceneInfo=static_cast<NodeSceneInfo*>(rNode);
+				rv.push_back(rNodeSceneInfo->getPath());
+			} else {
+				NodeResourceInfo *rNodeResourceInfo=static_cast<NodeResourceInfo*>(rNode);
+				rv.push_back(rNodeResourceInfo->getPath());
+			}
+		}
+	}
+	return rv;
+}
+
+
+
+NodeSceneInfo* ProjectContext::getSceneInfoByName(const string& rSceneName) {
+	NodeSceneInfo *rNodeSceneInfo=nullptr;
+	if (getNodeProject()) {
+		Node *rNode=getNodeProject()->getChildNodeWithNameAndNodeType(rSceneName, NodeType::SceneInfo);
+		if (rNode && rNode->getNodeType()==NodeType::SceneInfo) {
+			rNodeSceneInfo=static_cast<NodeSceneInfo*>(rNode);
+		}
+	}
+	return rNodeSceneInfo;
+}
+
+NodeScene* ProjectContext::getOrLoadSceneByName(const string& rSceneName) {
+	NodeScene *rNodeScene=nullptr;
+	if (getSceneInfoByName(rSceneName)) {
+		rNodeScene=getNodeSceneByName(rSceneName);
+		if (!rNodeScene) {
+			if (load(NodeInfoType::Scene, rSceneName)) {
+				rNodeScene=getNodeSceneByName(rSceneName);
+			}
+		}
+	}
+	return rNodeScene;
+}
+
+NodeResourceInfo* ProjectContext::getResourceInfoByName(const string& rResourceName) {
+	NodeResourceInfo *rNodeResourceInfo=nullptr;
+	if (getNodeProject()) {
+		Node *rNode=getNodeProject()->getChildNodeWithNameAndNodeType(rResourceName, NodeType::ResourceInfo);
+		if (rNode && rNode->getNodeType()==NodeType::ResourceInfo) {
+			rNodeResourceInfo=static_cast<NodeResourceInfo*>(rNode);
+		}
+	}
+	return rNodeResourceInfo;
+}
+
+NodeResource* ProjectContext::getOrLoadResourceByName(const string& rResourceName) {
+	NodeResource *rNodeResource=nullptr;
+	if (getResourceInfoByName(rResourceName)) {
+		rNodeResource=getNodeResourceByName(rResourceName);
+		if (!rNodeResource) {
+			if (load(NodeInfoType::Resource, rResourceName)) {
+				rNodeResource=getNodeResourceByName(rResourceName);
+			}
+		}
+	}
+	return rNodeResource;
+}
+
+NodeScene* ProjectContext::getDefaultScene() {
+	NodeScene* rNodeScene=nullptr;
+	if (getNodeProject()) {
+		vector<Node*> v=getNodeProject()->getChildNodesWithNodeType(NodeType::SceneInfo);
+		for(auto rNode :  v) {
+			if (rNode->getNodeType()==NodeType::SceneInfo) {
+				NodeSceneInfo* rNodeSceneInfo=static_cast<NodeSceneInfo*>(rNode);
+				if (rNodeSceneInfo->getIsDefault()) {
+					rNodeScene=getOrLoadSceneByName(rNodeSceneInfo->getName());
+					break;
+				}
+			}
+		}
+	}
+	return rNodeScene;
+}
+
+NodeResource* ProjectContext::getDefaultResource() {
+	NodeResource* rNodeResource=nullptr;
+	if (getNodeProject()) {
+		vector<Node*> v=getNodeProject()->getChildNodesWithNodeType(NodeType::ResourceInfo);
+		for(auto rNode :  v) {
+			if (rNode->getNodeType()==NodeType::ResourceInfo) {
+				NodeResourceInfo* rNodeResourceInfo=static_cast<NodeResourceInfo*>(rNode);
+				if (rNodeResourceInfo->getIsDefault()) {
+					rNodeResource=getOrLoadResourceByName(rNodeResourceInfo->getName());
+					break;
+				}
+			}
+		}
+	}
+	return rNodeResource;
+}

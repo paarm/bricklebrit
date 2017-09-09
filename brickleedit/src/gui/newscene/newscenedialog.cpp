@@ -32,7 +32,7 @@ void NewSceneDialog::on_okButton_clicked()
 		if (mNodeInfoType==NodeInfoType::Scene) {
 			rFullName = DirUtil::concatPath(ProjectContext::getInstance().getNodeProject()->getScenesSubPath(),getName().toStdString());
 			rFullName+=".brscn";
-			if (GuiContext::getInstance().getSceneInfoByName(rFullName)) {
+			if (ProjectContext::getInstance().getSceneInfoByName(rFullName)) {
 				QMessageBox::warning(this, tr("Error"), tr("A Scene with this Name exists already"), QMessageBox::Ok);
 			} else if (!GuiContext::getInstance().createNewScene(rFullName, false)) {
 				QMessageBox::warning(this, tr("Error"), tr("Could not create Scene"), QMessageBox::Ok);
@@ -42,7 +42,7 @@ void NewSceneDialog::on_okButton_clicked()
 		} else {
 			rFullName = DirUtil::concatPath(ProjectContext::getInstance().getNodeProject()->getResourcesSubPath(),getName().toStdString());
 			rFullName+=".brres";
-			if (GuiContext::getInstance().getResourceInfoByName(rFullName)) {
+			if (ProjectContext::getInstance().getResourceInfoByName(rFullName)) {
 				QMessageBox::warning(this, tr("Error"), tr("A Resource with this Name exists already"), QMessageBox::Ok);
 			} else if (!GuiContext::getInstance().createNewResource(rFullName, false)) {
 				QMessageBox::warning(this, tr("Error"), tr("Could not create Resource"), QMessageBox::Ok);

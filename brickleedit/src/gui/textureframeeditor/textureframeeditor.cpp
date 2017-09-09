@@ -230,6 +230,8 @@ void TextureFrameEditor::on_treeWidget_itemClicked(QTreeWidgetItem *item, int co
 	}
 }
 
+
+
 /*void TextureFrameEditor::on_treeWidget_itemEntered(QTreeWidgetItem *item, int column)
 {
 }

@@ -320,6 +320,51 @@ QTreeWidgetItem* SceneTreeDock::addNodeX(QTreeWidgetItem *parent, Node* rNode, Q
 	return r;
 }
 
+void SceneTreeDock::updateSceneOrResourceDropdownWithCurrent(NodeInfoType rNodeInfoType) {
+	int i=0;
+	if (rNodeInfoType==NodeInfoType::Scene) {
+		ui->sceneNameOpm->clear();
+	} else if (rNodeInfoType==NodeInfoType::Resource) {
+		ui->resourceNameOpm->clear();
+	}
+	vector<string> v=ProjectContext::getInstance().getFileNamesForType(rNodeInfoType);
+
+	for (auto& s : v) {
+		if (rNodeInfoType==NodeInfoType::Scene) {
+			ui->sceneNameOpm->addItem(QString::fromStdString(s));
+			if (GuiContext::getInstance().getCurrentScene() && GuiContext::getInstance().getCurrentScene()->getName()==s) {
+				ui->sceneNameOpm->setCurrentIndex(i);
+			}
+		} else if (rNodeInfoType==NodeInfoType::Resource) {
+			ui->resourceNameOpm->addItem(QString::fromStdString(s));
+			if (GuiContext::getInstance().getCurrentResource() && GuiContext::getInstance().getCurrentResource()->getName()==s) {
+				ui->resourceNameOpm->setCurrentIndex(i);
+			}
+		}
+		i++;
+	}
+}
+
+void SceneTreeDock::switchToSceneOrResource(Node *rNode, NodeInfoType rNodeInfoType) {
+	if (rNodeInfoType==NodeInfoType::Scene) {
+		clearScene();
+		if (rNode) {
+			setSceneEditable(true);
+			addNode(nullptr, rNode, rNodeInfoType);
+		} else {
+			setSceneEditable(false);
+		}
+	} else if (rNodeInfoType==NodeInfoType::Resource) {
+		clearResource();
+		if (rNode) {
+			setResourceEditable(true);
+			addNode(nullptr, rNode, rNodeInfoType);
+		} else {
+			setResourceEditable(false);
+		}
+	}
+}
+
 void SceneTreeDock::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)
 {
 	if (column>=0) {
@@ -362,4 +407,30 @@ void SceneTreeDock::on_tabWidget_currentChanged(int index)
 		// do not switch if in the current tab nothing is selected/available -> do not remove the current property if anyone is currently outlined
 		GuiContext::getInstance().switchProperties(rNode, rNodeInfoType);
 	}
+}
+
+void SceneTreeDock::on_sceneNameOpm_currentIndexChanged(const QString &arg1)
+{
+}
+
+void SceneTreeDock::on_resourceNameOpm_currentIndexChanged(const QString &arg1)
+{
+}
+
+void SceneTreeDock::on_sceneNameOpm_currentIndexChanged(int index)
+{
+	string name="";
+	if (index>=0) {
+		name=ui->sceneNameOpm->itemText(index).toStdString();
+	}
+	GuiContext::getInstance().setCurrentScene(name);
+}
+
+void SceneTreeDock::on_resourceNameOpm_currentIndexChanged(int index)
+{
+	string name="";
+	if (index>=0) {
+		name=ui->resourceNameOpm->itemText(index).toStdString();
+	}
+	GuiContext::getInstance().setCurrentResource(name);
 }

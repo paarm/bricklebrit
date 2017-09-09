@@ -26,14 +26,10 @@ public:
 	bool createNewProject(const string& rProjectPathAbs, const string& rProjectName);
 	bool loadProject(const string&rProjectPathWithFileAbs);
 
-	NodeSceneInfo* getSceneInfoByName(const string& rSceneName);
-	NodeScene* getOrLoadSceneByName(const string& rSceneName);
 	bool createNewScene(const string& rSceneName, bool asDefault);
 	void setCurrentScene(const string& rSceneName);
 	NodeScene* getCurrentScene();
 
-	NodeResourceInfo* getResourceInfoByName(const string& rResourceName);
-	NodeResource* getOrLoadResourceByName(const string& rResourceName);
 	bool createNewResource(const string& rName, bool asDefault);
 	void setCurrentResource(const string& rResourceName);
 	NodeResource* getCurrentResource();

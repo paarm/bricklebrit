@@ -30,6 +30,8 @@ public:
 	Node* getNodeFromTreeItem(QTreeWidgetItem* r);
 	void clearScene();
 	void clearResource();
+	void switchToSceneOrResource(Node *rNode, NodeInfoType rNodeInfoType);
+	void updateSceneOrResourceDropdownWithCurrent(NodeInfoType rNodeInfoType);
 	void setSceneEditable(bool isEditable);
 	void setResourceEditable(bool isEditable);
 	void setProjectAvailable(bool isActive);
@@ -50,6 +52,14 @@ private slots:
 	void on_newResource_clicked();
 
 	void on_treeWidgetResources_itemDoubleClicked(QTreeWidgetItem *item, int column);
+
+	void on_sceneNameOpm_currentIndexChanged(const QString &arg1);
+
+	void on_resourceNameOpm_currentIndexChanged(const QString &arg1);
+
+	void on_sceneNameOpm_currentIndexChanged(int index);
+
+	void on_resourceNameOpm_currentIndexChanged(int index);
 
 private:
 	Ui::SceneTreeDock *ui;

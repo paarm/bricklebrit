@@ -27,7 +27,14 @@ public:
 	string getProjectPathAbs();
 	NodeProject *getNodeProject();
 	NodeResource *getNodeResourceByName(const string& rName);
+	NodeResource *getDefaultResource();
+	NodeSceneInfo* getSceneInfoByName(const string& rSceneName);
+	NodeScene* getOrLoadSceneByName(const string& rSceneName);
+	NodeResourceInfo* getResourceInfoByName(const string& rResourceName);
+	NodeResource* getOrLoadResourceByName(const string& rResourceName);
 	NodeScene *getNodeSceneByName(const string& rName);
+	NodeScene *getDefaultScene();
+	vector<string> getFileNamesForType(NodeInfoType rNodeInfoType);
 	BTexturePng *getTexture(const string &rPathRelativeToProject);
 };
 
