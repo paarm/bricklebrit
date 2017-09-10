@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>761</width>
+    <width>1040</width>
     <height>575</height>
    </rect>
   </property>
@@ -16,7 +16,7 @@
   <widget class="QPushButton" name="okButton">
    <property name="geometry">
     <rect>
-     <x>570</x>
+     <x>850</x>
      <y>520</y>
      <width>80</width>
      <height>26</height>
@@ -29,7 +29,7 @@
   <widget class="QPushButton" name="cancelButton">
    <property name="geometry">
     <rect>
-     <x>660</x>
+     <x>940</x>
      <y>520</y>
      <width>80</width>
      <height>26</height>
@@ -70,7 +70,7 @@
     <rect>
      <x>20</x>
      <y>100</y>
-     <width>721</width>
+     <width>1001</width>
      <height>401</height>
     </rect>
    </property>

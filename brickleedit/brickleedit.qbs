@@ -46,6 +46,8 @@ Project {
             "src/gui/textureframeeditor/textureframeeditor.ui",
             "src/gui/toolbar.cpp",
             "src/gui/toolbar.h",
+            "src/gui/treeutil.cpp",
+            "src/gui/treeutil.h",
             "src/main.cpp",
             "src/gui/mainwindow.cpp",
             "src/gui/mainwindow.h",

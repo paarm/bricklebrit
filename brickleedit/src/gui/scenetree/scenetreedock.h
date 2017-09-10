@@ -10,8 +10,6 @@ namespace Ui {
 class SceneTreeDock;
 }
 
-Q_DECLARE_METATYPE(Node*);
-
 class SceneTreeDock : public QDockWidget
 {
 	Q_OBJECT

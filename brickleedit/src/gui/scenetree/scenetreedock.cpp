@@ -3,6 +3,7 @@
 #include "../guicontext.h"
 #include "../textureframeeditor/textureframeeditor.h"
 #include "../animationframeeditor/animationframeeditor.h"
+#include "../treeutil.h"
 
 SceneTreeDock::SceneTreeDock(QWidget *parent) :
 	QDockWidget(parent),
@@ -103,26 +104,9 @@ Node* SceneTreeDock::getSelectedNode(NodeInfoType rNodeInfoType) {
 	QTreeWidgetItem*r=getSelectedItem(rNodeInfoType);
 	Node *rv=nullptr;
 	if (r) {
-		rv=getNodeFromTreeItem(r);
+		rv=TreeUtil::getNodeFromTreeItem(r);
 	}
 	return rv;
-}
-
-Node* SceneTreeDock::getNodeFromTreeItem(QTreeWidgetItem* r) {
-	Node *rv=nullptr;
-	if (r) {
-		QVariant v=r->data(0,Qt::UserRole);
-		rv=v.value<Node*>();
-	}
-	return rv;
-}
-
-void SceneTreeDock::setNodeToTreeItem(QTreeWidgetItem* r, Node *rNode) {
-	if (r && rNode) {
-		QVariant v;
-		v.setValue(rNode);
-		r->setData(0, Qt::UserRole, v);
-	}
 }
 
 void SceneTreeDock::deleteChilds(QTreeWidgetItem *parent) {
@@ -141,14 +125,14 @@ void SceneTreeDock::deleteChilds(QTreeWidgetItem *parent) {
 QTreeWidgetItem* SceneTreeDock::searchTreeWidgetItemByNode(QTreeWidgetItem *parent, Node* rNode) {
 	QTreeWidgetItem* rv=nullptr;
 
-	if (parent && getNodeFromTreeItem(parent)==rNode) {
+	if (parent && TreeUtil::getNodeFromTreeItem(parent)==rNode) {
 		rv=parent;
 	}
 	if (!rv) {
 		int count=parent->childCount();
 		for (int i=0;i<count;i++) {
 			QTreeWidgetItem *r=parent->child(i);
-			if (r && getNodeFromTreeItem(r)==rNode) {
+			if (r && TreeUtil::getNodeFromTreeItem(r)==rNode) {
 				rv=r;
 			}
 		}
@@ -199,7 +183,7 @@ void SceneTreeDock::updateChildNodes(Node* rNode, NodeInfoType rNodeInfoType) {
 
 void SceneTreeDock::updateAllNodeNamesX(QTreeWidgetItem *parent) {
 	if (parent) {
-		Node* rNode=getNodeFromTreeItem(parent);
+		Node* rNode=TreeUtil::getNodeFromTreeItem(parent);
 		if (rNode) {
 			setNodeName(parent, rNode->getName());
 		}
@@ -222,7 +206,7 @@ void SceneTreeDock::updateAllNodeNames(NodeInfoType rNodeInfoType) {
 bool SceneTreeDock::updateNodeNameX(QTreeWidgetItem *parent, Node* rUpdateNode) {
 	bool updated=false;
 	if (parent) {
-		Node* rNode=getNodeFromTreeItem(parent);
+		Node* rNode=TreeUtil::getNodeFromTreeItem(parent);
 		if (rNode && rNode==rUpdateNode) {
 			setNodeName(parent, rNode->getName());
 			updated=true;
@@ -269,13 +253,11 @@ QTreeWidgetItem* SceneTreeDock::addNodeX(QTreeWidgetItem *parent, Node* rNode, Q
 			r=new QTreeWidgetItem(rQTreeWidget);
 		}
 		// Type + ID
-		string rType=getNodeTypeAsString(rNode->getNodeType());
-		rType+="("+std::to_string(rNode->getId())+")";
-		r->setText(0, QString::fromStdString(rType));
+		TreeUtil::setTypeNameToTreeItem(r,rNode);
 		// Name
-		setNodeName(r, rNode->getName());
+		TreeUtil::setNodeNameToTreeItem(r, rNode);
 		//r->setText(1,QString::fromStdString(rNode->getName()));
-		setNodeToTreeItem(r,rNode);
+		TreeUtil::setNodeToTreeItem(r,rNode);
 		//r->setIcon(0, QIcon(":/icons/new.png"));
 		if (parent) {
 			parent->addChild(r);
@@ -368,7 +350,7 @@ void SceneTreeDock::switchToSceneOrResource(Node *rNode, NodeInfoType rNodeInfoT
 void SceneTreeDock::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)
 {
 	if (column>=0) {
-		Node* rNode=getNodeFromTreeItem(item);
+		Node* rNode=TreeUtil::getNodeFromTreeItem(item);
 		GuiContext::getInstance().switchProperties(rNode, NodeInfoType::Scene);
 	}
 }
@@ -376,7 +358,7 @@ void SceneTreeDock::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)
 void SceneTreeDock::on_treeWidgetResources_itemDoubleClicked(QTreeWidgetItem *item, int column)
 {
 	if (column>=0) {
-		Node* rNode=getNodeFromTreeItem(item);
+		Node* rNode=TreeUtil::getNodeFromTreeItem(item);
 		if (rNode) {
 			if (rNode->getNodeType()==NodeType::Texture) {
 				QMessageBox::information(this, "Brickleedit", "Das ist eine Texture");
@@ -388,7 +370,7 @@ void SceneTreeDock::on_treeWidgetResources_itemDoubleClicked(QTreeWidgetItem *it
 void SceneTreeDock::on_treeWidgetResources_itemClicked(QTreeWidgetItem *item, int column)
 {
 	if (column>=0) {
-		Node* rNode=getNodeFromTreeItem(item);
+		Node* rNode=TreeUtil::getNodeFromTreeItem(item);
 		GuiContext::getInstance().switchProperties(rNode, NodeInfoType::Resource);
 	}
 }

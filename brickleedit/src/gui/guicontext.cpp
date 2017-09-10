@@ -1,6 +1,6 @@
 #include "guicontext.h"
 #include <QMessageBox>
-
+#include "treeutil.h"
 GuiContext::GuiContext()
 {
 
@@ -289,7 +289,7 @@ void GuiContext::onCreateNewNode(QString rNodeTypeName, NodeInfoType rNodeInfoTy
 	if (rNode) {
 		rNode->setName(rNodeTypeName.toStdString());
 		if (parent) {
-			Node* parentNode=getMainWindow().getSceneTreeDock().getNodeFromTreeItem(parent);
+			Node* parentNode=TreeUtil::getNodeFromTreeItem(parent);
 			if (parentNode) {
 				parentNode->addChildNode(rNode);
 			}

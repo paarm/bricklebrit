@@ -19,16 +19,13 @@ enum class NodeType {
 	Resource,
 	Texture,
 	TextureFrame,
+	Animation,
+	AnimationFrame,
 	Project,
 	ResourceInfo,
 	SceneInfo,
 	Scene,
 	SceneRef,
-	TextureAtlas,
-	TextureAtlasFrame,
-	Animation,
-	AnimationSetFrameTexture,
-	AnimationSetFrameTextureAtlas,
 
 
 	Sound,
@@ -70,7 +67,7 @@ public:
 	void deleteNode(Node *rNodeToDelete);
 	unsigned long getChildCount();
 	Node* getNodeFromIndex(unsigned long rIndex);
-	Node* getNodeWithNodeId(int rIndex);
+	Node* getNodeWithNodeId(int rNodeId);
 	Node* getChildNodeWithName(const string &rName);
 	Node* getChildNodeWithNameAndNodeType(const string &rName, NodeType rNodeType);
 	vector<Node*> getChildNodesWithNodeType(NodeType rNodeType);
@@ -288,39 +285,6 @@ public:
 };
 
 
-class NodeTextureAtlas : public Node {
-private:
-public:
-	PROPERTY_STRING_GETSET(Name)
-	PROPERTY_STRING_GETSET(Texture)
-
-	NodeTextureAtlas(bool rCreateNewId) : Node(rCreateNewId) {
-		mNodeType=NodeType::TextureAtlas;
-		setName();
-		setTexture();
-	}
-
-	NodeTextureAtlas() : NodeTextureAtlas(true) {
-	}
-};
-
-class NodeTextureAtlasFrame : public Node {
-private:
-public:
-	PROPERTY_STRING_GETSET(Name)
-	PROPERTY_RECTINT_GETSET(TextureSourceRect)
-	PROPERTY_INT_GETSET(Rotation)
-
-	NodeTextureAtlasFrame(bool rCreateNewId) : Node(rCreateNewId) {
-		mNodeType=NodeType::TextureAtlasFrame;
-		setName();
-		setTextureSourceRect();
-		setRotation(0); // 0, 90=rotated Right, 270=rotated Left
-	}
-
-	NodeTextureAtlasFrame() : NodeTextureAtlasFrame(true) {
-	}
-};
 
 class NodeAnimation : public Node {
 private:
@@ -336,37 +300,22 @@ public:
 	}
 };
 
-class NodeAnimationSetFrameTexture : public Node {
+class NodeAnimationFrame : public Node {
 private:
 public:
-	PROPERTY_STRING_GETSET(Name)
-	PROPERTY_STRING_GETSET(Texture)
-	PROPERTY_RECTINT_GETSET(TextureSourceRect)
-	NodeAnimationSetFrameTexture(bool rCreateNewId) : Node(rCreateNewId) {
-		mNodeType=NodeType::AnimationSetFrameTexture;
-		setName();
-		setTexture();
-		setTextureSourceRect();
+	PROPERTY_FRAMEREF_GETSET(FrameRef)
+
+	NodeAnimationFrame(bool rCreateNewId) : Node(rCreateNewId) {
+		mNodeType=NodeType::AnimationFrame;
+		setFrameRef();
 	}
-	NodeAnimationSetFrameTexture() : NodeAnimationSetFrameTexture(true) {
+
+	NodeAnimationFrame() : NodeAnimationFrame(true) {
 	}
 };
 
-class NodeAnimationSetFrameTextureAtlas : public Node {
-private:
-public:
-	PROPERTY_STRING_GETSET(Name)
-	PROPERTY_STRING_GETSET(TextureAtlasName)
-	PROPERTY_STRING_GETSET(TextureAtlasFrameName)
-	NodeAnimationSetFrameTextureAtlas(bool rCreateNewId) : Node(rCreateNewId) {
-		mNodeType=NodeType::AnimationSetFrameTextureAtlas;
-		setName();
-		setTextureAtlasName();
-		setTextureAtlasFrameName();
-	}
-	NodeAnimationSetFrameTextureAtlas() : NodeAnimationSetFrameTextureAtlas(true) {
-	}
-};
+
+
 
 
 

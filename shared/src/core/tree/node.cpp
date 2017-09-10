@@ -27,25 +27,16 @@ Node * getInstanceFromNodeType(NodeType rNodeType, bool rCreateNewId) {
 			return getXInstanceFromNodeType<NodeTexture>(rCreateNewId);
 		case NodeType::TextureFrame:
 			return getXInstanceFromNodeType<NodeTextureFrame>(rCreateNewId);
+		case NodeType::Animation:
+			return getXInstanceFromNodeType<NodeAnimation>(rCreateNewId);
+		case NodeType::AnimationFrame:
+			return getXInstanceFromNodeType<NodeAnimationFrame>(rCreateNewId);
 		case NodeType::Scene:
 			return getXInstanceFromNodeType<NodeScene>(rCreateNewId);
 		case NodeType::SceneInfo:
 			return getXInstanceFromNodeType<NodeSceneInfo>(rCreateNewId);
 		case NodeType::SceneRef:
 			return getXInstanceFromNodeType<Node>(rCreateNewId);
-
-		case NodeType::TextureAtlas:
-			return getXInstanceFromNodeType<NodeTextureAtlas>(rCreateNewId);
-		case NodeType::TextureAtlasFrame:
-			return getXInstanceFromNodeType<NodeTextureAtlasFrame>(rCreateNewId);
-
-		case NodeType::Animation:
-			return getXInstanceFromNodeType<NodeAnimation>(rCreateNewId);
-		case NodeType::AnimationSetFrameTexture:
-			return getXInstanceFromNodeType<NodeAnimationSetFrameTexture>(rCreateNewId);
-		case NodeType::AnimationSetFrameTextureAtlas:
-			return getXInstanceFromNodeType<NodeAnimationSetFrameTextureAtlas>(rCreateNewId);
-
 		case NodeType::Sound:
 			return getXInstanceFromNodeType<Node>(rCreateNewId);
 		case NodeType::Music:
@@ -67,17 +58,12 @@ static NodeLookupTable gNodeLookupTable[]={
 	{NodeType::ResourceInfo					,"ResourceInfo"},
 	{NodeType::Texture						,"Texture"},
 	{NodeType::TextureFrame					,"TextureFrame"},
+	{NodeType::Animation					,"Animation"},
+	{NodeType::AnimationFrame				,"AnimationFrame"},
 	{NodeType::Project						,"Project"},
 	{NodeType::Scene						,"Scene"},
 	{NodeType::SceneInfo					,"SceneInfo"},
 	{NodeType::SceneRef						,"SceneRef"},
-// Texture Atlas
-	{NodeType::TextureAtlas					,"TextureAtlas"},
-	{NodeType::TextureAtlasFrame			,"TextureAtlasFrame"},
-// Animation Set
-	{NodeType::Animation					,"Animation"},
-	{NodeType::AnimationSetFrameTexture		,"AnimationSetFrameTexture"},
-	{NodeType::AnimationSetFrameTextureAtlas,"AnimationSetFrameTextureAtlas"},
 
 	{NodeType::Sound						,"Sound"},
 	{NodeType::Music						,"Music"},
@@ -158,10 +144,10 @@ Node* Node::getNodeFromIndex(unsigned long rIndex) {
 	return rv;
 }
 
-Node* Node::getNodeWithNodeId(int rIndex) {
+Node* Node::getNodeWithNodeId(int rNodeId) {
 	Node *rv=nullptr;
 	for (auto *rNode : mNodes) {
-		if (rNode->getId()==rIndex) {
+		if (rNode->getId()==rNodeId) {
 			rv=rNode;
 			break;
 		}
