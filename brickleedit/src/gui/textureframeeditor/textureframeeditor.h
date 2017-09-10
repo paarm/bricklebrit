@@ -57,6 +57,8 @@ private slots:
 
 	//void on_treeWidget_itemActivated(QTreeWidgetItem *item, int column);
 
+    void on_pushButton_clicked();
+
 private:
 	Ui::TextureFrameEditor *ui;
 	vector<TextureFrameEntry> mTextureFrameEntryList;
@@ -70,6 +72,7 @@ private:
 	void setupNode();
 	void createFrame(const string&rName, int x, int y, int w, int h);
 	int getTextureFrameEntryIndexFromTreeWidgetItem(QTreeWidgetItem* rTreeWidgetItem);
+    void setupTexture(const string &rName);
 
 	void updateFrameView();
 

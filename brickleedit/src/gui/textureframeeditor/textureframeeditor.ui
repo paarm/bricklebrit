@@ -22,6 +22,12 @@
      <height>28</height>
     </rect>
    </property>
+   <property name="minimumSize">
+    <size>
+     <width>80</width>
+     <height>0</height>
+    </size>
+   </property>
    <property name="text">
     <string>Remove Frame</string>
    </property>
@@ -64,6 +70,12 @@
      </item>
      <item row="0" column="2">
       <widget class="QPushButton" name="addFrames">
+       <property name="minimumSize">
+        <size>
+         <width>80</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>Add Frames</string>
        </property>
@@ -182,6 +194,12 @@
      </item>
      <item row="0" column="4">
       <widget class="QPushButton" name="addSingleFrame">
+       <property name="minimumSize">
+        <size>
+         <width>80</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>Add Frame</string>
        </property>
@@ -261,6 +279,13 @@
      </widget>
     </item>
     <item>
+     <widget class="QPushButton" name="pushButton">
+      <property name="text">
+       <string>Texture ...</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QLabel" name="label_2">
       <property name="text">
        <string>Width</string>
@@ -308,7 +333,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>21</x>

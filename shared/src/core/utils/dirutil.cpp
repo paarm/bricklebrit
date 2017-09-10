@@ -18,7 +18,7 @@ string DirUtil::concatPath(const string &rPart1, const string &rPart2) {
 string DirUtil::subPart1FromPart2(const string &rPart1, const string &rPart2) {
 	string path="";
 	if (rPart1.length()<rPart2.length()) {
-		path=rPart2.substr(rPart1.length()+1, rPart2.length()-rPart2.length());
+        path=rPart2.substr(rPart1.length()+1, rPart2.length()-rPart1.length());
 	}
 #ifdef WINDOWS
 	if(!path.empty() && path[0]=='\\') {

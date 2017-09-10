@@ -1,6 +1,7 @@
 #include "textureframeeditor.h"
 #include "ui_textureframeeditor.h"
 #include "../guicontext.h"
+#include <QFileDialog>
 
 TextureFrameEditor::TextureFrameEditor(Node *rNode, QWidget *parent) :
 	QDialog(parent),
@@ -22,19 +23,7 @@ void TextureFrameEditor::setupNode() {
 	if (mNode) {
 		if (mNode->getNodeType()==NodeType::Texture) {
 			NodeTexture *rNodeTexture=static_cast<NodeTexture*>(mNode);
-			ui->textureName->setText(QString::fromStdString(rNodeTexture->getPath()));
-			if (mImage.load(QString::fromStdString(DirUtil::concatPath(ProjectContext::getInstance().getProjectPathAbs(), rNodeTexture->getPath())))) {
-				mImageLoaded=true;
-				mImageWidth=mImage.width();
-				mImageHeight=mImage.height();
-				mImageScaled=mImage.scaled(QSize(100,100),
-							  Qt::KeepAspectRatio);
-				ui->imageWidth->setText(QString::number(mImageWidth));
-				ui->imageHeight->setText(QString::number(mImageHeight));
-				ui->widhtFrame->setValue(mImageWidth);
-				ui->heightFrame->setValue(mImageHeight);
-				ui->previewImage->setPixmap(mImageScaled);
-			}
+            setupTexture(rNodeTexture->getPath());
 			int childCnt=mNode->getChildCount();
 			if (childCnt>0) {
 				for (int i=0;i<childCnt;i++) {
@@ -51,6 +40,40 @@ void TextureFrameEditor::setupNode() {
 	}
 }
 
+void TextureFrameEditor::setupTexture(const string &rPath) {
+    ui->textureName->setText(QString::fromStdString(rPath));
+    if (mImage.load(QString::fromStdString(DirUtil::concatPath(ProjectContext::getInstance().getProjectPathAbs(), rPath)))) {
+        mImageLoaded=true;
+        mImageWidth=mImage.width();
+        mImageHeight=mImage.height();
+        mImageScaled=mImage.scaled(QSize(100,100),
+                      Qt::KeepAspectRatio);
+        ui->imageWidth->setText(QString::number(mImageWidth));
+        ui->imageHeight->setText(QString::number(mImageHeight));
+        ui->widhtFrame->setValue(mImageWidth);
+        ui->heightFrame->setValue(mImageHeight);
+        ui->previewImage->setPixmap(mImageScaled);
+    } else {
+        mImageLoaded=false;
+    }
+}
+
+void TextureFrameEditor::on_pushButton_clicked()
+{
+    QString file=QFileDialog::getOpenFileName(this, tr("Select Texture"),
+                                              QString::fromStdString(ProjectContext::getInstance().getProjectPathAbs()),
+                                              "*.png",
+                                              nullptr,
+                                              QFileDialog::DontResolveSymlinks
+                                              );
+    string rName=DirUtil::subPart1FromPart2(ProjectContext::getInstance().getProjectPathAbs(), file.toStdString());
+    if (!rName.empty() && rName!=ui->textureName->text().toStdString()) {
+        setupTexture(rName);
+        mTextureFrameEntryList.clear();
+        updateFrameView();
+    }
+}
+
 void TextureFrameEditor::on_cancelButton_clicked()
 {
 	deleteLater();
@@ -65,6 +88,10 @@ void TextureFrameEditor::on_okButton_clicked()
 {
 	int i=0;
 	mNode->deleteChildNodes();
+    NodeTexture* rNodeTexture=static_cast<NodeTexture*>(mNode);
+    rNodeTexture->setPath(ui->textureName->text().toStdString());
+    rNodeTexture->setName(ui->textureName->text().toStdString());
+
 	NodeType rNodeType=NodeType::TextureFrame;
 	for(auto&rTextureFrameEntry : mTextureFrameEntryList) {
 		Node*rNode=getInstanceFromNodeType(rNodeType, true);
@@ -80,7 +107,8 @@ void TextureFrameEditor::on_okButton_clicked()
 		i++;
 	}
 	GuiContext::getInstance().updateChildNodes(mNode, NodeInfoType::Resource);
-	deleteLater();
+    GuiContext::getInstance().updateNodeName(mNode, NodeInfoType::Resource);
+    deleteLater();
 }
 
 void TextureFrameEditor::on_addFrames_clicked()
@@ -239,3 +267,4 @@ void TextureFrameEditor::on_treeWidget_itemClicked(QTreeWidgetItem *item, int co
 void TextureFrameEditor::on_treeWidget_itemActivated(QTreeWidgetItem *item, int column)
 {
 }*/
+
