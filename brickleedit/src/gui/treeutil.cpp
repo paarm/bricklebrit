@@ -25,6 +25,12 @@ void TreeUtil::setTypeNameToTreeItem(QTreeWidgetItem* r, Node *rNode) {
 	}
 }
 
+string TreeUtil::getNodeNameWithId(Node *rNode) {
+	string rv=rNode->getName();
+	rv+="("+std::to_string(rNode->getId())+")";
+	return rv;
+}
+
 void TreeUtil::setNodeNameToTreeItem(QTreeWidgetItem* r, Node* rNode) {
 	if (r && rNode) {
 		r->setText(1,QString::fromStdString(rNode->getName()));

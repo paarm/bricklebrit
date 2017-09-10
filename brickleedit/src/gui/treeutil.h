@@ -14,6 +14,7 @@ public:
 	static void setTypeNameToTreeItem(QTreeWidgetItem* r, Node *rNode);
 	static void setNodeNameToTreeItem(QTreeWidgetItem* r, Node *rNode);
 	static void setNodeToTreeItem(QTreeWidgetItem* r, Node *rNode);
+	static string getNodeNameWithId(Node *rNode);
 };
 
 #endif // TREEUTIL_H

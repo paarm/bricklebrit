@@ -303,6 +303,11 @@ void GuiContext::updateChildNodes(Node *rNode_parent, NodeInfoType rNodeInfoType
 	updateGlWidget();
 }
 
+void GuiContext::updateNodeName(Node *rNode, NodeInfoType rNodeInfoType) {
+	getMainWindow().getSceneTreeDock().updateNodeName(rNode, rNodeInfoType);
+	//updateGlWidget();
+}
+
 void GuiContext::projectSwitched() {
 	getMainWindow().setProjectAvailable(ProjectContext::getInstance().getNodeProject());
 	getMainWindow().setProjectRequireSave(ProjectContext::getInstance().getNodeProject()); // TODO own mechanism

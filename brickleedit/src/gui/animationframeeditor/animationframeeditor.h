@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <bricklelib.h>
+#include <QTreeWidgetItem>
 
 namespace Ui {
 class AnimationFrameEditor;
@@ -44,6 +45,10 @@ private slots:
 
 	void on_addFrame_clicked();
 
+	void on_removeFrame_clicked();
+
+	void on_treeWidgetTextures_itemDoubleClicked(QTreeWidgetItem *item, int column);
+
 private:
 	Ui::AnimationFrameEditor *ui;
 	Node*	mNode=nullptr;
@@ -51,6 +56,8 @@ private:
 	void setupNode();
 	void setupCurrentResource(const string &rName);
 	void buildAnimationFrameView();
+	void addSelectedFrames(bool setNextSelection);
+
 };
 
 #endif // ANIMATIONFRAMEEDITOR_H

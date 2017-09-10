@@ -41,6 +41,7 @@ public:
 	void updateGlWidget();
 	void currentPropertyValueChanged(Node* rNode, NodeInfoType rNodeInfoType);
 	void updateChildNodes(Node *rNode_parent, NodeInfoType rNodeInfoType);
+	void updateNodeName(Node *rNode, NodeInfoType rNodeInfoType);
 
 	void clearSelectedSceneNodes();
 	void clearSelectedSceneNode(Node *rDeselectedNode);

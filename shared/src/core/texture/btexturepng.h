@@ -32,6 +32,22 @@ public:
 		return loaded;
 	}
 
+	unsigned char* getRawData() {
+		unsigned char*rv=nullptr;
+		if (loaded) {
+			rv=&image[0];
+		}
+		return rv;
+	}
+
+	unsigned int getRawDataLength() {
+		unsigned int rv=0;
+		if (loaded) {
+			rv=image.size();
+		}
+		return rv;
+	}
+
 	void bind() {
         if (loaded) {
 			if (glTextureId==0) {
