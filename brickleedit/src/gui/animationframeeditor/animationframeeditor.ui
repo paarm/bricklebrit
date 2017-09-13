@@ -72,12 +72,12 @@
        <widget class="QPushButton" name="addFrame">
         <property name="maximumSize">
          <size>
-          <width>70</width>
+          <width>100</width>
           <height>16777215</height>
          </size>
         </property>
         <property name="text">
-         <string>Add</string>
+         <string>Add (+)</string>
         </property>
        </widget>
       </item>
@@ -85,12 +85,38 @@
        <widget class="QPushButton" name="removeFrame">
         <property name="maximumSize">
          <size>
-          <width>70</width>
+          <width>100</width>
           <height>16777215</height>
          </size>
         </property>
         <property name="text">
-         <string>Remove</string>
+         <string>Remove (-)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="moveUp">
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Move Up</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="moveDown">
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Move Down</string>
         </property>
        </widget>
       </item>
@@ -159,7 +185,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>820</x>

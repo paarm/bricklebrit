@@ -49,55 +49,63 @@ void AnimationFrameEditor::setupNode() {
 	}
 }
 
+void AnimationFrameEditor::addContentForFrameItem(QTreeWidgetItem* r, AnimationFrameEntry &e, int iEntryIndex) {
+    NodeResource* rNodeResource=ProjectContext::getInstance().getOrLoadResourceByName(e.resourcefile);
+    if (rNodeResource) {
+        Node* rNodeT=rNodeResource->getNodeWithNodeId(e.textureid);
+        if (rNodeT && rNodeT->getNodeType()==NodeType::Texture) {
+            NodeTexture *rNodeTexture=static_cast<NodeTexture*>(rNodeT);
+            NodeTextureFrame *rNodeTextureFrame=nullptr;
+            if (!e.frame.empty()) {
+                Node* rNodeF=rNodeTexture->getChildNodeWithNameAndNodeType(e.frame, NodeType::TextureFrame);
+                if (rNodeF) {
+                    rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeF);
+                }
+            }
+            BTexturePng *bTexture=ProjectContext::getInstance().getTexture(rNodeTexture->getPath());
+            if (bTexture) {
+                QLabel *rPreviewImage=new QLabel(QString::fromStdString(to_string(iEntryIndex)));
+                QImage img(bTexture->getRawData(), bTexture->width, bTexture->height, QImage::Format_RGBA8888);
+                if (rNodeTextureFrame) {
+                    QImage imgFrame=img.copy(rNodeTextureFrame->getFrame().x,
+                                             rNodeTextureFrame->getFrame().y,
+                                             rNodeTextureFrame->getFrame().width,
+                                             rNodeTextureFrame->getFrame().height);
+                    QImage scaled = imgFrame.scaled(30, 30, Qt::AspectRatioMode::KeepAspectRatio); // Scale image to show results better
+                    QPixmap rQPixmap = QPixmap::fromImage(scaled); // Create pixmap from image
+                    rPreviewImage->setPixmap(rQPixmap);
+                } else {
+                    QImage scaled = img.scaled(30, 30, Qt::AspectRatioMode::KeepAspectRatio); // Scale image to show results better
+                    QPixmap rQPixmap = QPixmap::fromImage(scaled); // Create pixmap from image
+                    rPreviewImage->setPixmap(rQPixmap);
+                }
+                ui->treeWidgetAnimation->setItemWidget(r,0, rPreviewImage);
+            }
+            //r->setText(0, QString::fromStdString(to_string(i)));
+            // Texture Name
+            r->setText(1, QString::fromStdString(rNodeTexture->getName()));
+            // Texture Frame Name
+            r->setText(2, QString::fromStdString(e.frame));
+            // Texture Path
+            r->setText(3, QString::fromStdString(rNodeTexture->getPath()));
+            // Resource File
+            r->setText(4, QString::fromStdString(e.resourcefile));
+        }
+    }
+}
+
+void AnimationFrameEditor::buildNewFrameForView(AnimationFrameEntry&e, int iEntryIndex) {
+    QTreeWidgetItem *r=new QTreeWidgetItem(ui->treeWidgetAnimation);
+    ui->treeWidgetAnimation->addTopLevelItem(r);
+    addContentForFrameItem(r, e, iEntryIndex);
+}
+
 void AnimationFrameEditor::buildAnimationFrameView() {
 	ui->treeWidgetAnimation->clear();
 	int i=0;
 	for(AnimationFrameEntry&e : mAnimationFrameEntryList) {
-		NodeResource* rNodeResource=ProjectContext::getInstance().getOrLoadResourceByName(e.resourcefile);
-		if (rNodeResource) {
-			Node* rNodeT=rNodeResource->getNodeWithNodeId(e.textureid);
-			if (rNodeT && rNodeT->getNodeType()==NodeType::Texture) {
-				NodeTexture *rNodeTexture=static_cast<NodeTexture*>(rNodeT);
-				NodeTextureFrame *rNodeTextureFrame=nullptr;
-				if (!e.frame.empty()) {
-					Node* rNodeF=rNodeTexture->getChildNodeWithNameAndNodeType(e.frame, NodeType::TextureFrame);
-					if (rNodeF) {
-						rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeF);
-					}
-				}
-				QTreeWidgetItem *r=new QTreeWidgetItem(ui->treeWidgetAnimation);
-				BTexturePng *bTexture=ProjectContext::getInstance().getTexture(rNodeTexture->getPath());
-				if (bTexture) {
-					QLabel *rPreviewImage=new QLabel(QString::fromStdString(to_string(i)));
-					QImage img(bTexture->getRawData(), bTexture->width, bTexture->height, QImage::Format_RGBA8888);
-					if (rNodeTextureFrame) {
-						QImage imgFrame=img.copy(rNodeTextureFrame->getFrame().x,
-												 rNodeTextureFrame->getFrame().y,
-												 rNodeTextureFrame->getFrame().width,
-												 rNodeTextureFrame->getFrame().height);
-						QImage scaled = imgFrame.scaled(30, 30, Qt::AspectRatioMode::KeepAspectRatio); // Scale image to show results better
-						QPixmap rQPixmap = QPixmap::fromImage(scaled); // Create pixmap from image
-						rPreviewImage->setPixmap(rQPixmap);
-					} else {
-						QImage scaled = img.scaled(30, 30, Qt::AspectRatioMode::KeepAspectRatio); // Scale image to show results better
-						QPixmap rQPixmap = QPixmap::fromImage(scaled); // Create pixmap from image
-						rPreviewImage->setPixmap(rQPixmap);
-					}
-					ui->treeWidgetAnimation->setItemWidget(r,0, rPreviewImage);
-				}
-				//r->setText(0, QString::fromStdString(to_string(i)));
-				// Texture Name
-				r->setText(1, QString::fromStdString(rNodeTexture->getName()));
-				// Texture Frame Name
-				r->setText(2, QString::fromStdString(e.frame));
-				// Texture Path
-				r->setText(3, QString::fromStdString(rNodeTexture->getPath()));
-				// Resource File
-				r->setText(4, QString::fromStdString(e.resourcefile));
-				ui->treeWidgetAnimation->addTopLevelItem(r);
-			}
-		}
-		i++;
+        buildNewFrameForView(e,i);
+        i++;
 	}
 }
 
@@ -222,10 +230,12 @@ void AnimationFrameEditor::addSelectedFrames(bool setNextSelection)
 				if (rNode->getNodeType()==NodeType::TextureFrame) {
 					NodeTextureFrame *rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNode);
 					mAnimationFrameEntryList.emplace_back(ui->resourceNameOpm->currentText().toStdString(), rNode->getParent()->getId(), rNodeTextureFrame->getName());
-				} else if (rNode->getNodeType()==NodeType::Texture) {
+                    buildNewFrameForView(mAnimationFrameEntryList.back(),mAnimationFrameEntryList.size()-1);
+                } else if (rNode->getNodeType()==NodeType::Texture) {
 					NodeTexture *rNodeTexture=static_cast<NodeTexture*>(rNode);
 					mAnimationFrameEntryList.emplace_back(ui->resourceNameOpm->currentText().toStdString(), rNodeTexture->getId(), "");
-				}
+                    buildNewFrameForView(mAnimationFrameEntryList.back(),mAnimationFrameEntryList.size()-1);
+                }
 			}
 		}
 		if (setNextSelection) {
@@ -242,7 +252,7 @@ void AnimationFrameEditor::addSelectedFrames(bool setNextSelection)
 			}
 		}
 
-		buildAnimationFrameView();
+        //buildAnimationFrameView();
 	}
 }
 
@@ -254,9 +264,10 @@ void AnimationFrameEditor::on_removeFrame_clicked()
 		firstSelectedRow=indexes.at(0).row();
 		for (int i=indexes.size()-1;i>=0;i--) {
 			mAnimationFrameEntryList.erase(mAnimationFrameEntryList.begin()+indexes.at(i).row());
-		}
+            ui->treeWidgetAnimation->takeTopLevelItem(indexes.at(i).row());
+        }
 		mAnimationFrameEntryList.shrink_to_fit();
-		buildAnimationFrameView();
+        //buildAnimationFrameView();
 		if (firstSelectedRow>=0) {
 			if (ui->treeWidgetAnimation->topLevelItemCount()>firstSelectedRow) {
 				ui->treeWidgetAnimation->topLevelItem(firstSelectedRow)->setSelected(true);
@@ -267,3 +278,45 @@ void AnimationFrameEditor::on_removeFrame_clicked()
 	}
 }
 
+void AnimationFrameEditor::moveUpDown(int rIndex, bool rDown) {
+    unsigned int src=(unsigned int)rIndex;
+    unsigned int dest=(unsigned int)rIndex;
+    if (rDown) {
+        dest++;
+    } else {
+        dest--;
+    }
+    unsigned int cnt=mAnimationFrameEntryList.size();
+    if (src<cnt && dest<cnt) {
+        std::swap(mAnimationFrameEntryList[src], mAnimationFrameEntryList[dest]);
+        //QTreeWidgetItem* r=ui->treeWidgetAnimation->topLevelItem(src);
+        ui->treeWidgetAnimation->topLevelItem(src)->setSelected(false);
+        QTreeWidgetItem* r=ui->treeWidgetAnimation->takeTopLevelItem(src);
+        //buildNewFrameForView(mAnimationFrameEntryList[dest],dest);
+        ui->treeWidgetAnimation->insertTopLevelItem(dest,r);
+        addContentForFrameItem(r, mAnimationFrameEntryList[dest], dest);
+        ui->treeWidgetAnimation->setCurrentItem(r);
+        //buildAnimationFrameView();
+        ui->treeWidgetAnimation->topLevelItem(dest)->setSelected(true);
+    }
+}
+
+void AnimationFrameEditor::on_moveDown_clicked()
+{
+    int firstSelectedRow=-1;
+    QModelIndexList indexes = ui->treeWidgetAnimation->selectionModel()->selectedRows();
+    if (indexes.size()>0) {
+        firstSelectedRow=indexes.at(0).row();
+        moveUpDown(indexes.at(0).row(), true);
+    }
+}
+
+void AnimationFrameEditor::on_moveUp_clicked()
+{
+    int firstSelectedRow=-1;
+    QModelIndexList indexes = ui->treeWidgetAnimation->selectionModel()->selectedRows();
+    if (indexes.size()>0) {
+        firstSelectedRow=indexes.at(0).row();
+        moveUpDown(indexes.at(0).row(), false);
+    }
+}

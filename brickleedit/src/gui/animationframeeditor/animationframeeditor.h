@@ -49,14 +49,21 @@ private slots:
 
 	void on_treeWidgetTextures_itemDoubleClicked(QTreeWidgetItem *item, int column);
 
+    void on_moveDown_clicked();
+    
+    void on_moveUp_clicked();
+    
 private:
 	Ui::AnimationFrameEditor *ui;
 	Node*	mNode=nullptr;
 	vector<AnimationFrameEntry> mAnimationFrameEntryList;
 	void setupNode();
 	void setupCurrentResource(const string &rName);
-	void buildAnimationFrameView();
+    void addContentForFrameItem(QTreeWidgetItem* r, AnimationFrameEntry &e, int iEntryIndex);
+    void buildNewFrameForView(AnimationFrameEntry&e, int iEntryIndex);
+    void buildAnimationFrameView();
 	void addSelectedFrames(bool setNextSelection);
+    void moveUpDown(int rIndex, bool rDown);
 
 };
 
