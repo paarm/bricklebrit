@@ -70,11 +70,11 @@ private:
 	int		 mImageHeight=0;
 	bool	 mImageLoaded=false;
 	void setupNode();
+	void addContentForFrameItem(QTreeWidgetItem *r, TextureFrameEntry& rTextureFrameEntry);
 	void createFrame(const string&rName, int x, int y, int w, int h);
-	int getTextureFrameEntryIndexFromTreeWidgetItem(QTreeWidgetItem* rTreeWidgetItem);
     void setupTexture(const string &rName);
 
-	void updateFrameView();
+	//void updateFrameView();
 
 };
 

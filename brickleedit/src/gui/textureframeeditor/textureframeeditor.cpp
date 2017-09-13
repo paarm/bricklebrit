@@ -34,7 +34,7 @@ void TextureFrameEditor::setupNode() {
 									rNodeTextureFrame->getFrame().width,rNodeTextureFrame->getFrame().height);
 					}
 				}
-				updateFrameView();
+				//updateFrameView();
 			}
 		}
 	}
@@ -70,7 +70,8 @@ void TextureFrameEditor::on_pushButton_clicked()
     if (!rName.empty() && rName!=ui->textureName->text().toStdString()) {
         setupTexture(rName);
         mTextureFrameEntryList.clear();
-        updateFrameView();
+		ui->treeWidget->clear();
+		//updateFrameView();
     }
 }
 
@@ -129,7 +130,7 @@ void TextureFrameEditor::on_addFrames_clicked()
 				createFrame("", ix*w, iy*h, w, h);
 			}
 		}
-		updateFrameView();
+		//updateFrameView();
 	}
 }
 
@@ -160,23 +161,38 @@ void TextureFrameEditor::createFrame(const string&rName, int x, int y, int w, in
 		}
 	}
 	mTextureFrameEntryList.emplace_back(name,x,y,w,h);
+	QTreeWidgetItem *r=new QTreeWidgetItem();
+	ui->treeWidget->addTopLevelItem(r);
+	addContentForFrameItem(r, mTextureFrameEntryList.back());
 }
 
+void TextureFrameEditor::addContentForFrameItem(QTreeWidgetItem *r, TextureFrameEntry& rTextureFrameEntry) {
+	QLabel *rPreviewImage=new QLabel(QString::fromStdString(rTextureFrameEntry.name));
+	QPixmap imgFrame=mImage.copy(rTextureFrameEntry.x, rTextureFrameEntry.y, rTextureFrameEntry.w, rTextureFrameEntry.h);
+	imgFrame=imgFrame.scaled(QSize(30,30), Qt::KeepAspectRatio);
+	//QPixmap rQPixmap = QPixmap::fromImage(imgFrame); // Create pixmap from image
+	rPreviewImage->setPixmap(imgFrame);
+	ui->treeWidget->setItemWidget(r,0, rPreviewImage);
+
+	//r->setText(0, QString::fromStdString(rTextureFrameEntry.name));
+	r->setText(1, QString::number(rTextureFrameEntry.x));
+	r->setText(2, QString::number(rTextureFrameEntry.y));
+	r->setText(3, QString::number(rTextureFrameEntry.w));
+	r->setText(4, QString::number(rTextureFrameEntry.h));
+}
+
+#if 0
 void TextureFrameEditor::updateFrameView() {
 	ui->treeWidget->clear();
 	int i=0;
 	for(auto&rTextureFrameEntry : mTextureFrameEntryList) {
 		QTreeWidgetItem *r=new QTreeWidgetItem();
-		r->setText(0, QString::fromStdString(rTextureFrameEntry.name));
-		r->setText(1, QString::number(rTextureFrameEntry.x));
-		r->setText(2, QString::number(rTextureFrameEntry.y));
-		r->setText(3, QString::number(rTextureFrameEntry.w));
-		r->setText(4, QString::number(rTextureFrameEntry.h));
 		ui->treeWidget->addTopLevelItem(r);
+		addContentForFrameItem(r, rTextureFrameEntry);
 		i++;
 	}
 }
-
+#endif
 void TextureFrameEditor::on_addSingleFrame_clicked()
 {
 	int x=max(0,ui->xFrame->value());
@@ -191,56 +207,31 @@ void TextureFrameEditor::on_addSingleFrame_clicked()
 	h=min(h, mImageHeight-y);
 
 	createFrame("", x, y, w, h);
-	updateFrameView();
-}
-
-int TextureFrameEditor::getTextureFrameEntryIndexFromTreeWidgetItem(QTreeWidgetItem* rTreeWidgetItem) {
-	int idx=0;
-	int rv=-1;
-	for(auto&rTextureFrameEntry : mTextureFrameEntryList) {
-		if (rTextureFrameEntry.name==rTreeWidgetItem->text(0).toStdString()) {
-			rv=idx;
-			break;
-		}
-		idx++;
-	}
-	return rv;
+	//updateFrameView();
 }
 
 void TextureFrameEditor::on_removeFrame_clicked()
 {
-	QList<QTreeWidgetItem*>selectedItems=ui->treeWidget->selectedItems();
-	if (selectedItems.count()>0) {
-		int firstSelected=-1;
-		for (int i=selectedItems.count()-1;i>=0;i--) {
-			QTreeWidgetItem *r=selectedItems.at(i);
-			int idx=0;
-			int frame=-1;
-			for(auto&rTextureFrameEntry : mTextureFrameEntryList) {
-				if (rTextureFrameEntry.name==r->text(0).toStdString()) {
-					frame=idx;
-					break;
-				}
-				idx++;
-			}
-			if (frame>=0) {
-				if (firstSelected==-1) {
-					firstSelected=frame;
-				}
-			}
-			mTextureFrameEntryList.erase(mTextureFrameEntryList.begin()+frame);
+	int firstSelectedRow=-1;
+	QModelIndexList indexes = ui->treeWidget->selectionModel()->selectedRows();
+	if (indexes.size()>0) {
+		firstSelectedRow=indexes.at(0).row();
+		for (int i=indexes.size()-1;i>=0;i--) {
+			mTextureFrameEntryList.erase(mTextureFrameEntryList.begin()+indexes.at(i).row());
+			ui->treeWidget->takeTopLevelItem(indexes.at(i).row());
 		}
 		mTextureFrameEntryList.shrink_to_fit();
-		updateFrameView();
-
-		int selectThisIndex=-1;
-		if (firstSelected>=0 && ui->treeWidget->topLevelItemCount()>firstSelected) {
-			selectThisIndex=firstSelected;
-		} else if (ui->treeWidget->topLevelItemCount()>0) {
-			selectThisIndex=ui->treeWidget->topLevelItemCount()-1;
-		}
-		if (selectThisIndex>=0) {
-			ui->treeWidget->topLevelItem(selectThisIndex)->setSelected(true);
+		//buildAnimationFrameView();
+		if (firstSelectedRow>=0) {
+			if (ui->treeWidget->topLevelItemCount()>firstSelectedRow) {
+				ui->treeWidget->topLevelItem(firstSelectedRow)->setSelected(true);
+				on_treeWidget_itemClicked(ui->treeWidget->topLevelItem(firstSelectedRow),0);
+			} else if (ui->treeWidget->topLevelItemCount()>0) {
+				ui->treeWidget->topLevelItem(ui->treeWidget->topLevelItemCount()-1)->setSelected(true);
+				on_treeWidget_itemClicked(ui->treeWidget->topLevelItem(ui->treeWidget->topLevelItemCount()-1),0);
+			} else {
+				ui->previewFrame->setPixmap(QPixmap());
+			}
 		}
 	}
 }
@@ -248,8 +239,8 @@ void TextureFrameEditor::on_removeFrame_clicked()
 void TextureFrameEditor::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)
 {
 	if (mImageLoaded && item && column>=0) {
-		int rIndex=getTextureFrameEntryIndexFromTreeWidgetItem(item);
-		if (rIndex>=0) {
+		int rIndex=ui->treeWidget->indexOfTopLevelItem(item);
+		if (rIndex>=0 && mTextureFrameEntryList.size()>rIndex) {
 			TextureFrameEntry &rTextureFrameEntry=mTextureFrameEntryList.at(rIndex);
 			mImageFrame=mImage.copy(rTextureFrameEntry.x, rTextureFrameEntry.y, rTextureFrameEntry.w, rTextureFrameEntry.h);
 			mImageFrame=mImageFrame.scaled(QSize(100,100), Qt::KeepAspectRatio);

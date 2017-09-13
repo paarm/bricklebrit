@@ -228,6 +228,7 @@ void PropertyTreeDock::addSubProperty(Node* rNode, PropertyBase* rPropertyBase, 
 	rTreeWidgetSubItem->setText(1,QString::fromStdString(rValue));
 	rTreeWidgetSubItem->setFlags(rTreeWidgetSubItem->flags()|Qt::ItemIsEditable);
 	rTreeWidgetItem->addChild(rTreeWidgetSubItem);
+	rTreeWidgetItem->setExpanded(true);
 	//r->setExpanded(true);
 }
 

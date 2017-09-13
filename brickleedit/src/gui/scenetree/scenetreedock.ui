@@ -12,8 +12,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>350</width>
-    <height>225</height>
+    <width>422</width>
+    <height>289</height>
    </size>
   </property>
   <property name="baseSize">
@@ -36,7 +36,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="scene">
        <property name="sizePolicy">
@@ -157,7 +157,24 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QPushButton" name="newResource">
+           <widget class="QComboBox" name="resourceNameOpm"/>
+          </item>
+          <item>
+           <widget class="QToolButton" name="resourceMenu">
+            <property name="text">
+             <string>Resources</string>
+            </property>
+            <property name="popupMode">
+             <enum>QToolButton::InstantPopup</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QPushButton" name="newTexture">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -169,6 +186,9 @@
             </property>
             <property name="styleSheet">
              <string notr="true">image: url(:/icons/newproject.png);</string>
+            </property>
+            <property name="text">
+             <string>Texture</string>
             </property>
             <property name="icon">
              <iconset resource="../resources/resource.qrc">
@@ -186,17 +206,34 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="resourceNameOpm"/>
-          </item>
-          <item>
-           <widget class="QToolButton" name="resourceMenu">
-            <property name="text">
-             <string>Resources</string>
+           <widget class="QPushButton" name="newAnimation">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
-            <property name="popupMode">
-             <enum>QToolButton::InstantPopup</enum>
+            <property name="text">
+             <string>Animation</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources/resource.qrc">
+              <normaloff>:/icons/new.png</normaloff>:/icons/new.png</iconset>
             </property>
            </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </item>

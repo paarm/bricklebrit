@@ -178,7 +178,7 @@ void AnimationFrameEditor::on_okButton_clicked()
 		Node*rNode=getInstanceFromNodeType(rNodeType, true);
 		if (rNode) {
 			NodeAnimationFrame *rNodeAnimationFrame=static_cast<NodeAnimationFrame*>(rNode);
-			rNodeAnimationFrame->setName(rAnimationFrameEntry.frame);
+			rNodeAnimationFrame->setName(to_string(i));
 			rNodeAnimationFrame->getFrameRef().frame=rAnimationFrameEntry.frame;
 			rNodeAnimationFrame->getFrameRef().textureid=rAnimationFrameEntry.textureid;
 			rNodeAnimationFrame->getFrameRef().resourcefile=rAnimationFrameEntry.resourcefile;

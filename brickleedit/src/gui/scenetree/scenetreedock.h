@@ -59,6 +59,10 @@ private slots:
 
 	void on_resourceNameOpm_currentIndexChanged(int index);
 
+	void on_newTexture_clicked();
+
+	void on_newAnimation_clicked();
+
 private:
 	Ui::SceneTreeDock *ui;
 	NewSceneNodeDialog *newSceneNodeDialog=nullptr;

@@ -39,7 +39,8 @@ void SceneTreeDock::setSceneEditable(bool isEditable) {
 }
 
 void SceneTreeDock::setResourceEditable(bool isEditable) {
-	ui->newResource->setEnabled(isEditable);
+	ui->newTexture->setEnabled(isEditable);
+	ui->newAnimation->setEnabled(isEditable);
 }
 
 void SceneTreeDock::setProjectAvailable(bool isActive) {
@@ -47,23 +48,6 @@ void SceneTreeDock::setProjectAvailable(bool isActive) {
 	ui->resourceMenu->setEnabled(isActive);
 }
 
-void SceneTreeDock::on_newNode_clicked()
-{
-	if (newSceneNodeDialog==nullptr) {
-		newSceneNodeDialog=new NewSceneNodeDialog(NodeInfoType::Scene, this);
-		QObject::connect(newSceneNodeDialog, &NewSceneNodeDialog::newNodeSelected, &GuiContext::getInstance(), &GuiContext::onCreateNewNode);
-	}
-	newSceneNodeDialog->show();
-}
-
-void SceneTreeDock::on_newResource_clicked()
-{
-	if (newResourceNodeDialog==nullptr) {
-		newResourceNodeDialog=new NewSceneNodeDialog(NodeInfoType::Resource, this);
-		QObject::connect(newResourceNodeDialog, &NewSceneNodeDialog::newNodeSelected, &GuiContext::getInstance(), &GuiContext::onCreateNewNode);
-	}
-	newResourceNodeDialog->show();
-}
 
 int SceneTreeDock::getActiveTreeTabIndex() {
 	return ui->tabWidget->currentIndex();
@@ -415,4 +399,33 @@ void SceneTreeDock::on_resourceNameOpm_currentIndexChanged(int index)
 		name=ui->resourceNameOpm->itemText(index).toStdString();
 	}
 	GuiContext::getInstance().setCurrentResource(name);
+}
+
+
+void SceneTreeDock::on_newNode_clicked()
+{
+	if (newSceneNodeDialog==nullptr) {
+		newSceneNodeDialog=new NewSceneNodeDialog(NodeInfoType::Scene, this);
+		QObject::connect(newSceneNodeDialog, &NewSceneNodeDialog::newNodeSelected, &GuiContext::getInstance(), &GuiContext::onCreateNewNode);
+	}
+	newSceneNodeDialog->show();
+}
+
+void SceneTreeDock::on_newResource_clicked()
+{
+	if (newResourceNodeDialog==nullptr) {
+		newResourceNodeDialog=new NewSceneNodeDialog(NodeInfoType::Resource, this);
+		QObject::connect(newResourceNodeDialog, &NewSceneNodeDialog::newNodeSelected, &GuiContext::getInstance(), &GuiContext::onCreateNewNode);
+	}
+	newResourceNodeDialog->show();
+}
+
+void SceneTreeDock::on_newTexture_clicked()
+{
+
+}
+
+void SceneTreeDock::on_newAnimation_clicked()
+{
+
 }
