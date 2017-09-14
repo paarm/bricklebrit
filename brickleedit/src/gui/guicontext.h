@@ -57,5 +57,7 @@ public slots:
 	void onNewResourceClicked();
 	// Scene Tree
 	void onCreateNewNode(QString rNodeTypeName, NodeInfoType rNodeInfoType);
+	void insertNewNode(Node *rNode, NodeInfoType rNodeInfoType);
+
 };
 

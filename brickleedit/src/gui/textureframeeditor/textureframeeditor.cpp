@@ -88,27 +88,39 @@ void TextureFrameEditor::on_TextureFrameEditor_rejected()
 void TextureFrameEditor::on_okButton_clicked()
 {
 	int i=0;
-	mNode->deleteChildNodes();
-    NodeTexture* rNodeTexture=static_cast<NodeTexture*>(mNode);
-    rNodeTexture->setPath(ui->textureName->text().toStdString());
-    rNodeTexture->setName(ui->textureName->text().toStdString());
-
-	NodeType rNodeType=NodeType::TextureFrame;
-	for(auto&rTextureFrameEntry : mTextureFrameEntryList) {
-		Node*rNode=getInstanceFromNodeType(rNodeType, true);
-		if (rNode) {
-			NodeTextureFrame *rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNode);
-			rNodeTextureFrame->setName(rTextureFrameEntry.name);
-			rNodeTextureFrame->getFrame().x=rTextureFrameEntry.x;
-			rNodeTextureFrame->getFrame().y=rTextureFrameEntry.y;
-			rNodeTextureFrame->getFrame().width=rTextureFrameEntry.w;
-			rNodeTextureFrame->getFrame().height=rTextureFrameEntry.h;
-			mNode->addChildNode(rNodeTextureFrame);
-		}
-		i++;
+	bool isNewNode=true;
+	if (mNode) {
+		isNewNode=false;
+		mNode->deleteChildNodes();
+	} else {
+		mNode=getInstanceFromNodeType(NodeType::Texture, true);
 	}
-	GuiContext::getInstance().updateChildNodes(mNode, NodeInfoType::Resource);
-    GuiContext::getInstance().updateNodeName(mNode, NodeInfoType::Resource);
+	if (mNode) {
+		NodeTexture* rNodeTexture=static_cast<NodeTexture*>(mNode);
+		rNodeTexture->setPath(ui->textureName->text().toStdString());
+		rNodeTexture->setName(ui->textureName->text().toStdString());
+
+		NodeType rNodeType=NodeType::TextureFrame;
+		for(auto&rTextureFrameEntry : mTextureFrameEntryList) {
+			Node*rNode=getInstanceFromNodeType(rNodeType, true);
+			if (rNode) {
+				NodeTextureFrame *rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNode);
+				rNodeTextureFrame->setName(rTextureFrameEntry.name);
+				rNodeTextureFrame->getFrame().x=rTextureFrameEntry.x;
+				rNodeTextureFrame->getFrame().y=rTextureFrameEntry.y;
+				rNodeTextureFrame->getFrame().width=rTextureFrameEntry.w;
+				rNodeTextureFrame->getFrame().height=rTextureFrameEntry.h;
+				mNode->addChildNode(rNodeTextureFrame);
+			}
+			i++;
+		}
+		if (isNewNode) {
+			GuiContext::getInstance().insertNewNode(mNode, NodeInfoType::Resource);
+		} else {
+			GuiContext::getInstance().updateChildNodes(mNode, NodeInfoType::Resource);
+			GuiContext::getInstance().updateNodeName(mNode, NodeInfoType::Resource);
+		}
+	}
     deleteLater();
 }
 

@@ -303,6 +303,26 @@ void GuiContext::updateChildNodes(Node *rNode_parent, NodeInfoType rNodeInfoType
 	updateGlWidget();
 }
 
+void GuiContext::insertNewNode(Node *rNode, NodeInfoType rNodeInfoType) {
+	if (rNode) {
+		Node *rNode_parent=nullptr;
+		QTreeWidgetItem *parent=nullptr;
+		if (rNodeInfoType==NodeInfoType::Resource) {
+			parent=getMainWindow().getSceneTreeDock().getRootItem(rNodeInfoType);
+		} else {
+			parent=getMainWindow().getSceneTreeDock().getSelectedItem(rNodeInfoType);
+		}
+		if (parent) {
+			rNode_parent=TreeUtil::getNodeFromTreeItem(parent);
+			if (rNode_parent) {
+				rNode_parent->addChildNode(rNode);
+				getMainWindow().getSceneTreeDock().addNode(parent, rNode, rNodeInfoType);
+				updateGlWidget();
+			}
+		}
+	}
+}
+
 void GuiContext::updateNodeName(Node *rNode, NodeInfoType rNodeInfoType) {
 	getMainWindow().getSceneTreeDock().updateNodeName(rNode, rNodeInfoType);
 	//updateGlWidget();

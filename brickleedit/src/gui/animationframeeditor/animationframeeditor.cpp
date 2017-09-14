@@ -19,33 +19,36 @@ AnimationFrameEditor::~AnimationFrameEditor()
 }
 
 void AnimationFrameEditor::setupNode() {
+	string currentResourceName="";
+	if (GuiContext::getInstance().getCurrentResource()) {
+		currentResourceName=GuiContext::getInstance().getCurrentResource()->getName();
+	}
+
+	vector<string> v=ProjectContext::getInstance().getFileNamesForType(NodeInfoType::Resource);
+	int i=0;
+	for (auto& s : v) {
+		ui->resourceNameOpm->addItem(QString::fromStdString(s));
+		if (s==currentResourceName) {
+			ui->resourceNameOpm->setCurrentIndex(i);
+		}
+		i++;
+	}
+
 	if (mNode) {
-		int i=0;
-		string currentResourceName="";
 
 		if (mNode->getNodeType()==NodeType::Animation) {
 			NodeAnimation *rNodeAnimation=static_cast<NodeAnimation*>(mNode);
 			ui->animationName->setText(QString::fromStdString(rNodeAnimation->getName()));
 		}
 
-		if (GuiContext::getInstance().getCurrentResource()) {
-			currentResourceName=GuiContext::getInstance().getCurrentResource()->getName();
-		}
-
-		vector<string> v=ProjectContext::getInstance().getFileNamesForType(NodeInfoType::Resource);
-		for (auto& s : v) {
-			ui->resourceNameOpm->addItem(QString::fromStdString(s));
-			if (s==currentResourceName) {
-				ui->resourceNameOpm->setCurrentIndex(i);
-			}
-			i++;
-		}
 		vector<Node*> vAnimationFrames=mNode->getChildNodesWithNodeType(NodeType::AnimationFrame);
 		for (auto rNode : vAnimationFrames) {
 			NodeAnimationFrame* rNodeAnimationFrame=static_cast<NodeAnimationFrame*>(rNode);
 			mAnimationFrameEntryList.emplace_back(rNodeAnimationFrame->getFrameRef().resourcefile, rNodeAnimationFrame->getFrameRef().textureid, rNodeAnimationFrame->getFrameRef().frame );
 		}
 		buildAnimationFrameView();
+	} else {
+		ui->animationName->setText("New Animation");
 	}
 }
 
@@ -171,23 +174,35 @@ void AnimationFrameEditor::setupCurrentResource(const string &rName) {
 void AnimationFrameEditor::on_okButton_clicked()
 {
 	int i=0;
-	mNode->deleteChildNodes();
-	mNode->setName(ui->animationName->text().toStdString());
-	NodeType rNodeType=NodeType::AnimationFrame;
-	for(auto&rAnimationFrameEntry : mAnimationFrameEntryList) {
-		Node*rNode=getInstanceFromNodeType(rNodeType, true);
-		if (rNode) {
-			NodeAnimationFrame *rNodeAnimationFrame=static_cast<NodeAnimationFrame*>(rNode);
-			rNodeAnimationFrame->setName(to_string(i));
-			rNodeAnimationFrame->getFrameRef().frame=rAnimationFrameEntry.frame;
-			rNodeAnimationFrame->getFrameRef().textureid=rAnimationFrameEntry.textureid;
-			rNodeAnimationFrame->getFrameRef().resourcefile=rAnimationFrameEntry.resourcefile;
-			mNode->addChildNode(rNodeAnimationFrame);
-		}
-		i++;
+	bool isNewNode=true;
+	if (mNode) {
+		isNewNode=false;
+		mNode->deleteChildNodes();
+	} else {
+		mNode=getInstanceFromNodeType(NodeType::Animation, true);
 	}
-	GuiContext::getInstance().updateNodeName(mNode, NodeInfoType::Resource);
-	GuiContext::getInstance().updateChildNodes(mNode, NodeInfoType::Resource);
+	if (mNode) {
+		mNode->setName(ui->animationName->text().toStdString());
+		NodeType rNodeType=NodeType::AnimationFrame;
+		for(auto&rAnimationFrameEntry : mAnimationFrameEntryList) {
+			Node*rNode=getInstanceFromNodeType(rNodeType, true);
+			if (rNode) {
+				NodeAnimationFrame *rNodeAnimationFrame=static_cast<NodeAnimationFrame*>(rNode);
+				rNodeAnimationFrame->setName(to_string(i));
+				rNodeAnimationFrame->getFrameRef().frame=rAnimationFrameEntry.frame;
+				rNodeAnimationFrame->getFrameRef().textureid=rAnimationFrameEntry.textureid;
+				rNodeAnimationFrame->getFrameRef().resourcefile=rAnimationFrameEntry.resourcefile;
+				mNode->addChildNode(rNodeAnimationFrame);
+			}
+			i++;
+		}
+		if (isNewNode) {
+			GuiContext::getInstance().insertNewNode(mNode, NodeInfoType::Resource);
+		} else {
+			GuiContext::getInstance().updateNodeName(mNode, NodeInfoType::Resource);
+			GuiContext::getInstance().updateChildNodes(mNode, NodeInfoType::Resource);
+		}
+	}
 	deleteLater();
 }
 

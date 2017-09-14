@@ -422,10 +422,12 @@ void SceneTreeDock::on_newResource_clicked()
 
 void SceneTreeDock::on_newTexture_clicked()
 {
-
+	TextureFrameEditor *rTextureFrameEditor=new TextureFrameEditor(nullptr, this);
+	rTextureFrameEditor->show();
 }
 
 void SceneTreeDock::on_newAnimation_clicked()
 {
-
+	AnimationFrameEditor *rAnimationFrameEditor=new AnimationFrameEditor(nullptr, this);
+	rAnimationFrameEditor->show();
 }
