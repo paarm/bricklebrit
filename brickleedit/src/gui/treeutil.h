@@ -15,6 +15,7 @@ public:
 	static void setNodeNameToTreeItem(QTreeWidgetItem* r, Node *rNode);
 	static void setNodeToTreeItem(QTreeWidgetItem* r, Node *rNode);
 	static string getNodeNameWithId(Node *rNode);
+	static void fillTreeWidgetWithTexturesFromResource(QTreeWidget *rQTreeWidget, const string &rResourceName, bool textures, bool animations);
 };
 
 #endif // TREEUTIL_H

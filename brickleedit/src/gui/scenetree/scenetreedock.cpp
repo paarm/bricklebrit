@@ -3,6 +3,7 @@
 #include "../guicontext.h"
 #include "../textureframeeditor/textureframeeditor.h"
 #include "../animationframeeditor/animationframeeditor.h"
+#include "../spriteeditor/spriteeditor.h"
 #include "../treeutil.h"
 
 SceneTreeDock::SceneTreeDock(QWidget *parent) :
@@ -268,6 +269,15 @@ QTreeWidgetItem* SceneTreeDock::addNodeX(QTreeWidgetItem *parent, Node* rNode, Q
 			connect(rButton, &QPushButton::clicked, this, [rButton, rNode, this]() {
 				AnimationFrameEditor *rAnimationFrameEditor=new AnimationFrameEditor(rNode, this);
 				rAnimationFrameEditor->show();
+			});
+			rQTreeWidget->setItemWidget(r, 2, rButton);
+		} else if (rNode->getNodeType()==NodeType::Sprite) {
+			QPushButton *rButton=new QPushButton("S",rQTreeWidget);
+			rButton->setToolTip(tr("Edit Sprite..."));
+			rButton->setFixedWidth(rButton->fontMetrics().width(" ... "));
+			connect(rButton, &QPushButton::clicked, this, [rButton, rNode, this]() {
+				SpriteEditor *rSpriteEditor=new SpriteEditor(rNode, this);
+				rSpriteEditor->show();
 			});
 			rQTreeWidget->setItemWidget(r, 2, rButton);
 		}

@@ -6,5 +6,9 @@
         <file>icons/open.png</file>
         <file>icons/newAnimation.png</file>
         <file>icons/newTexture.png</file>
+        <file>icons/delete.png</file>
+        <file>icons/down.png</file>
+        <file>icons/plus.png</file>
+        <file>icons/up.png</file>
     </qresource>
 </RCC>

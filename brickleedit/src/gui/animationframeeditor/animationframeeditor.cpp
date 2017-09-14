@@ -112,64 +112,6 @@ void AnimationFrameEditor::buildAnimationFrameView() {
 	}
 }
 
-void AnimationFrameEditor::setupCurrentResource(const string &rName) {
-	ui->treeWidgetTextures->clear();
-	NodeResource* rNodeResource=ProjectContext::getInstance().getOrLoadResourceByName(rName);
-	if (rNodeResource) {
-		int cnt=rNodeResource->getChildCount();
-		for (int i=0;i<cnt;i++) {
-			Node *rNode=rNodeResource->getNodeFromIndex(i);
-			if (rNode && rNode->getNodeType()==NodeType::Texture) {
-				NodeTexture* rNodeTexture=static_cast<NodeTexture*>(rNode);
-				QTreeWidgetItem *r=new QTreeWidgetItem(ui->treeWidgetTextures);
-				r->setText(0,QString::fromStdString(TreeUtil::getNodeNameWithId(rNode)));
-				//TreeUtil::setTypeNameToTreeItem(r,rNode);
-				//TreeUtil::setNodeNameToTreeItem(r,rNode);
-				TreeUtil::setNodeDataToTreeItem(r,rNode);
-
-				BTexturePng *bTexture=ProjectContext::getInstance().getTexture(rNodeTexture->getPath());
-				if (bTexture) {
-					QLabel *rPreviewImage=new QLabel(QString::fromStdString(to_string(i)));
-					QImage img(bTexture->getRawData(), bTexture->width, bTexture->height, QImage::Format_RGBA8888);
-					QImage scaled = img.scaled(60, 60, Qt::AspectRatioMode::KeepAspectRatio); // Scale image to show results better
-					QPixmap rQPixmap = QPixmap::fromImage(scaled); // Create pixmap from image
-					rPreviewImage->setPixmap(rQPixmap);
-					ui->treeWidgetTextures->setItemWidget(r,1, rPreviewImage);
-					//TreeUtil::setNodeToTreeItem(r, rNode);
-					ui->treeWidgetTextures->addTopLevelItem(r);
-					r->setExpanded(true);
-
-					if (rNode->getChildCount()>0) {
-						unsigned long countChild=rNode->getChildCount();
-						for (unsigned long i=0;i<countChild;i++) {
-							Node *rNodeChild=rNode->getNodeFromIndex(i);
-							if (rNodeChild && rNodeChild->getNodeType()==NodeType::TextureFrame) {
-								NodeTextureFrame *rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeChild);
-								QTreeWidgetItem *rc=new QTreeWidgetItem(r);
-								rc->setText(0,QString::fromStdString("Frame: "+TreeUtil::getNodeNameWithId(rNodeChild)));
-
-								//TreeUtil::setNodeNameToTreeItem(r,rNode);
-								TreeUtil::setNodeDataToTreeItem(rc,rNodeChild);
-
-								QLabel *rPreviewImageFrame=new QLabel(QString::fromStdString(rNodeTextureFrame->getName()));
-
-								QImage imgFrame=img.copy(rNodeTextureFrame->getFrame().x,
-															 rNodeTextureFrame->getFrame().y,
-															 rNodeTextureFrame->getFrame().width,
-															 rNodeTextureFrame->getFrame().height);
-								QImage scaledFrame = imgFrame.scaled(30, 30, Qt::AspectRatioMode::KeepAspectRatio); // Scale image to show results better
-								QPixmap rQPixmapFrame = QPixmap::fromImage(scaledFrame); // Create pixmap from image
-								rPreviewImageFrame->setPixmap(rQPixmapFrame);
-								ui->treeWidgetTextures->setItemWidget(rc,1, rPreviewImageFrame);
-								r->addChild(rc);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-}
 
 void AnimationFrameEditor::on_okButton_clicked()
 {
@@ -220,7 +162,7 @@ void AnimationFrameEditor::on_AnimationFrameEditor_rejected()
 void AnimationFrameEditor::on_resourceNameOpm_currentIndexChanged(int index)
 {
 	QString rCurrentResource=ui->resourceNameOpm->currentText();
-	setupCurrentResource(rCurrentResource.toStdString());
+	TreeUtil::fillTreeWidgetWithTexturesFromResource(ui->treeWidgetTextures, rCurrentResource.toStdString(), true, false);
 }
 
 
