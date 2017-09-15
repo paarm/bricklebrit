@@ -35,7 +35,6 @@ void AnimationFrameEditor::setupNode() {
 	}
 
 	if (mNode) {
-
 		if (mNode->getNodeType()==NodeType::Animation) {
 			NodeAnimation *rNodeAnimation=static_cast<NodeAnimation*>(mNode);
 			ui->animationName->setText(QString::fromStdString(rNodeAnimation->getName()));

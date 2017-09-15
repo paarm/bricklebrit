@@ -325,6 +325,7 @@ void GuiContext::insertNewNode(Node *rNode, NodeInfoType rNodeInfoType) {
 
 void GuiContext::updateNodeName(Node *rNode, NodeInfoType rNodeInfoType) {
 	getMainWindow().getSceneTreeDock().updateNodeName(rNode, rNodeInfoType);
+	getMainWindow().getPropertyTreeDock().setPropertiesForNode(rNode, rNodeInfoType);
 	//updateGlWidget();
 }
 

@@ -9,6 +9,13 @@ namespace Ui {
 class SpriteEditor;
 }
 
+struct CurrentRef {
+	//Node	*rNode;
+	string	resourceName;
+	int		id;
+	string	frameName;
+};
+
 class SpriteEditor : public QDialog
 {
 	Q_OBJECT
@@ -26,10 +33,15 @@ private slots:
 
 	void on_resourceNameOpm_currentIndexChanged(const QString &arg1);
 
+	void on_treeWidget_itemClicked(QTreeWidgetItem *item, int column);
+
 private:
 	Ui::SpriteEditor *ui;
-	Node*	mNode=nullptr;
+	NodeSprite*	mNode=nullptr;
+	CurrentRef mCurrentRef;
 	void setupNode();
+	void updateSelectedFrame(Node *rNode, bool setWidthAndHeight);
+
 
 };
 

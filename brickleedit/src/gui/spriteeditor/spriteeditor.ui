@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>632</width>
-    <height>576</height>
+    <width>657</width>
+    <height>668</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,8 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>420</x>
-     <y>520</y>
+     <x>440</x>
+     <y>620</y>
      <width>195</width>
      <height>30</height>
     </rect>
@@ -65,64 +65,26 @@
     </item>
    </layout>
   </widget>
-  <widget class="QLabel" name="label_3">
+  <widget class="QComboBox" name="resourceNameOpm">
    <property name="geometry">
     <rect>
-     <x>450</x>
-     <y>290</y>
-     <width>171</width>
-     <height>16</height>
+     <x>10</x>
+     <y>100</y>
+     <width>321</width>
+     <height>22</height>
     </rect>
    </property>
-   <property name="text">
-    <string>no preview available</string>
-   </property>
-  </widget>
-  <widget class="QWidget" name="">
-   <property name="geometry">
-    <rect>
-     <x>440</x>
-     <y>50</y>
-     <width>151</width>
-     <height>53</height>
-    </rect>
-   </property>
-   <layout class="QFormLayout" name="formLayout">
-    <item row="0" column="1">
-     <widget class="QSpinBox" name="spriteWidth"/>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label_5">
-      <property name="text">
-       <string>Height</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QSpinBox" name="spriteHeight"/>
-    </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="label_2">
-      <property name="text">
-       <string>Width</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
   </widget>
   <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>50</y>
-     <width>411</width>
-     <height>451</height>
+     <y>130</y>
+     <width>611</width>
+     <height>461</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QComboBox" name="resourceNameOpm"/>
-    </item>
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
     <item>
      <widget class="QTreeWidget" name="treeWidget">
       <column>
@@ -137,20 +99,73 @@
       </column>
      </widget>
     </item>
+    <item>
+     <widget class="QLabel" name="previewImage">
+      <property name="text">
+       <string>no preview available</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>361</x>
+     <y>100</y>
+     <width>252</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_4">
+    <item>
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>Width</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QSpinBox" name="spriteWidth">
+      <property name="minimumSize">
+       <size>
+        <width>80</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximum">
+       <number>9999</number>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_5">
+      <property name="text">
+       <string>Height</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QSpinBox" name="spriteHeight">
+      <property name="minimumSize">
+       <size>
+        <width>80</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximum">
+       <number>9999</number>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <zorder>layoutWidget</zorder>
-  <zorder>treeWidget</zorder>
-  <zorder>resourceNameOpm</zorder>
+  <zorder>layoutWidget</zorder>
+  <zorder>layoutWidget</zorder>
   <zorder>layoutWidget_2</zorder>
-  <zorder>label_5</zorder>
-  <zorder>label_2</zorder>
-  <zorder>spriteWidth</zorder>
-  <zorder>spriteHeight</zorder>
-  <zorder>label_3</zorder>
-  <zorder>treeWidget</zorder>
+  <zorder>previewImage</zorder>
   <zorder>resourceNameOpm</zorder>
-  <zorder>label_2</zorder>
  </widget>
  <resources/>
  <connections/>

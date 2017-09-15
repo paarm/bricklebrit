@@ -1,7 +1,6 @@
 #include "treeutil.h"
 #include "../project/projectcontext.h"
 #include <QLabel>
-#include <QImage>
 #include <QPixmap>
 
 Node* TreeUtil::getNodeFromTreeItem(QTreeWidgetItem* r) {
@@ -49,32 +48,40 @@ void TreeUtil::setNodeToTreeItem(QTreeWidgetItem* r, Node* rNode) {
 	}
 }
 
-void TreeUtil::fillTreeWidgetWithTexturesFromResource(QTreeWidget *rQTreeWidget, const string &rResourceName, bool textures, bool animations) {
+void TreeUtil::setPixmapToTreeItem(QTreeWidget *rQTreeWidget, QTreeWidgetItem *r, QImage& rImageSrc, int srcX, int srcY, int srcWidht, int srcHeight, int destWidth, int destHeight) {
+	QLabel *rPreviewImage=new QLabel("");
+	QImage imgFrame=rImageSrc.copy(srcX,
+								 srcY,
+								 srcWidht,
+								 srcHeight);
+	QImage scaledFrame = imgFrame.scaled(destWidth, destHeight, Qt::AspectRatioMode::KeepAspectRatio); // Scale image to show results better
+	QPixmap rQPixmapFrame = QPixmap::fromImage(scaledFrame); // Create pixmap from image
+	rPreviewImage->setPixmap(rQPixmapFrame);
+	rQTreeWidget->setItemWidget(r,1, rPreviewImage);
+}
+
+void TreeUtil::fillTreeWidgetWithTexturesFromResource(QTreeWidget *rQTreeWidget, const string &rResourceName, bool addTextures, bool addAnimations) {
 	rQTreeWidget->clear();
 	NodeResource* rNodeResource=ProjectContext::getInstance().getOrLoadResourceByName(rResourceName);
 	if (rNodeResource) {
 		int cnt=rNodeResource->getChildCount();
+		QIcon rTextureIcon(":/icons/newTexture.png");
+		QIcon rAnimationIcon(":/icons/newAnimation.png");
 		for (int i=0;i<cnt;i++) {
 			Node *rNode=rNodeResource->getNodeFromIndex(i);
-			if (rNode && rNode->getNodeType()==NodeType::Texture) {
+			if (rNode && rNode->getNodeType()==NodeType::Texture && addTextures) {
 				NodeTexture* rNodeTexture=static_cast<NodeTexture*>(rNode);
 				QTreeWidgetItem *r=new QTreeWidgetItem(rQTreeWidget);
 				r->setText(0,QString::fromStdString(TreeUtil::getNodeNameWithId(rNode)));
-				//TreeUtil::setTypeNameToTreeItem(r,rNode);
-				//TreeUtil::setNodeNameToTreeItem(r,rNode);
 				TreeUtil::setNodeDataToTreeItem(r,rNode);
+				r->setIcon(0, rTextureIcon);
 
 				BTexturePng *bTexture=ProjectContext::getInstance().getTexture(rNodeTexture->getPath());
 				if (bTexture) {
-					QLabel *rPreviewImage=new QLabel(QString::fromStdString(to_string(i)));
-					QImage img(bTexture->getRawData(), bTexture->width, bTexture->height, QImage::Format_RGBA8888);
-					QImage scaled = img.scaled(60, 60, Qt::AspectRatioMode::KeepAspectRatio); // Scale image to show results better
-					QPixmap rQPixmap = QPixmap::fromImage(scaled); // Create pixmap from image
-					rPreviewImage->setPixmap(rQPixmap);
-					rQTreeWidget->setItemWidget(r,1, rPreviewImage);
-					//TreeUtil::setNodeToTreeItem(r, rNode);
+					QImage rImageSrc(bTexture->getRawData(), bTexture->width, bTexture->height, QImage::Format_RGBA8888);
+					TreeUtil::setPixmapToTreeItem(rQTreeWidget, r, rImageSrc, 0, 0, bTexture->width, bTexture->height, 60, 60);
 					rQTreeWidget->addTopLevelItem(r);
-					r->setExpanded(true);
+					//r->setExpanded(true);
 
 					if (rNode->getChildCount()>0) {
 						unsigned long countChild=rNode->getChildCount();
@@ -84,21 +91,48 @@ void TreeUtil::fillTreeWidgetWithTexturesFromResource(QTreeWidget *rQTreeWidget,
 								NodeTextureFrame *rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeChild);
 								QTreeWidgetItem *rc=new QTreeWidgetItem(r);
 								rc->setText(0,QString::fromStdString("Frame: "+TreeUtil::getNodeNameWithId(rNodeChild)));
-
-								//TreeUtil::setNodeNameToTreeItem(r,rNode);
 								TreeUtil::setNodeDataToTreeItem(rc,rNodeChild);
-
-								QLabel *rPreviewImageFrame=new QLabel(QString::fromStdString(rNodeTextureFrame->getName()));
-
-								QImage imgFrame=img.copy(rNodeTextureFrame->getFrame().x,
-															 rNodeTextureFrame->getFrame().y,
-															 rNodeTextureFrame->getFrame().width,
-															 rNodeTextureFrame->getFrame().height);
-								QImage scaledFrame = imgFrame.scaled(30, 30, Qt::AspectRatioMode::KeepAspectRatio); // Scale image to show results better
-								QPixmap rQPixmapFrame = QPixmap::fromImage(scaledFrame); // Create pixmap from image
-								rPreviewImageFrame->setPixmap(rQPixmapFrame);
-								rQTreeWidget->setItemWidget(rc,1, rPreviewImageFrame);
+								TreeUtil::setPixmapToTreeItem(rQTreeWidget, rc, rImageSrc, rNodeTextureFrame->getFrame().x, rNodeTextureFrame->getFrame().y, rNodeTextureFrame->getFrame().width, rNodeTextureFrame->getFrame().height, 30, 30);
 								r->addChild(rc);
+							}
+						}
+					}
+				}
+			} else if (rNode && rNode->getNodeType()==NodeType::Animation && addAnimations) {
+				NodeAnimation* rNodeAnimation=static_cast<NodeAnimation*>(rNode);
+				QTreeWidgetItem *r=new QTreeWidgetItem(rQTreeWidget);
+				r->setText(0,QString::fromStdString(TreeUtil::getNodeNameWithId(rNodeAnimation)));
+				TreeUtil::setNodeDataToTreeItem(r,rNodeAnimation);
+				r->setIcon(0, rAnimationIcon);
+
+				if (rNodeAnimation->getChildCount()>0) {
+					unsigned long countChild=rNodeAnimation->getChildCount();
+					bool isFirst=true;
+					for (unsigned long i=0;i<countChild;i++) {
+						Node *rNodeChild=rNodeAnimation->getNodeFromIndex(i);
+						if (rNodeChild && rNodeChild->getNodeType()==NodeType::AnimationFrame) {
+							NodeAnimationFrame *rNodeAnimationFrame=static_cast<NodeAnimationFrame*>(rNodeChild);
+							NodeResource* rNodeResource=ProjectContext::getInstance().getOrLoadResourceByName(rNodeAnimationFrame->getFrameRef().resourcefile);
+							if (rNodeResource) {
+								NodeTexture* rNodeTexture=static_cast<NodeTexture*>(rNodeResource->getNodeWithNodeId(rNodeAnimationFrame->getFrameRef().textureid));
+								if (rNodeTexture && rNodeTexture->getNodeType()==NodeType::Texture) {
+									BTexturePng *bTexture=ProjectContext::getInstance().getTexture(rNodeTexture->getPath());
+									if (bTexture) {
+										NodeTextureFrame *rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeTexture->getChildNodeWithNameAndNodeType(rNodeAnimationFrame->getFrameRef().frame, NodeType::TextureFrame));
+										if (rNodeTextureFrame && rNodeTextureFrame->getNodeType()==NodeType::TextureFrame) {
+											QImage rImageSrc(bTexture->getRawData(), bTexture->width, bTexture->height, QImage::Format_RGBA8888);
+											QTreeWidgetItem *rc=new QTreeWidgetItem(r);
+											rc->setText(0,QString::fromStdString("Frame: "+TreeUtil::getNodeNameWithId(rNodeAnimationFrame)));
+											TreeUtil::setNodeDataToTreeItem(rc,rNodeAnimationFrame);
+											TreeUtil::setPixmapToTreeItem(rQTreeWidget, rc, rImageSrc, rNodeTextureFrame->getFrame().x, rNodeTextureFrame->getFrame().y, rNodeTextureFrame->getFrame().width, rNodeTextureFrame->getFrame().height, 30, 30);
+											r->addChild(rc);
+											if (isFirst) {
+												isFirst=false;
+												TreeUtil::setPixmapToTreeItem(rQTreeWidget, r, rImageSrc, rNodeTextureFrame->getFrame().x, rNodeTextureFrame->getFrame().y, rNodeTextureFrame->getFrame().width, rNodeTextureFrame->getFrame().height, 30, 30);
+											}
+										}
+									}
+								}
 							}
 						}
 					}
