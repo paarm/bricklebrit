@@ -1,8 +1,114 @@
 #include "sceneglwidget.h"
 #include "guicontext.h"
 
+
+void SceneGlWidget::initializeGL()
+{
+	initializeOpenGLFunctions();
+	glClearColor(0,0,0,1);
+	//glEnable(GL_DEPTH_TEST);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHTING);
+	//glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	glEnable(GL_COLOR_MATERIAL);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//texture= new QOpenGLTexture(QImage("data/assets/test.bmp"));
+
+	//bTexture.load("data/assets/gravity.png");
+#if 0
+	glEnable(GL_TEXTURE_2D);
+	unsigned error = lodepng::decode(image, lwidth, lheight, "data/assets/testhg.png");
+	glGenTextures(1, &texName);
+	glBindTexture(GL_TEXTURE_2D, texName);
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); //GL_NEAREST = no smoothing
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, lwidth, lheight, 0, GL_RGBA, GL_UNSIGNED_BYTE, &image);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, lwidth, lheight, 0, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
+
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); //GL_NEAREST = no smoothing
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+#endif
+#if 0
+	QPainter p;
+	p.begin(this);
+	p.drawText(100,100,"Hallo Welt");
+	p.end();
+#endif
+
+}
+
+void SceneGlWidget::updateCamera() {
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	float w=mViewportInfo.viewportWidth;
+	float h=mViewportInfo.viewportHeight;
+	if (mViewportInfo.zoomLevel!=0.0) {
+		w=w+(w/12*mViewportInfo.zoomLevel);
+		h=h+(h/12*mViewportInfo.zoomLevel);
+	}
+	mViewportInfo.orthoLeft=(-w/2.0)+mViewportInfo.camaraOffsetX;
+	mViewportInfo.orthoRight=(w/2.0)+mViewportInfo.camaraOffsetX;
+	mViewportInfo.orthoBottom=(h/2.0)+mViewportInfo.camaraOffsetY;
+	mViewportInfo.orthoTop=(-h/2.0)+mViewportInfo.camaraOffsetY;
+	glOrtho(mViewportInfo.orthoLeft, mViewportInfo.orthoRight, mViewportInfo.orthoBottom, mViewportInfo.orthoTop, -1.0f, 1.0f);
+
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void SceneGlWidget::wheelEvent(QWheelEvent *event){
+	if (event->delta()>0) {
+		mViewportInfo.zoomLevelVirtual--;
+	} else {
+		mViewportInfo.zoomLevelVirtual++;
+	}
+	if (mViewportInfo.zoomLevelVirtual>20.0) {
+		mViewportInfo.zoomLevelVirtual=20.0;
+	} else if (mViewportInfo.zoomLevelVirtual<-10.0) {
+		mViewportInfo.zoomLevelVirtual=-10.0;
+	}
+	cout<<"Virtual Zoom Level: " << to_string(mViewportInfo.zoomLevelVirtual)<<std::endl;
+	mViewportInfo.zoomLevel=mViewportInfo.zoomLevelVirtual;
+	mViewportInfo.updateCamaraOnDraw=true;
+	//updateCamera();
+	this->update();//update();
+}
+
+void SceneGlWidget::resizeGL(int w, int h)
+{
+	mViewportInfo.viewportWidth=w;
+	mViewportInfo.viewportHeight=h;
+	//mViewportInfo.zoomLevel=-5.0;
+
+	updateCamera();
+	//glViewport(0,0,1,h);
+	//glTranslatef(200,0,500.0);
+	//glViewport(0, 0, w, h);
+	//glm::mat4 projectionMatrix = glm::ortho( 0.0f, (float)w, (float)h, 0.0f,-5.0f, 5.0f);
+
+
+	//glOrtho(-(mWidth/2.0), +(mWidth/2.0), +(mHeight/2.0), -(mHeight/2.0), 0.0f, 1.0f);
+#if 0
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(45, (float)w/h, 0.01, 100.0);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(0,0,5,0,0,0,0,1,0);
+#endif
+	// Update projection matrix and other size related settings:
+	//m_projection.setToIdentity();
+	//m_projection.perspective(45.0f, w / float(h), 0.01f, 100.0f);
+}
+
 void SceneGlWidget::paintGL()
 {
+	if (mViewportInfo.updateCamaraOnDraw) {
+		mViewportInfo.updateCamaraOnDraw=false;
+		updateCamera();
+	}
+
 	// Draw the scene:
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
@@ -98,6 +204,50 @@ void SceneGlWidget::paintGL()
 
 }
 
+
+void SceneGlWidget::mousePressEvent(QMouseEvent * event ) {
+	onMouseClicked(event->pos().x(), event->pos().y());
+}
+
+void SceneGlWidget::onMouseClicked(int mx, int my) {
+	float x=(float)mx;
+	float y=(float)my;
+	GLfloat matrixArray[16];
+	glGetFloatv (GL_PROJECTION_MATRIX, matrixArray);
+	glm::mat4x4 projectionMatrix=glm::make_mat4x4(matrixArray);
+
+	glm::vec3 posVec = glm::unProject(
+	   glm::vec3(x, float(this->size().height()) - y, 1.0f),
+	   glm::mat4(1.0f),
+	   projectionMatrix,
+	   glm::vec4(0.0f, 0.0f, float(this->size().width()), float(this->size().height()))
+	);
+	cout<<"World X=" << std::to_string(posVec.x)<<"Y="<< std::to_string(posVec.y)<<std::endl;
+}
+
+void SceneGlWidget::setCurrentWordCoordinateToNode(Node2d *rNode2d, GLfloat *matrixArray) {
+	int x=rNode2d->getPosition().x;
+	int y=rNode2d->getPosition().y;
+	int w=rNode2d->getSize().x;
+	float w2=w/2.0;
+	int h=rNode2d->getSize().y;
+	float h2=h/2.0;
+
+	glm::mat4x4 matrix=glm::make_mat4x4(matrixArray);
+	glm::vec4 rCenter=matrix*glm::vec4{x,y,0.0,1.0};
+	glm::vec4 rLT=matrix*glm::vec4{x-w2,y-h2,0.0,1.0};
+	glm::vec4 rLB=matrix*glm::vec4{x-w2,y+h2,0.0,1.0};
+	glm::vec4 rRT=matrix*glm::vec4{x+w2,y-h2,0.0,1.0};
+	glm::vec4 rRB=matrix*glm::vec4{x+w2,y+h2,0.0,1.0};
+	rNode2d->setCurrentPos(rCenter.x, rCenter.y, rLT.x, rLT.y, rLB.x, rLB.y, rRT.x, rRT.y, rRB.x, rRB.y);
+	cout<<rNode2d->getName()<<std::endl;
+	cout<<"CE X=" << std::to_string(rCenter.x)<<"Y="<< std::to_string(rCenter.y)<<std::endl;
+	cout<<"LT X=" << std::to_string(rLT.x)<<"Y="<< std::to_string(rLT.y)<<std::endl;
+	cout<<"LB X=" << std::to_string(rLB.x)<<"Y="<< std::to_string(rLB.y)<<std::endl;
+	cout<<"RT X=" << std::to_string(rRT.x)<<"Y="<< std::to_string(rRT.y)<<std::endl;
+	cout<<"RB X=" << std::to_string(rRB.x)<<"Y="<< std::to_string(rRB.y)<<std::endl;
+}
+
 void SceneGlWidget::paintNode(Node* rNode) {
 	glPushMatrix();
 	if (rNode->getNodeType()==NodeType::Sprite) {
@@ -116,6 +266,18 @@ void SceneGlWidget::paintNode(Node* rNode) {
 		} else if (angle<0.0) {
 			angle=360.0+angle;
 		}
+
+		//glTranslatef(0, 0, 0);
+		glTranslatef(x, y, 0.0);
+		glRotatef(angle, 0.0, 0.0, 1.0);
+		if (scaleX!=1.0 || scaleY!=1.0) {
+			glScalef(scaleX, scaleY, 1.0);
+		}
+		GLfloat matrix[16];
+		glGetFloatv (GL_MODELVIEW_MATRIX, matrix);
+		setCurrentWordCoordinateToNode(paintNode, matrix);
+
+
 		NodeResource* rNodeResource=ProjectContext::getInstance().getOrLoadResourceByName(paintNode->getFrameRef().resourcefile);
 		if (!rNodeResource) {
 			rNodeResource=ProjectContext::getInstance().getDefaultResource();
@@ -167,12 +329,6 @@ void SceneGlWidget::paintNode(Node* rNode) {
 							th=(((float)rNodeTextureFrame->getFrame().y)+((float)rNodeTextureFrame->getFrame().height))/((float)bTexture->height);
 						}
 					}
-					//glTranslatef(0, 0, 0);
-					glTranslatef(x, y, 0.0);
-					glRotatef(angle, 0.0, 0.0, 1.0);
-					if (scaleX!=1.0 || scaleY!=1.0) {
-						glScalef(scaleX, scaleY, 1.0);
-					}
 
 					glEnable(GL_TEXTURE_2D);
 					glPolygonMode(GL_FRONT, GL_FILL);
@@ -191,6 +347,7 @@ void SceneGlWidget::paintNode(Node* rNode) {
 						glTexCoord2f(tw, ty); glVertex3f( w2, -h2, 0);
 					glEnd();
 					glDisable(GL_TEXTURE_2D);
+
 
 					if (GuiContext::getInstance().isSceneNodeSelected(rNode)) {
 						glPolygonMode(GL_FRONT, GL_LINE);

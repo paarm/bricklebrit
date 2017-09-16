@@ -162,8 +162,15 @@ public:
 	}
 };
 
+
 class Node2d : public Node {
 private:
+	PointFloat mCenter;
+	PointFloat mLeftTop;
+	PointFloat mLeftBottom;
+	PointFloat mRightTop;
+	PointFloat mRightBottom;
+	float z;
 public:
 	PROPERTY_POINTINT_GETSET(Position)
 	PROPERTY_POINTINT_GETSET(Size)
@@ -176,6 +183,33 @@ public:
 		setSize();
 		setScale(PointFloat(1.0,1.0));
 		setRotation();
+	}
+	void setCurrentPos(float rCenterX, float rCenterY, float rLeftTopX, float rLeftTopY, float rLeftBottomX, float rLeftBottomY, float rRightTopX, float rRightTopY, float rRightBottomX, float rRightBottomY) {
+		mCenter.x=rCenterX;
+		mCenter.y=rCenterY;
+		mLeftTop.x=rLeftTopX;
+		mLeftTop.y=rLeftTopY;
+		mLeftBottom.x=rLeftBottomX;
+		mLeftBottom.y=rLeftBottomY;
+		mRightTop.x=rRightTopX;
+		mRightTop.y=rRightTopY;
+		mRightBottom.x=rRightBottomX;
+		mRightBottom.y=rRightBottomY;
+	}
+	PointFloat &getCurrentCenter() {
+		return mCenter;
+	}
+	PointFloat &getCurrentLeftTop() {
+		return mLeftTop;
+	}
+	PointFloat &getCurrentLeftBottom() {
+		return mLeftBottom;
+	}
+	PointFloat &getCurrentRightTop() {
+		return mRightTop;
+	}
+	PointFloat &getCurrentRightBottom() {
+		return mRightBottom;
 	}
 
 	Node2d() : Node2d(true) {

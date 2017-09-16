@@ -58,7 +58,7 @@ Project {
         }
         Export {
             Depends { name: "cpp" }
-            cpp.includePaths: ['src']
+            cpp.includePaths: ['src', 'glm']
         }
     }
 }
