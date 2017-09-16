@@ -118,18 +118,29 @@ void TreeUtil::fillTreeWidgetWithTexturesFromResource(QTreeWidget *rQTreeWidget,
 								if (rNodeTexture && rNodeTexture->getNodeType()==NodeType::Texture) {
 									BTexturePng *bTexture=ProjectContext::getInstance().getTexture(rNodeTexture->getPath());
 									if (bTexture) {
-										NodeTextureFrame *rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeTexture->getChildNodeWithNameAndNodeType(rNodeAnimationFrame->getFrameRef().frame, NodeType::TextureFrame));
-										if (rNodeTextureFrame && rNodeTextureFrame->getNodeType()==NodeType::TextureFrame) {
-											QImage rImageSrc(bTexture->getRawData(), bTexture->width, bTexture->height, QImage::Format_RGBA8888);
-											QTreeWidgetItem *rc=new QTreeWidgetItem(r);
-											rc->setText(0,QString::fromStdString("Frame: "+TreeUtil::getNodeNameWithId(rNodeAnimationFrame)));
-											TreeUtil::setNodeDataToTreeItem(rc,rNodeAnimationFrame);
-											TreeUtil::setPixmapToTreeItem(rQTreeWidget, rc, rImageSrc, rNodeTextureFrame->getFrame().x, rNodeTextureFrame->getFrame().y, rNodeTextureFrame->getFrame().width, rNodeTextureFrame->getFrame().height, 30, 30);
-											r->addChild(rc);
-											if (isFirst) {
-												isFirst=false;
-												TreeUtil::setPixmapToTreeItem(rQTreeWidget, r, rImageSrc, rNodeTextureFrame->getFrame().x, rNodeTextureFrame->getFrame().y, rNodeTextureFrame->getFrame().width, rNodeTextureFrame->getFrame().height, 30, 30);
+										QImage rImageSrc(bTexture->getRawData(), bTexture->width, bTexture->height, QImage::Format_RGBA8888);
+										QTreeWidgetItem *rc=new QTreeWidgetItem(r);
+										rc->setText(0,QString::fromStdString("Frame: "+TreeUtil::getNodeNameWithId(rNodeAnimationFrame)));
+										TreeUtil::setNodeDataToTreeItem(rc,rNodeAnimationFrame);
+
+										int tx=0;
+										int ty=0;
+										int tw=bTexture->width;
+										int th=bTexture->height;
+										if (!rNodeAnimationFrame->getFrameRef().frame.empty()) {
+											NodeTextureFrame *rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeTexture->getChildNodeWithNameAndNodeType(rNodeAnimationFrame->getFrameRef().frame, NodeType::TextureFrame));
+											if (rNodeTextureFrame && rNodeTextureFrame->getNodeType()==NodeType::TextureFrame) {
+												tx=rNodeTextureFrame->getFrame().x;
+												ty=rNodeTextureFrame->getFrame().y;
+												tw=rNodeTextureFrame->getFrame().width;
+												th=rNodeTextureFrame->getFrame().height;
 											}
+										}
+										TreeUtil::setPixmapToTreeItem(rQTreeWidget, rc, rImageSrc, tx, ty, tw, th, 30, 30);
+										r->addChild(rc);
+										if (isFirst) {
+											isFirst=false;
+											TreeUtil::setPixmapToTreeItem(rQTreeWidget, r, rImageSrc, tx, ty, tw, th, 30, 30);
 										}
 									}
 								}

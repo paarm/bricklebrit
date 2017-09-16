@@ -63,6 +63,8 @@ private slots:
 
 	void on_newAnimation_clicked();
 
+	void on_newSprite_clicked();
+
 private:
 	Ui::SceneTreeDock *ui;
 	NewSceneNodeDialog *newSceneNodeDialog=nullptr;

@@ -10,5 +10,6 @@
         <file>icons/down.png</file>
         <file>icons/plus.png</file>
         <file>icons/up.png</file>
+        <file>icons/newSprite.png</file>
     </qresource>
 </RCC>

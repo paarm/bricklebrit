@@ -39,4 +39,5 @@ private:
 
 	QString propertyToString(PropertyBase* p);
 	bool validatePropertyInt(QString data);
+	bool validatePropertyFloat(QString data);
 };

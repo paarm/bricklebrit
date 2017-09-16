@@ -36,7 +36,7 @@ void SceneTreeDock::clearResource() {
 }
 
 void SceneTreeDock::setSceneEditable(bool isEditable) {
-	ui->newNode->setEnabled(isEditable);
+	ui->newSprite->setEnabled(isEditable);
 }
 
 void SceneTreeDock::setResourceEditable(bool isEditable) {
@@ -440,4 +440,10 @@ void SceneTreeDock::on_newAnimation_clicked()
 {
 	AnimationFrameEditor *rAnimationFrameEditor=new AnimationFrameEditor(nullptr, this);
 	rAnimationFrameEditor->show();
+}
+
+void SceneTreeDock::on_newSprite_clicked()
+{
+	SpriteEditor *rSpriteEditor=new SpriteEditor(nullptr, this);
+	rSpriteEditor->show();
 }

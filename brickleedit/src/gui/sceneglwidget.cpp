@@ -105,6 +105,8 @@ void SceneGlWidget::paintNode(Node* rNode) {
 		int x=paintNode->getPosition().x;
 		int y=paintNode->getPosition().y;
 		int w=paintNode->getSize().x;
+		float scaleX=paintNode->getScale().x;
+		float scaleY=paintNode->getScale().y;
 		float w2=w/2.0;
 		int h=paintNode->getSize().y;
 		float h2=h/2.0;
@@ -119,9 +121,33 @@ void SceneGlWidget::paintNode(Node* rNode) {
 			rNodeResource=ProjectContext::getInstance().getDefaultResource();
 		}
 		if (rNodeResource) {
-			Node *rNodeT=rNodeResource->getNodeWithNodeId(paintNode->getFrameRef().textureid);
-			if (rNodeT && rNodeT->getNodeType()==NodeType::Texture) {
-				NodeTexture *rNodeTexture=(NodeTexture*)rNodeT;
+			NodeTexture *rNodeTexture=nullptr;
+			NodeTextureFrame *rNodeTextureFrame=nullptr;
+
+			Node *rNodeRef=rNodeResource->getNodeWithNodeId(paintNode->getFrameRef().textureid);
+			if (rNodeRef) {
+				if (rNodeRef->getNodeType()==NodeType::Texture) {
+					rNodeTexture=static_cast<NodeTexture*>(rNodeRef);
+					if (!paintNode->getFrameRef().frame.empty()) {
+						rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeTexture->getChildNodeWithName(paintNode->getFrameRef().frame));
+					}
+				} else if (rNodeRef->getNodeType()==NodeType::Animation) {
+					NodeAnimation* rNodeAnimation=static_cast<NodeAnimation*>(rNodeRef);
+					if (!paintNode->getFrameRef().frame.empty()) {
+						NodeAnimationFrame* rNodeAnimationFrame=static_cast<NodeAnimationFrame*>(rNodeAnimation->getChildNodeWithNameAndNodeType(paintNode->getFrameRef().frame, NodeType::AnimationFrame));
+						if (rNodeAnimationFrame) {
+							NodeResource* rNodeResourceAnimationFrame=ProjectContext::getInstance().getOrLoadResourceByName(rNodeAnimationFrame->getFrameRef().resourcefile);
+							if (rNodeResourceAnimationFrame) {
+								rNodeTexture=static_cast<NodeTexture*>(rNodeResourceAnimationFrame->getNodeWithNodeId(rNodeAnimationFrame->getFrameRef().textureid));
+								if (rNodeTexture && !rNodeAnimationFrame->getFrameRef().frame.empty()) {
+									rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeTexture->getChildNodeWithName(rNodeAnimationFrame->getFrameRef().frame));
+								}
+							}
+						}
+					}
+				}
+			}
+			if (rNodeTexture) {
 				BTexturePng *bTexture=ProjectContext::getInstance().getTexture(rNodeTexture->getPath());
 				if (bTexture) {
 					float tx=0.0;
@@ -129,25 +155,25 @@ void SceneGlWidget::paintNode(Node* rNode) {
 					float tw=1.0;
 					float th=1.0;
 
-					if (paintNode->getFrameRef().frame.size()>0) {
-						Node *rNodeFrameX=rNodeTexture->getChildNodeWithName(paintNode->getFrameRef().frame);
-						if (rNodeFrameX && rNodeFrameX->getNodeType()==NodeType::TextureFrame) {
-							NodeTextureFrame *rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeFrameX);
-							if (rNodeTextureFrame->getFrame().width>0 && rNodeTextureFrame->getFrame().height>0) {
-								if (rNodeTextureFrame->getFrame().x>0) {
-									tx=((float)rNodeTextureFrame->getFrame().x)/((float)bTexture->width);
-								}
-								if (rNodeTextureFrame->getFrame().y>0) {
-									ty=((float)rNodeTextureFrame->getFrame().y)/((float)bTexture->height);
-								}
-								tw=(((float)rNodeTextureFrame->getFrame().x)+((float)rNodeTextureFrame->getFrame().width))/((float)bTexture->width);
-								th=(((float)rNodeTextureFrame->getFrame().y)+((float)rNodeTextureFrame->getFrame().height))/((float)bTexture->height);
+					if (rNodeTextureFrame) {
+						if (rNodeTextureFrame->getFrame().width>0 && rNodeTextureFrame->getFrame().height>0) {
+							if (rNodeTextureFrame->getFrame().x>0) {
+								tx=((float)rNodeTextureFrame->getFrame().x)/((float)bTexture->width);
 							}
+							if (rNodeTextureFrame->getFrame().y>0) {
+								ty=((float)rNodeTextureFrame->getFrame().y)/((float)bTexture->height);
+							}
+							tw=(((float)rNodeTextureFrame->getFrame().x)+((float)rNodeTextureFrame->getFrame().width))/((float)bTexture->width);
+							th=(((float)rNodeTextureFrame->getFrame().y)+((float)rNodeTextureFrame->getFrame().height))/((float)bTexture->height);
 						}
 					}
 					//glTranslatef(0, 0, 0);
 					glTranslatef(x, y, 0.0);
 					glRotatef(angle, 0.0, 0.0, 1.0);
+					if (scaleX!=1.0 || scaleY!=1.0) {
+						glScalef(scaleX, scaleY, 1.0);
+					}
+
 					glEnable(GL_TEXTURE_2D);
 					glPolygonMode(GL_FRONT, GL_FILL);
 					glPolygonMode(GL_BACK, GL_FILL);

@@ -43,6 +43,12 @@ bool PropertyTreeDock::validatePropertyInt(QString data) {
 	return validator.validate(data,pos) == QValidator::Acceptable;
 }
 
+bool PropertyTreeDock::validatePropertyFloat(QString data) {
+	QDoubleValidator validator;
+	int				pos=0;
+	return validator.validate(data,pos) == QValidator::Acceptable;
+}
+
 bool PropertyTreeDock::onPropertyChange(PropertyInfo* rPropertyInfo, QString data) {
 	bool rv=false;
 	if(rPropertyInfo && rPropertyInfo->getPropertyBase()) {
@@ -129,7 +135,31 @@ bool PropertyTreeDock::onPropertyChange(PropertyInfo* rPropertyInfo, QString dat
 				}
 			} else if (rPropertyType==PropertyType::RectFloat) {
 				PropertyRectFloat *pp=static_cast<PropertyRectFloat*>(p);
-				rv=true;
+				if (rPropertyInfo->getPropertySubName()=="X") {
+					rv=validatePropertyFloat(data);
+					if (rv) {
+						pp->value.x=data.toFloat();
+					}
+				} else if (rPropertyInfo->getPropertySubName()=="Y") {
+					rv=validatePropertyFloat(data);
+					if (rv) {
+						pp->value.y=data.toFloat();
+					}
+				} else if (rPropertyInfo->getPropertySubName()=="Width") {
+					rv=validatePropertyFloat(data);
+					if (rv) {
+						pp->value.width=data.toFloat();
+					}
+				} else if (rPropertyInfo->getPropertySubName()=="Height") {
+					rv=validatePropertyFloat(data);
+					if (rv) {
+						pp->value.height=data.toFloat();
+					}
+				}
+				if (rv) {
+					QString rPropertyString=propertyToString(p);
+					rPropertyInfo->getTreeWidgetItem()->setText(1,rPropertyString);
+				}
 			} else if (rPropertyType==PropertyType::PointInt) {
 				PropertyPointInt *pp=static_cast<PropertyPointInt*>(p);
 				if (rPropertyInfo->getPropertySubName()=="X") {
@@ -149,7 +179,21 @@ bool PropertyTreeDock::onPropertyChange(PropertyInfo* rPropertyInfo, QString dat
 				}
 			} else if (rPropertyType==PropertyType::PointFloat) {
 				PropertyPointFloat *pp=static_cast<PropertyPointFloat*>(p);
-				rv=true;
+				if (rPropertyInfo->getPropertySubName()=="X") {
+					rv=validatePropertyFloat(data);
+					if (rv) {
+						pp->value.x=data.toFloat();
+					}
+				} else if (rPropertyInfo->getPropertySubName()=="Y") {
+					rv=validatePropertyFloat(data);
+					if (rv) {
+						pp->value.y=data.toFloat();
+					}
+				}
+				if (rv) {
+					QString rPropertyString=propertyToString(p);
+					rPropertyInfo->getTreeWidgetItem()->setText(1,rPropertyString);
+				}
 			} else if (rPropertyType==PropertyType::List) {
 				PropertyList *pp=static_cast<PropertyList*>(p);
 				rv=true;

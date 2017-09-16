@@ -56,6 +56,8 @@ void SpriteEditor::setupNode() {
 							if (c) {
 								Node *rNodeC=TreeUtil::getNodeFromTreeItem(c);
 								if (rNodeC && rNodeC->getName()==mNode->getFrameRef().frame) {
+									r->setExpanded(true);
+									c->setSelected(true);
 									updateSelectedFrame(rNodeC, false);
 									break;
 								}
@@ -63,6 +65,7 @@ void SpriteEditor::setupNode() {
 						}
 					}
 				} else {
+					r->setSelected(true);
 					updateSelectedFrame(rNode, false);
 				}
 				break;
@@ -114,9 +117,11 @@ void SpriteEditor::on_resourceNameOpm_currentIndexChanged(const QString &arg1)
 void SpriteEditor::updateSelectedFrame(Node *rNode, bool setWidthAndHeight) {
 	mCurrentRef.resourceName=ui->resourceNameOpm->currentText().toStdString();
 	mCurrentRef.frameName="";
+	mCurrentRef.id=0;
 	if (rNode) {
 		NodeTexture *rNodeTexture=nullptr;
 		NodeTextureFrame *rNodeTextureFrame=nullptr;
+		NodeAnimationFrame *rNodeAnimationFrame=nullptr;
 		if (rNode->getNodeType()==NodeType::Texture) {
 			mCurrentRef.id=rNode->getId();
 			rNodeTexture=static_cast<NodeTexture*>(rNode);
@@ -125,7 +130,33 @@ void SpriteEditor::updateSelectedFrame(Node *rNode, bool setWidthAndHeight) {
 			mCurrentRef.frameName=rNodeTextureFrame->getName();
 			rNodeTexture=static_cast<NodeTexture*>(rNode->getParent());
 			mCurrentRef.id=rNodeTexture->getId();
+		} else if (rNode->getNodeType()==NodeType::Animation) {
+			NodeAnimation *rNodeAnimation=static_cast<NodeAnimation*>(rNode);
+			mCurrentRef.id=rNodeAnimation->getId();
+			if (rNodeAnimation->getChildCount()>0) {
+				rNodeAnimationFrame=static_cast<NodeAnimationFrame*>(rNodeAnimation->getNodeFromIndex(0));
+				if (rNodeAnimationFrame) {
+					mCurrentRef.frameName=rNodeAnimationFrame->getName();
+				}
+			}
+		} else if (rNode->getNodeType()==NodeType::AnimationFrame) {
+			rNodeAnimationFrame=static_cast<NodeAnimationFrame*>(rNode);
+			NodeAnimation* rNodeAnimation=static_cast<NodeAnimation*>(rNode->getParent());
+			mCurrentRef.frameName=rNodeAnimationFrame->getName();
+			mCurrentRef.id=rNodeAnimation->getId();
 		}
+		if (rNodeAnimationFrame) {
+			NodeResource *rNodeResource=ProjectContext::getInstance().getOrLoadResourceByName(rNodeAnimationFrame->getFrameRef().resourcefile);
+			if (rNodeResource) {
+				rNodeTexture=static_cast<NodeTexture*>(rNodeResource->getNodeWithNodeId(rNodeAnimationFrame->getFrameRef().textureid));
+				if (rNodeTexture) {
+					if (!rNodeAnimationFrame->getFrameRef().frame.empty()) {
+						rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeTexture->getChildNodeWithNameAndNodeType(rNodeAnimationFrame->getFrameRef().frame, NodeType::TextureFrame));
+					}
+				}
+			}
+		}
+
 		if (rNodeTexture) {
 			BTexturePng *bTexture=ProjectContext::getInstance().getTexture(rNodeTexture->getPath());
 			if (bTexture) {
