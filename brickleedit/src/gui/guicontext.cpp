@@ -398,3 +398,8 @@ void GuiContext::setSceneNodeAsSelected(Node* rSelectedNode) {
 		}
 	}
 }
+
+void GuiContext::onZoomLevelChanged(int rZoomLevel) {
+	getMainWindow().getToolBar().updateZoomLevel(rZoomLevel);
+}
+

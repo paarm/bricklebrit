@@ -2,6 +2,11 @@
 #include "guicontext.h"
 
 ToolBar::ToolBar(const QString& title, QWidget* parent) : QToolBar (title, parent) {
+	mZoomLevel=new QLineEdit(this);
+	mZoomLevel->setEnabled(false);
+	mZoomLevel->setMaximumWidth(80);
+	updateZoomLevel(0);
+	addWidget(mZoomLevel);
 #if 0
 	{
 		QIcon icon;
@@ -58,4 +63,8 @@ ToolBar::ToolBar(const QString& title, QWidget* parent) : QToolBar (title, paren
 	}
 #endif
 
+}
+
+void ToolBar::updateZoomLevel(int rZoomLevel) {
+	mZoomLevel->setText(QString::fromStdString("Zoom: "+to_string(rZoomLevel)));
 }

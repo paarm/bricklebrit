@@ -48,6 +48,7 @@ public:
 	void replaceSelectedSceneNode(Node *rSelectedNode);
 	bool isSceneNodeSelected(Node*);
 	void setSceneNodeAsSelected(Node*);
+	void onZoomLevelChanged(int rZoomLevel);
 public slots:
 	void onNewProjectClicked();
 	void onOpenProjectClicked();
@@ -58,6 +59,5 @@ public slots:
 	// Scene Tree
 	void onCreateNewNode(QString rNodeTypeName, NodeInfoType rNodeInfoType);
 	void insertNewNode(Node *rNode, NodeInfoType rNodeInfoType);
-
 };
 

@@ -34,6 +34,7 @@ struct ViewportInfo {
 	int camaraOffsetY=mHeight/2;
 	int zoomLevelVirtual=0;
 	int zoomLevel=0;
+	float zoomFactor=1.0;
 
 	int orthoLeft=0;
 	int orthoRight=0;
@@ -42,29 +43,43 @@ struct ViewportInfo {
 	bool updateCamaraOnDraw=false;
 };
 
+struct ViewportMoveInfo {
+	bool isOnMove=false;
+	int startX=0;
+	int startY=0;
+	int currentX=0;
+	int currentY=0;
+	int distanceX=0;
+	int distanceY=0;
+};
+
 class SceneGlWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
 private:
 	 void onMouseClicked(int mx, int my);
 	 void setCurrentWordCoordinateToNode(Node2d *rNode2d, GLfloat *matrixArray);
-	 void updateCamera();
+	 void updateCamera();	 
 public:
 	SceneGlWidget(QWidget *parent) : QOpenGLWidget(parent) {}
 	virtual ~SceneGlWidget() {}
 
 	void mousePressEvent(QMouseEvent * event ) override;
+	void mouseReleaseEvent(QMouseEvent * event ) override;
+	void mouseMoveEvent(QMouseEvent *event) override;
 	void wheelEvent(QWheelEvent *event) override;
 
 	void initializeGL();
 	void resizeGL(int w, int h);
-
+	void zoomInOut(int units);
 protected:
 	QImage *mImage;
 	ViewportInfo mViewportInfo;
+	ViewportMoveInfo mViewportMoveInfo;
     //QOpenGLTexture *texture;
 	//BTexturePng bTexture;
 	GLuint vbonum;
 	void paintNode(Node* rNode);
 	void paintGL();
-
+signals:
+	void zoomChanged(int rZoomLevel);
 };

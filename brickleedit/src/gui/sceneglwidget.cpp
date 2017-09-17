@@ -42,12 +42,8 @@ void SceneGlWidget::initializeGL()
 void SceneGlWidget::updateCamera() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	float w=mViewportInfo.viewportWidth;
-	float h=mViewportInfo.viewportHeight;
-	if (mViewportInfo.zoomLevel!=0.0) {
-		w=w+(w/12*mViewportInfo.zoomLevel);
-		h=h+(h/12*mViewportInfo.zoomLevel);
-	}
+	float w=mViewportInfo.viewportWidth*mViewportInfo.zoomFactor;
+	float h=mViewportInfo.viewportHeight*mViewportInfo.zoomFactor;
 	mViewportInfo.orthoLeft=(-w/2.0)+mViewportInfo.camaraOffsetX;
 	mViewportInfo.orthoRight=(w/2.0)+mViewportInfo.camaraOffsetX;
 	mViewportInfo.orthoBottom=(h/2.0)+mViewportInfo.camaraOffsetY;
@@ -58,21 +54,110 @@ void SceneGlWidget::updateCamera() {
 }
 
 void SceneGlWidget::wheelEvent(QWheelEvent *event){
+	int zoomUnits=0;
 	if (event->delta()>0) {
-		mViewportInfo.zoomLevelVirtual--;
+		zoomUnits=-2;
 	} else {
-		mViewportInfo.zoomLevelVirtual++;
+		zoomUnits=2;
 	}
-	if (mViewportInfo.zoomLevelVirtual>20.0) {
-		mViewportInfo.zoomLevelVirtual=20.0;
-	} else if (mViewportInfo.zoomLevelVirtual<-10.0) {
-		mViewportInfo.zoomLevelVirtual=-10.0;
+	zoomInOut(zoomUnits);
+}
+
+void SceneGlWidget::zoomInOut(int units) {
+	if (units!=0) {
+		mViewportInfo.zoomLevelVirtual+=units;
+		if (mViewportInfo.zoomLevelVirtual>70.0) {
+			mViewportInfo.zoomLevelVirtual=70.0;
+		} else if (mViewportInfo.zoomLevelVirtual<-8.0) {
+			mViewportInfo.zoomLevelVirtual=-8.0;
+		}
+		cout<<"Virtual Zoom Level: " << to_string(mViewportInfo.zoomLevelVirtual)<<std::endl;
+		mViewportInfo.zoomLevel=mViewportInfo.zoomLevelVirtual;
+		mViewportInfo.zoomFactor=1.0+mViewportInfo.zoomLevel/10.0;
+		mViewportInfo.updateCamaraOnDraw=true;
+		GuiContext::getInstance().onZoomLevelChanged(mViewportInfo.zoomLevel);
+		this->update();//update();
 	}
-	cout<<"Virtual Zoom Level: " << to_string(mViewportInfo.zoomLevelVirtual)<<std::endl;
-	mViewportInfo.zoomLevel=mViewportInfo.zoomLevelVirtual;
-	mViewportInfo.updateCamaraOnDraw=true;
-	//updateCamera();
-	this->update();//update();
+}
+
+void SceneGlWidget::mousePressEvent(QMouseEvent * event ) {
+	if (event->button()==Qt::MiddleButton) {
+		cout << "Middle Mouse pressed" << std::endl;
+		mViewportMoveInfo.isOnMove=true;
+		mViewportMoveInfo.startX=event->pos().x();
+		mViewportMoveInfo.startY=event->pos().y();
+		mViewportMoveInfo.currentX=event->pos().x();
+		mViewportMoveInfo.currentY=event->pos().y();
+		mViewportMoveInfo.distanceX=0;
+		mViewportMoveInfo.distanceY=0;
+	}
+	onMouseClicked(event->pos().x(), event->pos().y());
+}
+
+void SceneGlWidget::mouseReleaseEvent(QMouseEvent * event ) {
+	if (event->button()==Qt::MiddleButton) {
+		mViewportMoveInfo.isOnMove=false;
+		mViewportMoveInfo.startX=0;
+		mViewportMoveInfo.startY=0;
+		mViewportMoveInfo.currentX=0;
+		mViewportMoveInfo.currentY=0;
+		mViewportMoveInfo.distanceX=0;
+		mViewportMoveInfo.distanceY=0;
+	}
+}
+
+void SceneGlWidget::mouseMoveEvent(QMouseEvent * event ) {
+	if (mViewportMoveInfo.isOnMove) {
+		int distanceX=mViewportMoveInfo.startX-event->pos().x();
+		int distanceY=mViewportMoveInfo.startY-event->pos().y();
+		mViewportInfo.camaraOffsetX+=(distanceX*mViewportInfo.zoomFactor);
+		mViewportInfo.camaraOffsetY+=(distanceY*mViewportInfo.zoomFactor);
+		mViewportInfo.updateCamaraOnDraw=true;
+
+		mViewportMoveInfo.startX=event->pos().x();
+		mViewportMoveInfo.startY=event->pos().y();
+
+		this->update();//update();
+	}
+}
+
+void SceneGlWidget::onMouseClicked(int mx, int my) {
+	float x=(float)mx;
+	float y=(float)my;
+	GLfloat matrixArray[16];
+	glGetFloatv (GL_PROJECTION_MATRIX, matrixArray);
+	glm::mat4x4 projectionMatrix=glm::make_mat4x4(matrixArray);
+
+	glm::vec3 posVec = glm::unProject(
+	   glm::vec3(x, float(this->size().height()) - y, 1.0f),
+	   glm::mat4(1.0f),
+	   projectionMatrix,
+	   glm::vec4(0.0f, 0.0f, float(this->size().width()), float(this->size().height()))
+	);
+	cout<<"World X=" << std::to_string(posVec.x)<<"Y="<< std::to_string(posVec.y)<<std::endl;
+}
+
+void SceneGlWidget::setCurrentWordCoordinateToNode(Node2d *rNode2d, GLfloat *matrixArray) {
+	int x=rNode2d->getPosition().x;
+	int y=rNode2d->getPosition().y;
+	int w=rNode2d->getSize().x;
+	float w2=w/2.0;
+	int h=rNode2d->getSize().y;
+	float h2=h/2.0;
+
+	glm::mat4x4 matrix=glm::make_mat4x4(matrixArray);
+	glm::vec4 rCenter=matrix*glm::vec4{0.0,0.0,0.0,1.0};
+	glm::vec4 rLT=matrix*glm::vec4{-w2,-h2,0.0,1.0};
+	glm::vec4 rLB=matrix*glm::vec4{-w2,h2,0.0,1.0};
+	glm::vec4 rRT=matrix*glm::vec4{w2,-h2,0.0,1.0};
+	glm::vec4 rRB=matrix*glm::vec4{w2,h2,0.0,1.0};
+	rNode2d->setCurrentPos(rCenter.x, rCenter.y, rLT.x, rLT.y, rLB.x, rLB.y, rRT.x, rRT.y, rRB.x, rRB.y);
+	cout<<rNode2d->getName()<<std::endl;
+	cout<<"CE X=" << std::to_string(rCenter.x)<<"Y="<< std::to_string(rCenter.y)<<std::endl;
+	cout<<"LT X=" << std::to_string(rLT.x)<<"Y="<< std::to_string(rLT.y)<<std::endl;
+	cout<<"LB X=" << std::to_string(rLB.x)<<"Y="<< std::to_string(rLB.y)<<std::endl;
+	cout<<"RT X=" << std::to_string(rRT.x)<<"Y="<< std::to_string(rRT.y)<<std::endl;
+	cout<<"RB X=" << std::to_string(rRB.x)<<"Y="<< std::to_string(rRB.y)<<std::endl;
 }
 
 void SceneGlWidget::resizeGL(int w, int h)
@@ -205,48 +290,6 @@ void SceneGlWidget::paintGL()
 }
 
 
-void SceneGlWidget::mousePressEvent(QMouseEvent * event ) {
-	onMouseClicked(event->pos().x(), event->pos().y());
-}
-
-void SceneGlWidget::onMouseClicked(int mx, int my) {
-	float x=(float)mx;
-	float y=(float)my;
-	GLfloat matrixArray[16];
-	glGetFloatv (GL_PROJECTION_MATRIX, matrixArray);
-	glm::mat4x4 projectionMatrix=glm::make_mat4x4(matrixArray);
-
-	glm::vec3 posVec = glm::unProject(
-	   glm::vec3(x, float(this->size().height()) - y, 1.0f),
-	   glm::mat4(1.0f),
-	   projectionMatrix,
-	   glm::vec4(0.0f, 0.0f, float(this->size().width()), float(this->size().height()))
-	);
-	cout<<"World X=" << std::to_string(posVec.x)<<"Y="<< std::to_string(posVec.y)<<std::endl;
-}
-
-void SceneGlWidget::setCurrentWordCoordinateToNode(Node2d *rNode2d, GLfloat *matrixArray) {
-	int x=rNode2d->getPosition().x;
-	int y=rNode2d->getPosition().y;
-	int w=rNode2d->getSize().x;
-	float w2=w/2.0;
-	int h=rNode2d->getSize().y;
-	float h2=h/2.0;
-
-	glm::mat4x4 matrix=glm::make_mat4x4(matrixArray);
-	glm::vec4 rCenter=matrix*glm::vec4{x,y,0.0,1.0};
-	glm::vec4 rLT=matrix*glm::vec4{x-w2,y-h2,0.0,1.0};
-	glm::vec4 rLB=matrix*glm::vec4{x-w2,y+h2,0.0,1.0};
-	glm::vec4 rRT=matrix*glm::vec4{x+w2,y-h2,0.0,1.0};
-	glm::vec4 rRB=matrix*glm::vec4{x+w2,y+h2,0.0,1.0};
-	rNode2d->setCurrentPos(rCenter.x, rCenter.y, rLT.x, rLT.y, rLB.x, rLB.y, rRT.x, rRT.y, rRB.x, rRB.y);
-	cout<<rNode2d->getName()<<std::endl;
-	cout<<"CE X=" << std::to_string(rCenter.x)<<"Y="<< std::to_string(rCenter.y)<<std::endl;
-	cout<<"LT X=" << std::to_string(rLT.x)<<"Y="<< std::to_string(rLT.y)<<std::endl;
-	cout<<"LB X=" << std::to_string(rLB.x)<<"Y="<< std::to_string(rLB.y)<<std::endl;
-	cout<<"RT X=" << std::to_string(rRT.x)<<"Y="<< std::to_string(rRT.y)<<std::endl;
-	cout<<"RB X=" << std::to_string(rRB.x)<<"Y="<< std::to_string(rRB.y)<<std::endl;
-}
 
 void SceneGlWidget::paintNode(Node* rNode) {
 	glPushMatrix();
@@ -328,6 +371,16 @@ void SceneGlWidget::paintNode(Node* rNode) {
 							tw=(((float)rNodeTextureFrame->getFrame().x)+((float)rNodeTextureFrame->getFrame().width))/((float)bTexture->width);
 							th=(((float)rNodeTextureFrame->getFrame().y)+((float)rNodeTextureFrame->getFrame().height))/((float)bTexture->height);
 						}
+					}
+					if (paintNode->getFlipX()) {
+						float tmp=tx;
+						tx=tw;
+						tw=tmp;
+					}
+					if (paintNode->getFlipY()) {
+						float tmp=ty;
+						ty=th;
+						th=tmp;
 					}
 
 					glEnable(GL_TEXTURE_2D);
