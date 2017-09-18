@@ -27,11 +27,37 @@ struct TVertex {
 	float z;
 };
 
+class Camara {
+private:
+    float x=0;
+    float y=0;
+    float z=0;
+    glm::mat4 viewMatrix;
+    bool dirty=true;
+public:
+    void move(float distX, float distY, float distZ) {
+        if (distX!=0.0 || distY!=0.0 || distZ!=0.0) {
+            x+=distX;
+            y+=distY;
+            z+=distZ;
+            dirty=true;
+        }
+    }
+
+    glm::mat4& getViewMatrix() {
+        if (dirty) {
+            viewMatrix=glm::mat4(1.0);
+            viewMatrix=glm::translate(viewMatrix, glm::vec3(x,y,z));
+        }
+        return viewMatrix;
+    }
+};
+
 struct ViewportInfo {
 	int viewportWidth=0;
 	int viewportHeight=0;
-	int camaraOffsetX=mWidth/2;
-	int camaraOffsetY=mHeight/2;
+    int camaraOffsetX=0;//mWidth/2;
+    int camaraOffsetY=0;//mHeight/2;
 	int zoomLevelVirtual=0;
 	int zoomLevel=0;
 	float zoomFactor=1.0;
@@ -58,7 +84,7 @@ class SceneGlWidget : public QOpenGLWidget, protected QOpenGLFunctions
 private:
 	 void onMouseClicked(int mx, int my);
 	 void setCurrentWordCoordinateToNode(Node2d *rNode2d, GLfloat *matrixArray);
-	 void updateCamera();	 
+     void updateViewport();
 public:
 	SceneGlWidget(QWidget *parent) : QOpenGLWidget(parent) {}
 	virtual ~SceneGlWidget() {}
@@ -74,6 +100,7 @@ public:
 protected:
 	QImage *mImage;
 	ViewportInfo mViewportInfo;
+    Camara mCamara;
 	ViewportMoveInfo mViewportMoveInfo;
     //QOpenGLTexture *texture;
 	//BTexturePng bTexture;

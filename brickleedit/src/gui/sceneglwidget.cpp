@@ -2,6 +2,8 @@
 #include "guicontext.h"
 
 
+
+
 void SceneGlWidget::initializeGL()
 {
 	initializeOpenGLFunctions();
@@ -39,7 +41,7 @@ void SceneGlWidget::initializeGL()
 
 }
 
-void SceneGlWidget::updateCamera() {
+void SceneGlWidget::updateViewport() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	float w=mViewportInfo.viewportWidth*mViewportInfo.zoomFactor;
@@ -48,7 +50,8 @@ void SceneGlWidget::updateCamera() {
 	mViewportInfo.orthoRight=(w/2.0)+mViewportInfo.camaraOffsetX;
 	mViewportInfo.orthoBottom=(h/2.0)+mViewportInfo.camaraOffsetY;
 	mViewportInfo.orthoTop=(-h/2.0)+mViewportInfo.camaraOffsetY;
-	glOrtho(mViewportInfo.orthoLeft, mViewportInfo.orthoRight, mViewportInfo.orthoBottom, mViewportInfo.orthoTop, -1.0f, 1.0f);
+    glOrtho(mViewportInfo.orthoLeft, mViewportInfo.orthoRight, mViewportInfo.orthoBottom, mViewportInfo.orthoTop, -1000.0f, 1000.0f);
+    //glViewport(mViewportInfo.orthoLeft, mViewportInfo.orthoTop, w, h);
 
 	glMatrixMode(GL_MODELVIEW);
 }
@@ -73,7 +76,9 @@ void SceneGlWidget::zoomInOut(int units) {
 		}
 		cout<<"Virtual Zoom Level: " << to_string(mViewportInfo.zoomLevelVirtual)<<std::endl;
 		mViewportInfo.zoomLevel=mViewportInfo.zoomLevelVirtual;
-		mViewportInfo.zoomFactor=1.0+mViewportInfo.zoomLevel/10.0;
+        mCamara.move(0,0,units);
+
+        mViewportInfo.zoomFactor=1.0+mViewportInfo.zoomLevel/10.0;
 		mViewportInfo.updateCamaraOnDraw=true;
 		GuiContext::getInstance().onZoomLevelChanged(mViewportInfo.zoomLevel);
 		this->update();//update();
@@ -110,9 +115,11 @@ void SceneGlWidget::mouseMoveEvent(QMouseEvent * event ) {
 	if (mViewportMoveInfo.isOnMove) {
 		int distanceX=mViewportMoveInfo.startX-event->pos().x();
 		int distanceY=mViewportMoveInfo.startY-event->pos().y();
-		mViewportInfo.camaraOffsetX+=(distanceX*mViewportInfo.zoomFactor);
-		mViewportInfo.camaraOffsetY+=(distanceY*mViewportInfo.zoomFactor);
-		mViewportInfo.updateCamaraOnDraw=true;
+        //mViewportInfo.camaraOffsetX+=(distanceX*mViewportInfo.zoomFactor);
+        //mViewportInfo.camaraOffsetY+=(distanceY*mViewportInfo.zoomFactor);
+        mCamara.move(-distanceX, -distanceY, 0.0);
+
+        mViewportInfo.updateCamaraOnDraw=true;
 
 		mViewportMoveInfo.startX=event->pos().x();
 		mViewportMoveInfo.startY=event->pos().y();
@@ -166,7 +173,7 @@ void SceneGlWidget::resizeGL(int w, int h)
 	mViewportInfo.viewportHeight=h;
 	//mViewportInfo.zoomLevel=-5.0;
 
-	updateCamera();
+    updateViewport();
 	//glViewport(0,0,1,h);
 	//glTranslatef(200,0,500.0);
 	//glViewport(0, 0, w, h);
@@ -191,13 +198,15 @@ void SceneGlWidget::paintGL()
 {
 	if (mViewportInfo.updateCamaraOnDraw) {
 		mViewportInfo.updateCamaraOnDraw=false;
-		updateCamera();
+        //updateCamera();
 	}
 
 	// Draw the scene:
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+    glLoadMatrixf (glm::value_ptr(mCamara.getViewMatrix()));
 
 	glBegin(GL_QUADS);
 		glColor3f(0.0, 1.0, 0.0);
