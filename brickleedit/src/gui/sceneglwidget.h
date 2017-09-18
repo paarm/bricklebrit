@@ -29,26 +29,56 @@ struct TVertex {
 
 class Camara {
 private:
-    float x=0;
+	const float minZ=-80;
+	const float maxScaleMinusFactor=-0.999;
+	const float maxZ=100;
+	const float maxScalePlusFactor=8.0;
+	float x=0;
     float y=0;
     float z=0;
-    glm::mat4 viewMatrix;
+	float scaleFactor=1.0;
+	glm::mat4 viewMatrix;
     bool dirty=true;
 public:
     void move(float distX, float distY, float distZ) {
         if (distX!=0.0 || distY!=0.0 || distZ!=0.0) {
             x+=distX;
             y+=distY;
-            z+=distZ;
+			z+=distZ;
+			if (z>maxZ) z=maxZ;
+			if (z<minZ) z=minZ;
             dirty=true;
         }
     }
+	float getScaleFactor() {
+		return scaleFactor;
+	}
+	float getX() {
+		return x;
+	}
+	float getY() {
+		return y;
+	}
+	float getZ() {
+		return z;
+	}
 
     glm::mat4& getViewMatrix() {
         if (dirty) {
             viewMatrix=glm::mat4(1.0);
-            viewMatrix=glm::translate(viewMatrix, glm::vec3(x,y,z));
-        }
+			viewMatrix=glm::translate(viewMatrix, glm::vec3(x,y,0.0));
+
+			float sf=0.0;
+			if (z>0.0) {
+				sf=maxScalePlusFactor*(z/maxZ);
+			} else if (z<0.0) {
+				sf=maxScaleMinusFactor*(z/minZ);
+				//if (sf<-1.0) sf=-1.0;
+			}
+			scaleFactor=1.0+sf;
+			viewMatrix=glm::scale(viewMatrix, glm::vec3(scaleFactor,scaleFactor,1.0));
+			dirty=false;
+		}
         return viewMatrix;
     }
 };
@@ -56,27 +86,16 @@ public:
 struct ViewportInfo {
 	int viewportWidth=0;
 	int viewportHeight=0;
-    int camaraOffsetX=0;//mWidth/2;
-    int camaraOffsetY=0;//mHeight/2;
-	int zoomLevelVirtual=0;
-	int zoomLevel=0;
-	float zoomFactor=1.0;
-
 	int orthoLeft=0;
 	int orthoRight=0;
 	int orthoBottom=0;
 	int orthoTop=0;
-	bool updateCamaraOnDraw=false;
 };
 
 struct ViewportMoveInfo {
 	bool isOnMove=false;
 	int startX=0;
 	int startY=0;
-	int currentX=0;
-	int currentY=0;
-	int distanceX=0;
-	int distanceY=0;
 };
 
 class SceneGlWidget : public QOpenGLWidget, protected QOpenGLFunctions

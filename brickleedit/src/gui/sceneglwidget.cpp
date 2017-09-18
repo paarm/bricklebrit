@@ -44,13 +44,13 @@ void SceneGlWidget::initializeGL()
 void SceneGlWidget::updateViewport() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	float w=mViewportInfo.viewportWidth*mViewportInfo.zoomFactor;
-	float h=mViewportInfo.viewportHeight*mViewportInfo.zoomFactor;
-	mViewportInfo.orthoLeft=(-w/2.0)+mViewportInfo.camaraOffsetX;
-	mViewportInfo.orthoRight=(w/2.0)+mViewportInfo.camaraOffsetX;
-	mViewportInfo.orthoBottom=(h/2.0)+mViewportInfo.camaraOffsetY;
-	mViewportInfo.orthoTop=(-h/2.0)+mViewportInfo.camaraOffsetY;
-    glOrtho(mViewportInfo.orthoLeft, mViewportInfo.orthoRight, mViewportInfo.orthoBottom, mViewportInfo.orthoTop, -1000.0f, 1000.0f);
+	float w=mViewportInfo.viewportWidth;
+	float h=mViewportInfo.viewportHeight;
+	mViewportInfo.orthoLeft=(-w/2.0);
+	mViewportInfo.orthoRight=(w/2.0);
+	mViewportInfo.orthoBottom=(h/2.0);
+	mViewportInfo.orthoTop=(-h/2.0);
+	glOrtho(mViewportInfo.orthoLeft, mViewportInfo.orthoRight, mViewportInfo.orthoBottom, mViewportInfo.orthoTop, -0.1f, 1.0f);
     //glViewport(mViewportInfo.orthoLeft, mViewportInfo.orthoTop, w, h);
 
 	glMatrixMode(GL_MODELVIEW);
@@ -68,19 +68,8 @@ void SceneGlWidget::wheelEvent(QWheelEvent *event){
 
 void SceneGlWidget::zoomInOut(int units) {
 	if (units!=0) {
-		mViewportInfo.zoomLevelVirtual+=units;
-		if (mViewportInfo.zoomLevelVirtual>70.0) {
-			mViewportInfo.zoomLevelVirtual=70.0;
-		} else if (mViewportInfo.zoomLevelVirtual<-8.0) {
-			mViewportInfo.zoomLevelVirtual=-8.0;
-		}
-		cout<<"Virtual Zoom Level: " << to_string(mViewportInfo.zoomLevelVirtual)<<std::endl;
-		mViewportInfo.zoomLevel=mViewportInfo.zoomLevelVirtual;
-        mCamara.move(0,0,units);
-
-        mViewportInfo.zoomFactor=1.0+mViewportInfo.zoomLevel/10.0;
-		mViewportInfo.updateCamaraOnDraw=true;
-		GuiContext::getInstance().onZoomLevelChanged(mViewportInfo.zoomLevel);
+		mCamara.move(0,0,units);
+		GuiContext::getInstance().onZoomLevelChanged(mCamara.getZ());
 		this->update();//update();
 	}
 }
@@ -91,10 +80,6 @@ void SceneGlWidget::mousePressEvent(QMouseEvent * event ) {
 		mViewportMoveInfo.isOnMove=true;
 		mViewportMoveInfo.startX=event->pos().x();
 		mViewportMoveInfo.startY=event->pos().y();
-		mViewportMoveInfo.currentX=event->pos().x();
-		mViewportMoveInfo.currentY=event->pos().y();
-		mViewportMoveInfo.distanceX=0;
-		mViewportMoveInfo.distanceY=0;
 	}
 	onMouseClicked(event->pos().x(), event->pos().y());
 }
@@ -104,10 +89,6 @@ void SceneGlWidget::mouseReleaseEvent(QMouseEvent * event ) {
 		mViewportMoveInfo.isOnMove=false;
 		mViewportMoveInfo.startX=0;
 		mViewportMoveInfo.startY=0;
-		mViewportMoveInfo.currentX=0;
-		mViewportMoveInfo.currentY=0;
-		mViewportMoveInfo.distanceX=0;
-		mViewportMoveInfo.distanceY=0;
 	}
 }
 
@@ -115,12 +96,7 @@ void SceneGlWidget::mouseMoveEvent(QMouseEvent * event ) {
 	if (mViewportMoveInfo.isOnMove) {
 		int distanceX=mViewportMoveInfo.startX-event->pos().x();
 		int distanceY=mViewportMoveInfo.startY-event->pos().y();
-        //mViewportInfo.camaraOffsetX+=(distanceX*mViewportInfo.zoomFactor);
-        //mViewportInfo.camaraOffsetY+=(distanceY*mViewportInfo.zoomFactor);
         mCamara.move(-distanceX, -distanceY, 0.0);
-
-        mViewportInfo.updateCamaraOnDraw=true;
-
 		mViewportMoveInfo.startX=event->pos().x();
 		mViewportMoveInfo.startY=event->pos().y();
 
@@ -137,7 +113,7 @@ void SceneGlWidget::onMouseClicked(int mx, int my) {
 
 	glm::vec3 posVec = glm::unProject(
 	   glm::vec3(x, float(this->size().height()) - y, 1.0f),
-	   glm::mat4(1.0f),
+	   /*glm::mat4(1.0f)**/mCamara.getViewMatrix(),
 	   projectionMatrix,
 	   glm::vec4(0.0f, 0.0f, float(this->size().width()), float(this->size().height()))
 	);
@@ -196,11 +172,6 @@ void SceneGlWidget::resizeGL(int w, int h)
 
 void SceneGlWidget::paintGL()
 {
-	if (mViewportInfo.updateCamaraOnDraw) {
-		mViewportInfo.updateCamaraOnDraw=false;
-        //updateCamera();
-	}
-
 	// Draw the scene:
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
