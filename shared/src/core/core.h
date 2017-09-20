@@ -8,3 +8,4 @@
 #include "utils/dirutil.h"
 #include "camera/camera.h"
 #include "math/intersection.h"
+#include "math/glmwrapper.h"

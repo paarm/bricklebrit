@@ -16,7 +16,7 @@ Project {
             "src/core/jsonparser/jsonparser.h",
             "src/core/jsonparser/jsonparserbase.cpp",
             "src/core/jsonparser/jsonparserbase.h",
-            "src/core/math/glmvector3.cpp",
+            "src/core/math/glmwrapper.cpp",
             "src/core/math/glmwrapper.h",
             "src/core/math/intersection.cpp",
             "src/core/math/intersection.h",

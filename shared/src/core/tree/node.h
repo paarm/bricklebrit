@@ -7,6 +7,7 @@
 #include "../jsonparser/jsonparser.h"
 #include "nodeidgenerator.h"
 #include <future>
+#include "../math/glmwrapper.h"
 
 
 enum class NodeType {
@@ -170,7 +171,9 @@ private:
 	PointFloat mLeftBottom;
 	PointFloat mRightTop;
 	PointFloat mRightBottom;
+	GLMMatrix4 mCurrentModelMatrix;
 	float z;
+	void setCurrentPos(float rCenterX, float rCenterY, float rLeftTopX, float rLeftTopY, float rLeftBottomX, float rLeftBottomY, float rRightTopX, float rRightTopY, float rRightBottomX, float rRightBottomY);
 public:
 	PROPERTY_POINTINT_GETSET(Position)
 	PROPERTY_POINTINT_GETSET(Size)
@@ -188,18 +191,8 @@ public:
 		setFlipX(false);
 		setFlipY(false);
 	}
-	void setCurrentPos(float rCenterX, float rCenterY, float rLeftTopX, float rLeftTopY, float rLeftBottomX, float rLeftBottomY, float rRightTopX, float rRightTopY, float rRightBottomX, float rRightBottomY) {
-		mCenter.x=rCenterX;
-		mCenter.y=rCenterY;
-		mLeftTop.x=rLeftTopX;
-		mLeftTop.y=rLeftTopY;
-		mLeftBottom.x=rLeftBottomX;
-		mLeftBottom.y=rLeftBottomY;
-		mRightTop.x=rRightTopX;
-		mRightTop.y=rRightTopY;
-		mRightBottom.x=rRightBottomX;
-		mRightBottom.y=rRightBottomY;
-	}
+
+	void setCurrentModelMatrix(GLMMatrix4 &m);
 	PointFloat &getCurrentCenter() {
 		return mCenter;
 	}

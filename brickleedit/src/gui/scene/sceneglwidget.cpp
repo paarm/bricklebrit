@@ -4,7 +4,7 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include "worldcalculator.h"
 
 void SceneGlWidget::initializeGL()
 {
@@ -105,41 +105,12 @@ void SceneGlWidget::mouseMoveEvent(QMouseEvent * event ) {
 	}
 }
 
-void SceneGlWidget::intersectTestForNode(glm::mat4 rMatrix, Node* rNode, float worldX, float worldY) {
-	if (rNode) {
-		if (rNode->getNodeType()==NodeType::Sprite) {
-			vector<PointFloat> v1;
-			vector<PointFloat> v2;
-			v2.emplace_back(worldX, worldY);
-			v2.emplace_back(worldX+1.0, worldY+1.0);
-			NodeSprite *rNodeSprite=static_cast<NodeSprite*>(rNode);
-			rMatrix=getLocalMatrix(rMatrix, rNodeSprite->getPosition().x, rNodeSprite->getPosition().y, 0.0, rNodeSprite->getSize().x, rNodeSprite->getSize().y, rNodeSprite->getScale().x, rNodeSprite->getScale().y, rNodeSprite->getRotation());
-			//rMatrix*=rLocalMatrix;
-			setCurrentWordCoordinateToNode(rNodeSprite, rMatrix);
-
-			v1.emplace_back(rNodeSprite->getCurrentLeftTop());
-			v1.emplace_back(rNodeSprite->getCurrentRightTop());
-			v1.emplace_back(rNodeSprite->getCurrentRightBottom());
-			v1.emplace_back(rNodeSprite->getCurrentLeftBottom());
-			v1.emplace_back(rNodeSprite->getCurrentLeftTop());
-			if (Intersection::isPolygonsIntersecting(v1, v2)) {
-				GuiContext::getInstance().setSceneNodeAsSelected(rNode);
-			}
-		}
-		int childCount=rNode->getChildCount();
-		for (int i=0;i<childCount;i++) {
-			Node *rNodeChild=rNode->getNodeFromIndex(i);
-			intersectTestForNode(rMatrix, rNodeChild, worldX, worldY);
-		}
-	}
-}
 
 void SceneGlWidget::onMouseClicked(int mx, int my) {
 	float x=(float)mx;
 	float y=(float)my;
 	GLfloat matrixArray[16];
 	glGetFloatv (GL_PROJECTION_MATRIX, matrixArray);
-	glm::mat4x4 projectionMatrix=glm::make_mat4x4(matrixArray);
 	GLMMatrix4 pr;
 	pr.setFromPointer(matrixArray);
 	std::cout << "View Matrix in Camera:\n" << mCamera.getViewMatrix().toString() << std::endl;
@@ -152,33 +123,15 @@ void SceneGlWidget::onMouseClicked(int mx, int my) {
 	cout<<"World X Factor=" << std::to_string(posVec.x)<<" Y="<< std::to_string(posVec.y)<<std::endl;
 	cout<<"World X=" << std::to_string(posVec.x*this->size().width()/2.0)<<" Y="<< std::to_string(this->size().height()/2.0*posVec.y)<<std::endl;
 
+	vector<Node*> v;
+	WorldCalculator::intersectTestForNode(v, GuiContext::getInstance().getCurrentScene(), posVec.x*this->size().width()/2.0, this->size().height()/2.0*posVec.y);
 	GuiContext::getInstance().clearSelectedSceneNodes();
-	intersectTestForNode(glm::mat4(1.0), GuiContext::getInstance().getCurrentScene(), posVec.x*this->size().width()/2.0, this->size().height()/2.0*posVec.y);
+	for (Node* n : v) {
+		GuiContext::getInstance().setSceneNodeAsSelected(n);
+	}
 	update();
 }
 
-void SceneGlWidget::setCurrentWordCoordinateToNode(Node2d *rNode2d, glm::mat4x4 &matrix) {
-	//int x=rNode2d->getPosition().x;
-	//int y=rNode2d->getPosition().y;
-	int w=rNode2d->getSize().x;
-	float w2=w/2.0;
-	int h=rNode2d->getSize().y;
-	float h2=h/2.0;
-
-	//glm::mat4x4 matrix=glm::make_mat4x4(matrixArray);
-	glm::vec4 rCenter=matrix*glm::vec4{0.0,0.0,0.0,1.0};
-	glm::vec4 rLT=matrix*glm::vec4{-w2,-h2,0.0,1.0};
-	glm::vec4 rLB=matrix*glm::vec4{-w2,h2,0.0,1.0};
-	glm::vec4 rRT=matrix*glm::vec4{w2,-h2,0.0,1.0};
-	glm::vec4 rRB=matrix*glm::vec4{w2,h2,0.0,1.0};
-	rNode2d->setCurrentPos(rCenter.x, rCenter.y, rLT.x, rLT.y, rLB.x, rLB.y, rRT.x, rRT.y, rRB.x, rRB.y);
-	cout<<rNode2d->getName()<<std::endl;
-	cout<<"CE X=" << std::to_string(rCenter.x)<<"Y="<< std::to_string(rCenter.y)<<std::endl;
-	cout<<"LT X=" << std::to_string(rLT.x)<<"Y="<< std::to_string(rLT.y)<<std::endl;
-	cout<<"LB X=" << std::to_string(rLB.x)<<"Y="<< std::to_string(rLB.y)<<std::endl;
-	cout<<"RT X=" << std::to_string(rRT.x)<<"Y="<< std::to_string(rRT.y)<<std::endl;
-	cout<<"RB X=" << std::to_string(rRB.x)<<"Y="<< std::to_string(rRB.y)<<std::endl;
-}
 
 void SceneGlWidget::resizeGL(int w, int h)
 {
@@ -198,24 +151,7 @@ void SceneGlWidget::resizeGL(int w, int h)
 #endif
 }
 
-glm::mat4x4 SceneGlWidget::getLocalMatrix(glm::mat4x4 m, float x, float y, float z, float w, float h, float scaleX, float scaleY, float rotation) {
-	//glm::mat4 m(1.0);
 
-
-	float angle=rotation;
-	if (angle>360.0) {
-		angle=angle/360.0;
-	} else if (angle<0.0) {
-		angle=360.0+angle;
-	}
-
-	m=glm::translate(m, glm::vec3(x,y,0.0));
-	m=glm::rotate(m, angle, glm::vec3(0.0,0.0,1.0));
-	if (scaleX!=1.0 || scaleY!=1.0) {
-		m=glm::scale(m, glm::vec3(scaleX, scaleY, 1.0));
-	}
-	return m;
-}
 
 void SceneGlWidget::paintGL()
 {
@@ -275,8 +211,11 @@ void SceneGlWidget::paintGL()
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	NodeScene *scene=GuiContext::getInstance().getCurrentScene();
 	if (scene) {
+		GLMMatrix4 m;
+		WorldCalculator::updateNodeMatrix(m, scene);
 		paintNode(scene);
 	}
 	glDisable(GL_TEXTURE_2D);

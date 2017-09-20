@@ -3,7 +3,7 @@
 //#include <GL/glext.h>
 
 #include <bricklelib.h>
-#include <glm/mat4x4.hpp>
+//#include <glm/mat4x4.hpp>
 
 //#include <glm/glm.hpp>
 //#include <glm/gtc/type_ptr.hpp>
@@ -38,10 +38,6 @@ private:
 	int mVirtualHeight=768;
 	bool mCameraInitialized=false;
 	 void onMouseClicked(int mx, int my);
-	 void setCurrentWordCoordinateToNode(Node2d *rNode2d, glm::mat4x4 &matrix);
-	 void intersectTestForNode(glm::mat4 rMatrix, Node* rNode, float worldX, float worldY);
-	 glm::mat4x4 getLocalMatrix(glm::mat4x4 rMatrix, float x, float y, float z, float w, float h, float scaleX, float scaleY, float rotation);
-
 	 void updateViewport();
 public:
 	SceneGlWidget(QWidget *parent) : QOpenGLWidget(parent) {}

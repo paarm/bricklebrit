@@ -37,6 +37,8 @@ Project {
             "src/gui/resources/resource.qrc",
             "src/gui/scene/sceneglwidget.cpp",
             "src/gui/scene/sceneglwidget.h",
+            "src/gui/scene/worldcalculator.cpp",
+            "src/gui/scene/worldcalculator.h",
             "src/gui/scenetree/newscenenode/newscenenodedialog.cpp",
             "src/gui/scenetree/newscenenode/newscenenodedialog.h",
             "src/gui/scenetree/newscenenode/newscenenodedialog.ui",
