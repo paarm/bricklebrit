@@ -6,3 +6,5 @@
 #include "jsonparser/jsonparser.h"
 #include "texture/texturemanager.h"
 #include "utils/dirutil.h"
+#include "camera/camera.h"
+#include "math/intersection.h"

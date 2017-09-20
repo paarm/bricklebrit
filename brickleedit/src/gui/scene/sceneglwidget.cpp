@@ -1,7 +1,9 @@
 #include "sceneglwidget.h"
-#include "guicontext.h"
-
-
+#include "../guicontext.h"
+#include "../../project/projectcontext.h"
+#include <glm/vec3.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 
 void SceneGlWidget::initializeGL()
@@ -44,15 +46,13 @@ void SceneGlWidget::initializeGL()
 void SceneGlWidget::updateViewport() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	float w=mViewportInfo.viewportWidth;
-	float h=mViewportInfo.viewportHeight;
-	mViewportInfo.orthoLeft=(-w/2.0);
-	mViewportInfo.orthoRight=(w/2.0);
-	mViewportInfo.orthoBottom=(h/2.0);
-	mViewportInfo.orthoTop=(-h/2.0);
-	glOrtho(mViewportInfo.orthoLeft, mViewportInfo.orthoRight, mViewportInfo.orthoBottom, mViewportInfo.orthoTop, -0.1f, 1.0f);
-    //glViewport(mViewportInfo.orthoLeft, mViewportInfo.orthoTop, w, h);
-
+	float w=static_cast<float>(mCamera.getViewportWidth());
+	float h=float(mCamera.getViewportHeight());
+	float orthoLeft=(-w/2.0);
+	float orthoRight=(w/2.0);
+	float orthoBottom=(h/2.0);
+	float orthoTop=(-h/2.0);
+	glOrtho(orthoLeft, orthoRight, orthoBottom, orthoTop, 0.0f, 1.0f);
 	glMatrixMode(GL_MODELVIEW);
 }
 
@@ -68,8 +68,8 @@ void SceneGlWidget::wheelEvent(QWheelEvent *event){
 
 void SceneGlWidget::zoomInOut(int units) {
 	if (units!=0) {
-		mCamara.move(0,0,units);
-		GuiContext::getInstance().onZoomLevelChanged(mCamara.getZ());
+		mCamera.move(0,0,units);
+		GuiContext::getInstance().onZoomLevelChanged(mCamera.getZ());
 		this->update();//update();
 	}
 }
@@ -80,8 +80,9 @@ void SceneGlWidget::mousePressEvent(QMouseEvent * event ) {
 		mViewportMoveInfo.isOnMove=true;
 		mViewportMoveInfo.startX=event->pos().x();
 		mViewportMoveInfo.startY=event->pos().y();
+	} else if (event->button()==Qt::LeftButton) {
+		onMouseClicked(event->pos().x(), event->pos().y());
 	}
-	onMouseClicked(event->pos().x(), event->pos().y());
 }
 
 void SceneGlWidget::mouseReleaseEvent(QMouseEvent * event ) {
@@ -96,11 +97,40 @@ void SceneGlWidget::mouseMoveEvent(QMouseEvent * event ) {
 	if (mViewportMoveInfo.isOnMove) {
 		int distanceX=mViewportMoveInfo.startX-event->pos().x();
 		int distanceY=mViewportMoveInfo.startY-event->pos().y();
-        mCamara.move(-distanceX, -distanceY, 0.0);
+		mCamera.move(-distanceX/mCamera.getScaleFactor(), -distanceY/mCamera.getScaleFactor(), 0.0);
 		mViewportMoveInfo.startX=event->pos().x();
 		mViewportMoveInfo.startY=event->pos().y();
 
 		this->update();//update();
+	}
+}
+
+void SceneGlWidget::intersectTestForNode(glm::mat4 rMatrix, Node* rNode, float worldX, float worldY) {
+	if (rNode) {
+		if (rNode->getNodeType()==NodeType::Sprite) {
+			vector<PointFloat> v1;
+			vector<PointFloat> v2;
+			v2.emplace_back(worldX, worldY);
+			v2.emplace_back(worldX+1.0, worldY+1.0);
+			NodeSprite *rNodeSprite=static_cast<NodeSprite*>(rNode);
+			rMatrix=getLocalMatrix(rMatrix, rNodeSprite->getPosition().x, rNodeSprite->getPosition().y, 0.0, rNodeSprite->getSize().x, rNodeSprite->getSize().y, rNodeSprite->getScale().x, rNodeSprite->getScale().y, rNodeSprite->getRotation());
+			//rMatrix*=rLocalMatrix;
+			setCurrentWordCoordinateToNode(rNodeSprite, rMatrix);
+
+			v1.emplace_back(rNodeSprite->getCurrentLeftTop());
+			v1.emplace_back(rNodeSprite->getCurrentRightTop());
+			v1.emplace_back(rNodeSprite->getCurrentRightBottom());
+			v1.emplace_back(rNodeSprite->getCurrentLeftBottom());
+			v1.emplace_back(rNodeSprite->getCurrentLeftTop());
+			if (Intersection::isPolygonsIntersecting(v1, v2)) {
+				GuiContext::getInstance().setSceneNodeAsSelected(rNode);
+			}
+		}
+		int childCount=rNode->getChildCount();
+		for (int i=0;i<childCount;i++) {
+			Node *rNodeChild=rNode->getNodeFromIndex(i);
+			intersectTestForNode(rMatrix, rNodeChild, worldX, worldY);
+		}
 	}
 }
 
@@ -110,25 +140,32 @@ void SceneGlWidget::onMouseClicked(int mx, int my) {
 	GLfloat matrixArray[16];
 	glGetFloatv (GL_PROJECTION_MATRIX, matrixArray);
 	glm::mat4x4 projectionMatrix=glm::make_mat4x4(matrixArray);
+	GLMMatrix4 pr;
+	pr.setFromPointer(matrixArray);
+	std::cout << "View Matrix in Camera:\n" << mCamera.getViewMatrix().toString() << std::endl;
+	std::cout << "Proj Matrix:\n" << pr.toString() << std::endl;
 
-	glm::vec3 posVec = glm::unProject(
-	   glm::vec3(x, float(this->size().height()) - y, 1.0f),
-	   /*glm::mat4(1.0f)**/mCamara.getViewMatrix(),
-	   projectionMatrix,
-	   glm::vec4(0.0f, 0.0f, float(this->size().width()), float(this->size().height()))
-	);
-	cout<<"World X=" << std::to_string(posVec.x)<<"Y="<< std::to_string(posVec.y)<<std::endl;
+	GLMVector3 pos=mCamera.unproject(mx, my, pr);
+	glm::vec3 posVec=glm::make_vec3(pos.getPointer());
+
+	cout<<"Mouse X=" << std::to_string(x)<<" Y="<< std::to_string(y)<<std::endl;
+	cout<<"World X Factor=" << std::to_string(posVec.x)<<" Y="<< std::to_string(posVec.y)<<std::endl;
+	cout<<"World X=" << std::to_string(posVec.x*this->size().width()/2.0)<<" Y="<< std::to_string(this->size().height()/2.0*posVec.y)<<std::endl;
+
+	GuiContext::getInstance().clearSelectedSceneNodes();
+	intersectTestForNode(glm::mat4(1.0), GuiContext::getInstance().getCurrentScene(), posVec.x*this->size().width()/2.0, this->size().height()/2.0*posVec.y);
+	update();
 }
 
-void SceneGlWidget::setCurrentWordCoordinateToNode(Node2d *rNode2d, GLfloat *matrixArray) {
-	int x=rNode2d->getPosition().x;
-	int y=rNode2d->getPosition().y;
+void SceneGlWidget::setCurrentWordCoordinateToNode(Node2d *rNode2d, glm::mat4x4 &matrix) {
+	//int x=rNode2d->getPosition().x;
+	//int y=rNode2d->getPosition().y;
 	int w=rNode2d->getSize().x;
 	float w2=w/2.0;
 	int h=rNode2d->getSize().y;
 	float h2=h/2.0;
 
-	glm::mat4x4 matrix=glm::make_mat4x4(matrixArray);
+	//glm::mat4x4 matrix=glm::make_mat4x4(matrixArray);
 	glm::vec4 rCenter=matrix*glm::vec4{0.0,0.0,0.0,1.0};
 	glm::vec4 rLT=matrix*glm::vec4{-w2,-h2,0.0,1.0};
 	glm::vec4 rLB=matrix*glm::vec4{-w2,h2,0.0,1.0};
@@ -145,18 +182,12 @@ void SceneGlWidget::setCurrentWordCoordinateToNode(Node2d *rNode2d, GLfloat *mat
 
 void SceneGlWidget::resizeGL(int w, int h)
 {
-	mViewportInfo.viewportWidth=w;
-	mViewportInfo.viewportHeight=h;
-	//mViewportInfo.zoomLevel=-5.0;
-
+	mCamera.setViewport(w,h);
+	if (!mCameraInitialized) {
+		mCameraInitialized=true;
+		//mCamera.move(-float(w)/2.0, -float(h)/2.0,0.0);
+	}
     updateViewport();
-	//glViewport(0,0,1,h);
-	//glTranslatef(200,0,500.0);
-	//glViewport(0, 0, w, h);
-	//glm::mat4 projectionMatrix = glm::ortho( 0.0f, (float)w, (float)h, 0.0f,-5.0f, 5.0f);
-
-
-	//glOrtho(-(mWidth/2.0), +(mWidth/2.0), +(mHeight/2.0), -(mHeight/2.0), 0.0f, 1.0f);
 #if 0
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -165,9 +196,25 @@ void SceneGlWidget::resizeGL(int w, int h)
 	glLoadIdentity();
 	gluLookAt(0,0,5,0,0,0,0,1,0);
 #endif
-	// Update projection matrix and other size related settings:
-	//m_projection.setToIdentity();
-	//m_projection.perspective(45.0f, w / float(h), 0.01f, 100.0f);
+}
+
+glm::mat4x4 SceneGlWidget::getLocalMatrix(glm::mat4x4 m, float x, float y, float z, float w, float h, float scaleX, float scaleY, float rotation) {
+	//glm::mat4 m(1.0);
+
+
+	float angle=rotation;
+	if (angle>360.0) {
+		angle=angle/360.0;
+	} else if (angle<0.0) {
+		angle=360.0+angle;
+	}
+
+	m=glm::translate(m, glm::vec3(x,y,0.0));
+	m=glm::rotate(m, angle, glm::vec3(0.0,0.0,1.0));
+	if (scaleX!=1.0 || scaleY!=1.0) {
+		m=glm::scale(m, glm::vec3(scaleX, scaleY, 1.0));
+	}
+	return m;
 }
 
 void SceneGlWidget::paintGL()
@@ -177,7 +224,7 @@ void SceneGlWidget::paintGL()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-    glLoadMatrixf (glm::value_ptr(mCamara.getViewMatrix()));
+	glLoadMatrixf (mCamera.getViewMatrix().getPointer());
 
 	glBegin(GL_QUADS);
 		glColor3f(0.0, 1.0, 0.0);
@@ -192,14 +239,14 @@ void SceneGlWidget::paintGL()
 	glPolygonMode(GL_BACK, GL_LINE);
 	glBegin(GL_QUADS);
 		glColor3f(1.0, 1.0, 0.0);
-		glVertex3d(0,0,0);
-		glVertex3d(mWidth,0,0);
-		glVertex3d(mWidth,mHeight,0);
-		glVertex3d(0,mHeight,0);
+		glVertex3d(-mVirtualWidth/2.0,-mVirtualHeight/2.0,0);
+		glVertex3d(mVirtualWidth/2.0,-mVirtualHeight/2.0,0);
+		glVertex3d(mVirtualWidth/2.0,mVirtualHeight/2.0,0);
+		glVertex3d(-mVirtualWidth/2.0,mVirtualHeight/2.0,0);
 	glEnd();
 
-	glPushMatrix();
-	glTranslatef(mWidth/2.0, mHeight/2.0,0);
+	//glPushMatrix();
+	//glTranslatef(mVirtualWidth/2.0, mVirtualHeight/2.0,0);
 	glBegin(GL_LINES);
 		glColor3f(1.0, 1.0, 0.0);
 		glVertex3d(-10,0,0);
@@ -207,7 +254,7 @@ void SceneGlWidget::paintGL()
 		glVertex3d(0,-10,0);
 		glVertex3d(0,10,0);
 	glEnd();
-	glPopMatrix();
+	//glPopMatrix();
 
 
 	glPolygonMode(GL_FRONT, GL_FILL);
@@ -226,50 +273,15 @@ void SceneGlWidget::paintGL()
 
 	glColor3f(1.0,1.0, 1.0);
 	glEnable(GL_TEXTURE_2D);
-#if 0
-	texture->bind();
-	// Draw a textured quad
-
-	glPushMatrix();
-	glTranslatef(-200, 0,0);
-
-	glBegin(GL_QUADS);
-	glTexCoord2f(0, 0); glVertex3f(0, 0, 0);
-	glTexCoord2f(0, 1); glVertex3f(0, 100, 0);
-	glTexCoord2f(1, 1); glVertex3f(100, 100, 0);
-	glTexCoord2f(1, 0); glVertex3f(100, 0, 0);
-	glEnd();
-	glPopMatrix();
-	texture->release();
-	glPushMatrix();
-	glTranslatef(200, 0,0);
-	//glBindTexture(GL_TEXTURE_2D, texName);
-	bTexture.bind();
-	glBegin(GL_QUADS);
-		glTexCoord2f(0, 0); glVertex3f(0, 0, 0);
-		glTexCoord2f(0, 1); glVertex3f(0, 100, 0);
-		glTexCoord2f(1, 1); glVertex3f(100, 100, 0);
-		glTexCoord2f(1, 0); glVertex3f(100, 0, 0);
-	glEnd();
-	glPopMatrix();
-	//glBindTexture(GL_TEXTURE_2D, texName);
-#endif
-
-
-
-	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	NodeScene *scene=GuiContext::getInstance().getCurrentScene();
 	if (scene) {
 		paintNode(scene);
 	}
-
 	glDisable(GL_TEXTURE_2D);
 
 }
-
-
 
 void SceneGlWidget::paintNode(Node* rNode) {
 	glPushMatrix();
@@ -296,9 +308,9 @@ void SceneGlWidget::paintNode(Node* rNode) {
 		if (scaleX!=1.0 || scaleY!=1.0) {
 			glScalef(scaleX, scaleY, 1.0);
 		}
-		GLfloat matrix[16];
-		glGetFloatv (GL_MODELVIEW_MATRIX, matrix);
-		setCurrentWordCoordinateToNode(paintNode, matrix);
+		//GLfloat matrix[16];
+		//glGetFloatv (GL_MODELVIEW_MATRIX, matrix);
+		//setCurrentWordCoordinateToNode(paintNode, matrix);
 
 
 		NodeResource* rNodeResource=ProjectContext::getInstance().getOrLoadResourceByName(paintNode->getFrameRef().resourcefile);
@@ -398,16 +410,6 @@ void SceneGlWidget::paintNode(Node* rNode) {
 				}
 			}
 		}
-#if 0
-		//glBindTexture(GL_TEXTURE_2D, texName);
-		bTexture.bind();
-		glBegin(GL_QUADS);
-			glTexCoord2f(0, 0); glVertex3f(0, 0, 0);
-			glTexCoord2f(0, 1); glVertex3f(0, 100, 0);
-			glTexCoord2f(1, 1); glVertex3f(100, 100, 0);
-			glTexCoord2f(1, 0); glVertex3f(100, 0, 0);
-		glEnd();
-#endif
 	}
 	unsigned long count=rNode->getChildCount();
 	unsigned long i;

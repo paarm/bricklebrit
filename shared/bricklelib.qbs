@@ -7,12 +7,19 @@ Project {
         name: "bricklelib"
         cpp.cppFlags: "-std=c++11"
         cpp.staticLibraries: "opengl32"
+        cpp.includePaths: ['src/core/thirdparty']
         files: [
             "src/bricklelib.h",
             "src/core/core.h",
+            "src/core/camera/camera.cpp",
+            "src/core/camera/camera.h",
             "src/core/jsonparser/jsonparser.h",
             "src/core/jsonparser/jsonparserbase.cpp",
             "src/core/jsonparser/jsonparserbase.h",
+            "src/core/math/glmvector3.cpp",
+            "src/core/math/glmwrapper.h",
+            "src/core/math/intersection.cpp",
+            "src/core/math/intersection.h",
             "src/core/texture/btexturepng.cpp",
             "src/core/texture/btexturepng.h",
             "src/core/texture/texturemanager.cpp",
@@ -58,7 +65,7 @@ Project {
         }
         Export {
             Depends { name: "cpp" }
-            cpp.includePaths: ['src', 'glm']
+            cpp.includePaths: ['src', 'src/core/thirdparty']
         }
     }
 }
