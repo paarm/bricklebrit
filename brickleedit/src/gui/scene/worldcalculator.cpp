@@ -19,10 +19,10 @@ void WorldCalculator::updateNodeMatrix(GLMMatrix4 parentMatrix, Node* rNode) {
 			angle=360.0+angle;
 		}
 		m=glm::translate(m, glm::vec3(rNodeSprite->getPosition().x,rNodeSprite->getPosition().y,0.0));
-		m=glm::rotate(m, angle, glm::vec3(0.0,0.0,1.0));
-		if (scaleX!=1.0 || scaleY!=1.0) {
-			m=glm::scale(m, glm::vec3(scaleX, scaleY, 1.0));
-		}
+		m=glm::rotate(m, glm::radians(angle), glm::vec3(0.0,0.0,1.0));
+		//if (scaleX!=1.0 || scaleY!=1.0) {
+		m=glm::scale(m, glm::vec3(scaleX, scaleY, 1.0));
+		//}
 		pM*=m;
 		pMM.setFromPointer(glm::value_ptr(pM));
 		rNodeSprite->setCurrentModelMatrix(pMM);
