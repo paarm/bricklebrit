@@ -2,9 +2,9 @@
 #include "ui_newscenedialog.h"
 #include "../guicontext.h"
 
-NewSceneDialog::NewSceneDialog(NodeInfoType rNodeInfoType, QWidget *parent) :
+NewSceneDialog::NewSceneDialog(bool rIsResource, QWidget *parent) :
 	QDialog(parent),
-	mNodeInfoType(rNodeInfoType),
+	mIsResource(rIsResource),
 	ui(new Ui::NewSceneDialog)
 {
 	ui->setupUi(this);
@@ -29,7 +29,7 @@ void NewSceneDialog::on_okButton_clicked()
 		QMessageBox::warning(this, tr("Error"), tr("Name required"), QMessageBox::Ok);
 	} else {
 		string rFullName="";
-		if (mNodeInfoType==NodeInfoType::Scene) {
+		if (!mIsResource) {
 			rFullName = DirUtil::concatPath(ProjectContext::getInstance().getNodeProject()->getScenesSubPath(),getName().toStdString());
 			rFullName+=".brscn";
 			if (ProjectContext::getInstance().getSceneInfoByName(rFullName)) {

@@ -37,11 +37,17 @@ public:
 	QString getVirtualProjectPath();
 	QString fromVirtualPath(const QString &rPathAbs);
 	QString toVirtualPath(const QString &rPathAbs);
-	void switchProperties(Node* rNode, NodeInfoType rNodeInfoType);
+	//void switchProperties(Node* rNode, NodeInfoType rNodeInfoType);
+
+
 	void updateGlWidget();
-	void currentPropertyValueChanged(Node* rNode, NodeInfoType rNodeInfoType);
-	void updateChildNodes(Node *rNode_parent, NodeInfoType rNodeInfoType);
-	void updateNodeName(Node *rNode, NodeInfoType rNodeInfoType);
+	void currentPropertyValueChanged(Node* rNode);
+	void updateChildNodes(Node *rNode_parent);
+	void updateNodeName(Node *rNode);
+	void insertNewSceneNode(Node *rNode);
+	void insertNewResourceNode(Node *rNode);
+
+	void setSceneNodeInTreeAsSelected(Node *rNode);
 
 	void clearSelectedSceneNodes();
 	void clearSelectedSceneNode(Node *rDeselectedNode);
@@ -57,7 +63,5 @@ public slots:
 	void onNewSceneClicked();
 	void onNewResourceClicked();
 	// Scene Tree
-	void onCreateNewNode(QString rNodeTypeName, NodeInfoType rNodeInfoType);
-	void insertNewNode(Node *rNode, NodeInfoType rNodeInfoType);
 };
 

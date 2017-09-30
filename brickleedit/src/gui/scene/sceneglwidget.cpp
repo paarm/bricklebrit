@@ -127,6 +127,7 @@ void SceneGlWidget::onMouseClicked(int mx, int my) {
 	WorldCalculator::intersectTestForNode(v, GuiContext::getInstance().getCurrentScene(), posVec.x*this->size().width()/2.0, this->size().height()/2.0*posVec.y);
 	GuiContext::getInstance().clearSelectedSceneNodes();
 	for (Node* n : v) {
+		GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
 		GuiContext::getInstance().setSceneNodeAsSelected(n);
 	}
 	update();

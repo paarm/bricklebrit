@@ -161,8 +161,8 @@ bool GuiContext::loadProject(const string&rProjectPathWithFileAbs) {
 		if (rNodeResource) {
 			setCurrentResource(rNodeResource->getName());
 		}
-		getMainWindow().getSceneTreeDock().updateSceneOrResourceDropdownWithCurrent(NodeInfoType::Scene);
-		getMainWindow().getSceneTreeDock().updateSceneOrResourceDropdownWithCurrent(NodeInfoType::Resource);
+		getMainWindow().getSceneTreeDock().updateSceneDropdownWithCurrent();
+		getMainWindow().getSceneTreeDock().updateResourceDropdownWithCurrent();
 
 		setWindowTitle();
 		//projectSwitched();
@@ -177,7 +177,7 @@ bool GuiContext::createNewScene(const string& rSceneName, bool asDefault) {
 	if (ProjectContext::getInstance().getSceneInfoByName(rSceneName)) {
 		rv=true;
 	} else {
-		rv=ProjectContext::getInstance().createNew(NodeInfoType::Scene, rSceneName);
+		rv=ProjectContext::getInstance().createNewScene(rSceneName);
 		if (rv) {
 			NodeSceneInfo *rNodeSceneInfo=static_cast<NodeSceneInfo*>(getInstanceFromNodeType(NodeType::SceneInfo, true));
 			if (rNodeSceneInfo) {
@@ -191,7 +191,7 @@ bool GuiContext::createNewScene(const string& rSceneName, bool asDefault) {
 				tmp.mkpath(".");
 			}
 			setCurrentScene(rSceneName);
-			getMainWindow().getSceneTreeDock().updateSceneOrResourceDropdownWithCurrent(NodeInfoType::Scene);
+			getMainWindow().getSceneTreeDock().updateSceneDropdownWithCurrent();
 
 		}
 	}
@@ -209,15 +209,10 @@ void GuiContext::setCurrentScene(const string& rName) {
 		} else {
 			mCurrentScene=nullptr;
 		}
-		getMainWindow().getSceneTreeDock().switchToSceneOrResource(getCurrentScene(), NodeInfoType::Scene);
-		switchProperties(nullptr, NodeInfoType::Scene);
+		getMainWindow().getSceneTreeDock().switchToScene(getCurrentScene());
 		setWindowTitle();
+		updateGlWidget();
 	}
-#if 0
-	if (updateDropdown) {
-		getMainWindow().getSceneTreeDock().updateSceneOrResourceDropdownWithCurrent(NodeInfoType::Scene);
-	}
-#endif
 }
 
 NodeScene* GuiContext::getCurrentScene() {
@@ -232,7 +227,7 @@ bool GuiContext::createNewResource(const string& rName, bool asDefault) {
 	} else {
 		NodeResource *rNodeResource=ProjectContext::getInstance().getNodeResourceByName(rName);
 		if (rNodeResource==nullptr) {
-			rv=ProjectContext::getInstance().createNew(NodeInfoType::Resource, rName);
+			rv=ProjectContext::getInstance().createNewResource(rName);
 			if (rv) {
 				NodeResourceInfo *rNodeResourceInfo=static_cast<NodeResourceInfo*>(getInstanceFromNodeType(NodeType::ResourceInfo, true));
 				if (rNodeResourceInfo) {
@@ -247,7 +242,7 @@ bool GuiContext::createNewResource(const string& rName, bool asDefault) {
 					tmp.mkpath(".");
 				}
 				setCurrentResource(rName);
-				getMainWindow().getSceneTreeDock().updateSceneOrResourceDropdownWithCurrent(NodeInfoType::Resource);
+				getMainWindow().getSceneTreeDock().updateResourceDropdownWithCurrent();
 			}
 		}
 	}
@@ -262,21 +257,17 @@ void GuiContext::setCurrentResource(const string& rName) {
 		} else {
 			mCurrentResource=nullptr;
 		}
-		getMainWindow().getSceneTreeDock().switchToSceneOrResource(getCurrentResource(), NodeInfoType::Resource);
-		switchProperties(nullptr, NodeInfoType::Resource);
+		getMainWindow().getSceneTreeDock().switchToResource(getCurrentResource());
 		setWindowTitle();
+		updateGlWidget();
 	}
-#if 0
-	if (updateDropdown) {
-		getMainWindow().getResourceTreeDock().updateResourceOrResourceDropdownWithCurrent(NodeInfoType::Resource);
-	}
-#endif
 }
 
 NodeResource* GuiContext::getCurrentResource() {
 	return mCurrentResource;
 }
 
+#if 0
 void GuiContext::onCreateNewNode(QString rNodeTypeName, NodeInfoType rNodeInfoType) {
 	QTreeWidgetItem *parent=nullptr;
 	if (rNodeInfoType==NodeInfoType::Resource) {
@@ -297,35 +288,39 @@ void GuiContext::onCreateNewNode(QString rNodeTypeName, NodeInfoType rNodeInfoTy
 		getMainWindow().getSceneTreeDock().addNode(parent, rNode, rNodeInfoType);
 	}
 }
+#endif
 
-void GuiContext::updateChildNodes(Node *rNode_parent, NodeInfoType rNodeInfoType) {
-	getMainWindow().getSceneTreeDock().updateChildNodes(rNode_parent, rNodeInfoType);
+void GuiContext::updateChildNodes(Node *rNode_parent) {
+	getMainWindow().getSceneTreeDock().updateChildNodes(rNode_parent);
 	updateGlWidget();
 }
 
-void GuiContext::insertNewNode(Node *rNode, NodeInfoType rNodeInfoType) {
+void GuiContext::insertNewSceneNode(Node *rNode) {
 	if (rNode) {
-		Node *rNode_parent=nullptr;
-		QTreeWidgetItem *parent=nullptr;
-		if (rNodeInfoType==NodeInfoType::Resource) {
-			parent=getMainWindow().getSceneTreeDock().getRootItem(rNodeInfoType);
-		} else {
-			parent=getMainWindow().getSceneTreeDock().getSelectedItem(rNodeInfoType);
-		}
-		if (parent) {
-			rNode_parent=TreeUtil::getNodeFromTreeItem(parent);
-			if (rNode_parent) {
-				rNode_parent->addChildNode(rNode);
-				getMainWindow().getSceneTreeDock().addNode(parent, rNode, rNodeInfoType);
-				updateGlWidget();
-			}
+		Node *rParentNode=getMainWindow().getSceneTreeDock().getSelectedSceneNode();
+		if (rParentNode) {
+			rParentNode->addChildNode(rNode);
+			getMainWindow().getSceneTreeDock().addSceneNodeToSelectedItem(rNode);
+			updateGlWidget();
 		}
 	}
 }
 
-void GuiContext::updateNodeName(Node *rNode, NodeInfoType rNodeInfoType) {
-	getMainWindow().getSceneTreeDock().updateNodeName(rNode, rNodeInfoType);
-	getMainWindow().getPropertyTreeDock().setPropertiesForNode(rNode, rNodeInfoType);
+void GuiContext::insertNewResourceNode(Node *rNode) {
+	if (rNode) {
+		Node *rParentNode=getMainWindow().getSceneTreeDock().getRootResourceNode();
+		if (rParentNode) {
+			rParentNode->addChildNode(rNode);
+			getMainWindow().getSceneTreeDock().addResourceNodeToRootItem(rNode);
+			updateGlWidget();
+		}
+	}
+}
+
+
+void GuiContext::updateNodeName(Node *rNode) {
+	getMainWindow().getSceneTreeDock().updateNodeName(rNode);
+	getMainWindow().getPropertyTreeDock().setPropertiesForNode(rNode);
 	//updateGlWidget();
 }
 
@@ -337,19 +332,17 @@ void GuiContext::projectSwitched() {
 	//resourceSwitched();
 }
 
-
-
-
+#if 0
 void GuiContext::switchProperties(Node* rNode, NodeInfoType rNodeInfoType) {
-	getMainWindow().getPropertyTreeDock().setPropertiesForNode(rNode, rNodeInfoType);
+	getMainWindow().getPropertyTreeDock().setPropertiesForNode(rNode);
 	if (rNodeInfoType==NodeInfoType::Scene) {
 		replaceSelectedSceneNode(rNode);
 	}
 	updateGlWidget();
 }
-
-void GuiContext::currentPropertyValueChanged(Node* rNode, NodeInfoType rNodeInfoType) {
-	getMainWindow().getSceneTreeDock().updateNodeName(rNode, rNodeInfoType);
+#endif
+void GuiContext::currentPropertyValueChanged(Node* rNode) {
+	getMainWindow().getSceneTreeDock().updateNodeName(rNode);
 	updateGlWidget();
 }
 
@@ -397,6 +390,10 @@ void GuiContext::setSceneNodeAsSelected(Node* rSelectedNode) {
 			mSelectedSceneNodes.push_back(rSelectedNode);
 		}
 	}
+}
+
+void GuiContext::setSceneNodeInTreeAsSelected(Node *rNode) {
+	getMainWindow().getSceneTreeDock().setSceneNodeAsSelected(rNode);
 }
 
 void GuiContext::onZoomLevelChanged(int rZoomLevel) {

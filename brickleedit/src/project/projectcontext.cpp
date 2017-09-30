@@ -7,16 +7,14 @@ ProjectContext::~ProjectContext() {
 }
 
 void ProjectContext::save() {
-	mNodeManager.save(NodeInfoType::Project,mProjectPathAbs);
-	mNodeManager.save(NodeInfoType::Scene,mProjectPathAbs);
-	mNodeManager.save(NodeInfoType::Resource,mProjectPathAbs);
+	mNodeManager.saveNodes(mProjectPathAbs);
 }
 
 void ProjectContext::closeProject(bool rPersistBefore) {
 	if (rPersistBefore) {
 		save();
 	}
-	mNodeManager.close(NodeInfoType::Project);
+	mNodeManager.closeNodes();
 	mProjectPathAbs="";
 	mTextureManager.clear();
 }
@@ -24,7 +22,7 @@ void ProjectContext::closeProject(bool rPersistBefore) {
 bool ProjectContext::loadProject(const string&rProjectPathAbs, const string&rName) {
 	bool rv=false;
 
-	rv=mNodeManager.load(NodeInfoType::Project, rProjectPathAbs, rName);
+	rv=mNodeManager.loadProjectNode(rProjectPathAbs, rName);
 	if (rv) {
 		mTextureManager.clear();
 		mProjectPathAbs=rProjectPathAbs;
@@ -33,9 +31,15 @@ bool ProjectContext::loadProject(const string&rProjectPathAbs, const string&rNam
 	return rv;
 }
 
-bool ProjectContext::load(NodeInfoType rNodeInfoType, const string&rName) {
+bool ProjectContext::loadScene(const string&rName) {
 	bool rv=false;
-	rv=mNodeManager.load(rNodeInfoType, mProjectPathAbs, rName);
+	rv=mNodeManager.loadSceneNode(mProjectPathAbs, rName);
+	return rv;
+}
+
+bool ProjectContext::loadResource(const string&rName) {
+	bool rv=false;
+	rv=mNodeManager.loadResourceNode(mProjectPathAbs, rName);
 	return rv;
 }
 
@@ -49,9 +53,15 @@ bool ProjectContext::createNewProject(const string& rProjectPathAbs, const strin
 	return rv;
 }
 
-bool ProjectContext::createNew(NodeInfoType rNodeInfoType, const string& rName) {
+bool ProjectContext::createNewScene(const string& rName) {
 	bool rv=false;
-	rv=mNodeManager.createNew(rNodeInfoType, rName);
+	rv=mNodeManager.createNewScene(rName);
+	return rv;
+}
+
+bool ProjectContext::createNewResource(const string& rName) {
+	bool rv=false;
+	rv=mNodeManager.createNewResource(rName);
 	return rv;
 }
 
@@ -79,28 +89,29 @@ BTexturePng *ProjectContext::getTexture(const string &rPathRelativeToProject) {
 	return mTextureManager.getTexture(rPathRelativeToProject);
 }
 
-vector<string> ProjectContext::getFileNamesForType(NodeInfoType rNodeInfoType) {
+vector<string> ProjectContext::getSceneNames() {
 	vector<string> rv;
-	if (rNodeInfoType==NodeInfoType::Resource || rNodeInfoType==NodeInfoType::Scene) {
-		NodeType rNodeType=NodeType::ResourceInfo;
-		if (rNodeInfoType==NodeInfoType::Scene) {
-			rNodeType=NodeType::SceneInfo;
-		}
-		vector<Node*> v=getNodeProject()->getChildNodesWithNodeType(rNodeType);
+	if (mNodeManager.getNodeProject()) {
+		vector<Node*> v=mNodeManager.getNodeProject()->getChildNodesWithNodeType(NodeType::SceneInfo);
 		for (auto rNode : v) {
-			if (rNodeInfoType==NodeInfoType::Scene) {
-				NodeSceneInfo *rNodeSceneInfo=static_cast<NodeSceneInfo*>(rNode);
-				rv.push_back(rNodeSceneInfo->getPath());
-			} else {
-				NodeResourceInfo *rNodeResourceInfo=static_cast<NodeResourceInfo*>(rNode);
-				rv.push_back(rNodeResourceInfo->getPath());
-			}
+			NodeSceneInfo *rNodeSceneInfo=static_cast<NodeSceneInfo*>(rNode);
+			rv.push_back(rNodeSceneInfo->getPath());
 		}
 	}
 	return rv;
 }
 
-
+vector<string> ProjectContext::getResourceNames() {
+	vector<string> rv;
+	if (mNodeManager.getNodeProject()) {
+		vector<Node*> v=mNodeManager.getNodeProject()->getChildNodesWithNodeType(NodeType::ResourceInfo);
+		for (auto rNode : v) {
+			NodeResourceInfo *rNodeResourceInfo=static_cast<NodeResourceInfo*>(rNode);
+			rv.push_back(rNodeResourceInfo->getPath());
+		}
+	}
+	return rv;
+}
 
 NodeSceneInfo* ProjectContext::getSceneInfoByName(const string& rSceneName) {
 	NodeSceneInfo *rNodeSceneInfo=nullptr;
@@ -118,7 +129,7 @@ NodeScene* ProjectContext::getOrLoadSceneByName(const string& rSceneName) {
 	if (getSceneInfoByName(rSceneName)) {
 		rNodeScene=getNodeSceneByName(rSceneName);
 		if (!rNodeScene) {
-			if (load(NodeInfoType::Scene, rSceneName)) {
+			if (loadScene(rSceneName)) {
 				rNodeScene=getNodeSceneByName(rSceneName);
 			}
 		}
@@ -142,7 +153,7 @@ NodeResource* ProjectContext::getOrLoadResourceByName(const string& rResourceNam
 	if (getResourceInfoByName(rResourceName)) {
 		rNodeResource=getNodeResourceByName(rResourceName);
 		if (!rNodeResource) {
-			if (load(NodeInfoType::Resource, rResourceName)) {
+			if (loadResource(rResourceName)) {
 				rNodeResource=getNodeResourceByName(rResourceName);
 			}
 		}

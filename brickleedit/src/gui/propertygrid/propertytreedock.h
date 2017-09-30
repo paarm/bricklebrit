@@ -7,7 +7,6 @@
 #include <QItemDelegate>
 #include "propertyinfo.h"
 #include "propertyeditdelegate.h"
-#include "../../project/nodeinfotype.h"
 
 namespace Ui {
 class PropertyTreeDock;
@@ -21,7 +20,7 @@ public:
 	explicit PropertyTreeDock(QWidget *parent = 0);
 	~PropertyTreeDock();
 	void clear();
-	void setPropertiesForNode(Node* rNode, NodeInfoType rNodeInfoType);
+	void setPropertiesForNode(Node* rNode);
 	PropertyInfo getPropertyInfoFromTreeItem(QTreeWidgetItem* r);
 	void setPropertyInfoToTreeItem(QTreeWidgetItem* r, PropertyInfo &rPropertyInfo);
 	void onChangeProperty(PropertyInfo rPropertyInfo);
@@ -32,7 +31,6 @@ private slots:
 
 private:
 	Ui::PropertyTreeDock *ui;
-	NodeInfoType mNodeInfoType;
 	PropertyEditDelegate *mPropertyNumberDelegate=nullptr;
 
 	void addSubProperty(Node* rNode, PropertyBase* rPropertyBase, const string& propertyName, QTreeWidgetItem* r, string rValue, const string &rPropertySubName);

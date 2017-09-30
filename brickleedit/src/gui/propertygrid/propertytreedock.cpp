@@ -198,7 +198,7 @@ bool PropertyTreeDock::onPropertyChange(PropertyInfo* rPropertyInfo, QString dat
 				PropertyList *pp=static_cast<PropertyList*>(p);
 				rv=true;
 			}
-			GuiContext::getInstance().currentPropertyValueChanged(rPropertyInfo->getNode(), mNodeInfoType);
+			GuiContext::getInstance().currentPropertyValueChanged(rPropertyInfo->getNode());
 		}
 	}
 	return rv;
@@ -276,9 +276,8 @@ void PropertyTreeDock::addSubProperty(Node* rNode, PropertyBase* rPropertyBase, 
 	//r->setExpanded(true);
 }
 
-void PropertyTreeDock::setPropertiesForNode(Node* rNode, NodeInfoType rNodeInfoType) {
+void PropertyTreeDock::setPropertiesForNode(Node* rNode) {
 	clear();
-	mNodeInfoType=rNodeInfoType;
 	if (rNode) {
 		unsigned long count=rNode->getPropertyCount();
 		for (unsigned long i=0;i<count;i++) {

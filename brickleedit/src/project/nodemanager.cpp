@@ -1,141 +1,143 @@
 #include "nodemanager.h"
-
+#include <QFileInfo>
 NodeManager::NodeManager() {
 }
 
 NodeManager::~NodeManager() {
-	close(NodeInfoType::Project);
-	close(NodeInfoType::Scene);
-	close(NodeInfoType::Resource);
+	closeNodes();
 }
 
 bool NodeManager::createNewProject(const string& rName) {
+	closeNodes();
 	NodeIdGenerator::getInstance().resetNumber(0);
-	return mNodeProject.createNew(rName);
+	mNodeProject=static_cast<NodeProject*>(getInstanceFromNodeType(NodeType::Project, true));
+	return true;
 }
 
-bool NodeManager::createNew(NodeInfoType rNodeInfoType, const string& rName) {
-	switch (rNodeInfoType) {
-	case NodeInfoType::Scene:
-	{
-			mNodeScene.emplace_back(3);
-			NodeInfo<NodeScene>& rNodeScene=mNodeScene.back();
-			return rNodeScene.createNew(rName);
-	}
-		break;
-	case NodeInfoType::Resource:
-		mNodeResource.emplace_back(3);
-		NodeInfo<NodeResource>& rNodeResource=mNodeResource.back();
-		return rNodeResource.createNew(rName);
-		break;
-	}
-	return false;
+bool NodeManager::createNewScene(const string& rName) {
+	NodeScene* rNodeScene=static_cast<NodeScene*>(getInstanceFromNodeType(NodeType::Scene, true));
+	mNodeSceneList.push_back(rNodeScene);
+	return true;
 }
 
-bool NodeManager::load(NodeInfoType rNodeInfoType, const string& rProjectPathAbs, const string &rName) {
+bool NodeManager::createNewResource(const string& rName) {
+	NodeResource* rNodeResource=static_cast<NodeResource*>(getInstanceFromNodeType(NodeType::Resource, true));
+	mNodeResourceList.push_back(rNodeResource);
+	return true;
+}
+
+Node* NodeManager::loadNode(const string&rPathWithFileAbs) {
+	Node *rv=nullptr;
+	QFileInfo fi(QString::fromStdString(rPathWithFileAbs));
+	if (fi.exists() && fi.isFile()) {
+		rv=Node::unpersistNode(fi.absoluteFilePath().toStdString());
+	}
+	return rv;
+}
+
+bool NodeManager::loadProjectNode(const string& rProjectPathAbs, const string &rName) {
+	bool rv=false;
 	string rPathWithFileAbs=DirUtil::concatPath(rProjectPathAbs, rName);
-	switch (rNodeInfoType) {
-	case NodeInfoType::Project:
-		if (mNodeProject.load(rPathWithFileAbs)) {
-			if (mNodeProject.getNode() && mNodeProject.getNode()->getNodeType()==NodeType::Project) {
-				NodeIdGenerator::getInstance().resetNumber(mNodeProject.getNode()->getNextFreeId());
-				return true;
-			}
-		}
-		close(rNodeInfoType);
-		break;
-	case NodeInfoType::Scene:
-	{
-		for (auto& r : mNodeScene) {
-			if (r.getNode()->getName()==rName) {
-				// already loaded
-				return true;
-			}
-		}
-		mNodeScene.emplace_back(3);
-		NodeInfo<NodeScene>& rNodeInfoScene=mNodeScene.back();
-		if (rNodeInfoScene.load(rPathWithFileAbs)) {
-			if (rNodeInfoScene.getNode() && rNodeInfoScene.getNode()->getNodeType()==NodeType::Scene) {
-				return true;
-			}
-		}
-		mNodeScene.pop_back();
+
+	if (mNodeProject) {
+		closeNodes();
 	}
-		break;
-	case NodeInfoType::Resource:
-		for (auto& r : mNodeResource) {
-			if (r.getNode()->getName()==rName) {
-				// already loaded
-				return true;
-			}
-		}
-		//NodeInfo<NodeResource> rNew;
-		mNodeResource.emplace_back(3);
-		NodeInfo<NodeResource>& rNodeInfoResource=mNodeResource.back();
-		if (rNodeInfoResource.load(rPathWithFileAbs)) {
-			if (rNodeInfoResource.getNode() && rNodeInfoResource.getNode()->getNodeType()==NodeType::Resource) {
-				return true;
-			}
-		}
-		mNodeResource.pop_back();
+	mNodeProject=static_cast<NodeProject*>(loadNode(rPathWithFileAbs));
+
+	if (mNodeProject && mNodeProject->getNodeType()==NodeType::Project) {
+		NodeIdGenerator::getInstance().resetNumber(mNodeProject->getNextFreeId());
+		rv=true;
+	} else if (mNodeProject) {
+		delete mNodeProject;
+		mNodeProject=nullptr;
 	}
-	return false;
+	return rv;
 }
 
-void NodeManager::close(NodeInfoType rNodeInfoType) {
-	switch (rNodeInfoType) {
-	case NodeInfoType::Project:
-		mNodeProject.close();
-		NodeIdGenerator::getInstance().resetNumber();
+bool NodeManager::loadSceneNode(const string& rProjectPathAbs, const string &rName) {
+	bool rv=false;
+	string rPathWithFileAbs=DirUtil::concatPath(rProjectPathAbs, rName);
 
-		close(NodeInfoType::Scene);
-		close(NodeInfoType::Resource);
-		break;
-	case NodeInfoType::Scene:
-		for (auto& r : mNodeScene) {
-			r.close();
+	for (NodeScene* r : mNodeSceneList) {
+		if (r->getName()==rName) {
+			// already loaded
+			return true;
 		}
-		mNodeScene.clear();
-		mNodeScene.shrink_to_fit();
-		break;
-	case NodeInfoType::Resource:
-		for (auto& r : mNodeResource) {
-			r.close();
-		}
-		mNodeResource.clear();
-		mNodeResource.shrink_to_fit();
-		break;
 	}
+	NodeScene* rNodeScene=static_cast<NodeScene*>(loadNode(rPathWithFileAbs));
+	if (rNodeScene && rNodeScene->getNodeType()==NodeType::Scene) {
+		mNodeSceneList.push_back(rNodeScene);
+		rv=true;
+	} else if (rNodeScene) {
+		delete rNodeScene;
+	}
+	return rv;
 }
 
-void NodeManager::save(NodeInfoType rNodeInfoType, const string& rProjectPathAbs) {
-	switch (rNodeInfoType) {
-	case NodeInfoType::Project:
-		mNodeProject.getNode()->setNextFreeId(NodeIdGenerator::getInstance().getNextFreeNumber());
-		mNodeProject.save(rProjectPathAbs);
-		break;
-	case NodeInfoType::Scene:
-		for (auto& r : mNodeScene) {
-			r.save(rProjectPathAbs);
+bool NodeManager::loadResourceNode(const string& rProjectPathAbs, const string &rName) {
+	bool rv=false;
+	string rPathWithFileAbs=DirUtil::concatPath(rProjectPathAbs, rName);
+
+	for (auto r : mNodeResourceList) {
+		if (r->getName()==rName) {
+			// already loaded
+			return true;
 		}
-		break;
-	case NodeInfoType::Resource:
-		for (auto& r : mNodeResource) {
-			r.save(rProjectPathAbs);
+	}
+	NodeResource* rNodeResource=static_cast<NodeResource*>(loadNode(rPathWithFileAbs));
+	if (rNodeResource && rNodeResource->getNodeType()==NodeType::Resource) {
+		mNodeResourceList.push_back(rNodeResource);
+		rv=true;
+	} else if (rNodeResource) {
+		delete rNodeResource;
+	}
+	return rv;
+}
+
+
+void NodeManager::closeNodes() {
+	if (mNodeProject) {
+		delete mNodeProject;
+		mNodeProject=nullptr;
+
+		for (NodeScene* r : mNodeSceneList) {
+			delete r;
 		}
-		break;
+		mNodeSceneList.clear();
+		mNodeSceneList.shrink_to_fit();
+
+		for (NodeResource* r: mNodeResourceList) {
+			delete r;
+		}
+		mNodeResourceList.clear();
+		mNodeResourceList.shrink_to_fit();
+	}
+	NodeIdGenerator::getInstance().resetNumber();
+}
+
+void NodeManager::saveNodes(const string& rProjectPathAbs) {
+	if (mNodeProject) {
+		mNodeProject->setNextFreeId(NodeIdGenerator::getInstance().getNextFreeNumber());
+		Node::persistNode(mNodeProject, DirUtil::concatPath(rProjectPathAbs, mNodeProject->getName()));
+
+		for (auto r : mNodeSceneList) {
+			Node::persistNode(r, DirUtil::concatPath(rProjectPathAbs, r->getName()));
+		}
+		for (auto r : mNodeResourceList) {
+			Node::persistNode(r, DirUtil::concatPath(rProjectPathAbs, r->getName()));
+		}
 	}
 }
 
 NodeProject *NodeManager::getNodeProject() {
-	return mNodeProject.getNode();
+	return mNodeProject;
 }
 
 NodeResource *NodeManager::getNodeResourceByName(const string &rName) {
 	NodeResource *rv=nullptr;
-	for (auto& r : mNodeResource) {
-		if (r.getNode()->getName()==rName) {
-			rv=r.getNode();
+	for (NodeResource *r : mNodeResourceList) {
+		if (r->getName()==rName) {
+			rv=r;
 			break;
 		}
 	}
@@ -144,9 +146,9 @@ NodeResource *NodeManager::getNodeResourceByName(const string &rName) {
 
 NodeScene *NodeManager::getNodeSceneByName(const string &rName) {
 	NodeScene *rv=nullptr;
-	for (auto& r : mNodeScene) {
-		if (r.getNode()->getName()==rName) {
-			rv=r.getNode();
+	for (NodeScene* r : mNodeSceneList) {
+		if (r->getName()==rName) {
+			rv=r;
 			break;
 		}
 	}

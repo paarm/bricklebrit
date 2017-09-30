@@ -122,14 +122,14 @@ NewProjectDialog& MainWindow::getNewProjectDialog() {
 
 NewSceneDialog& MainWindow::getNewSceneDialog() {
 	if (mNewSceneDialog==nullptr) {
-		mNewSceneDialog=new NewSceneDialog(NodeInfoType::Scene, this);
+		mNewSceneDialog=new NewSceneDialog(false, this);
 	}
 	return *mNewSceneDialog;
 }
 
 NewSceneDialog& MainWindow::getNewResourceDialog() {
 	if (mNewResourceDialog==nullptr) {
-		mNewResourceDialog=new NewSceneDialog(NodeInfoType::Resource, this);
+		mNewResourceDialog=new NewSceneDialog(true, this);
 	}
 	return *mNewResourceDialog;
 }

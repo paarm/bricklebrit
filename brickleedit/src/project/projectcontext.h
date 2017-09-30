@@ -18,9 +18,11 @@ public:
 	}
 	~ProjectContext();
 	bool createNewProject(const string& rProjectPathAbs, const string& rName);
-	bool createNew(NodeInfoType rNodeInfoType, const string& rName);
+	bool createNewScene(const string& rName);
+	bool createNewResource(const string& rName);
 	bool loadProject(const string& rProjectPathAbs, const string& rName);
-	bool load(NodeInfoType rNodeInfoType, const string& rName);
+	bool loadResource(const string& rName);
+	bool loadScene(const string& rName);
 	void save();
 	void closeProject(bool rPersistBefore);
 	bool isProjectAvailable();
@@ -34,7 +36,9 @@ public:
 	NodeResource* getOrLoadResourceByName(const string& rResourceName);
 	NodeScene *getNodeSceneByName(const string& rName);
 	NodeScene *getDefaultScene();
-	vector<string> getFileNamesForType(NodeInfoType rNodeInfoType);
+	vector<string> getChildNodeNamesWithType(NodeType rNodeType);
+	vector<string> getSceneNames();
+	vector<string> getResourceNames();
 	BTexturePng *getTexture(const string &rPathRelativeToProject);
 };
 

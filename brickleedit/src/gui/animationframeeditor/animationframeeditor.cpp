@@ -24,7 +24,7 @@ void AnimationFrameEditor::setupNode() {
 		currentResourceName=GuiContext::getInstance().getCurrentResource()->getName();
 	}
 
-	vector<string> v=ProjectContext::getInstance().getFileNamesForType(NodeInfoType::Resource);
+	vector<string> v=ProjectContext::getInstance().getResourceNames();
 	int i=0;
 	for (auto& s : v) {
 		ui->resourceNameOpm->addItem(QString::fromStdString(s));
@@ -138,10 +138,10 @@ void AnimationFrameEditor::on_okButton_clicked()
 			i++;
 		}
 		if (isNewNode) {
-			GuiContext::getInstance().insertNewNode(mNode, NodeInfoType::Resource);
+			GuiContext::getInstance().insertNewResourceNode(mNode);
 		} else {
-			GuiContext::getInstance().updateNodeName(mNode, NodeInfoType::Resource);
-			GuiContext::getInstance().updateChildNodes(mNode, NodeInfoType::Resource);
+			GuiContext::getInstance().updateNodeName(mNode);
+			GuiContext::getInstance().updateChildNodes(mNode);
 		}
 	}
 	deleteLater();

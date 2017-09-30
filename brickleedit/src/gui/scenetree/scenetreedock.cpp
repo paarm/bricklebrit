@@ -12,8 +12,10 @@ SceneTreeDock::SceneTreeDock(QWidget *parent) :
 {
 	ui->setupUi(this);
 	ui->sceneMenu->addAction(GuiContext::getInstance().getMainWindow().getActionNewScene());
-
 	ui->resourceMenu->addAction(GuiContext::getInstance().getMainWindow().getActionNewResource());
+
+	mTabInfoScene.setQTreeWidget(ui->treeWidget);
+	mTabInfoResource.setQTreeWidget(ui->treeWidgetResources);
 
 	setSceneEditable(false);
 	setResourceEditable(false);
@@ -26,12 +28,12 @@ SceneTreeDock::~SceneTreeDock()
 }
 
 void SceneTreeDock::clearScene() {
-	ui->treeWidget->clear();
+	mTabInfoScene.clear();
 	setSceneEditable(false);
 }
 
 void SceneTreeDock::clearResource() {
-	ui->treeWidgetResources->clear();
+	mTabInfoResource.clear();
 	setResourceEditable(false);
 }
 
@@ -54,310 +56,127 @@ int SceneTreeDock::getActiveTreeTabIndex() {
 	return ui->tabWidget->currentIndex();
 }
 
-QTreeWidgetItem* SceneTreeDock::getSelectedItem(NodeInfoType rNodeInfoType) {
-	QTreeWidgetItem* rv=nullptr;
-	if (rNodeInfoType==NodeInfoType::Scene) {
-		QList<QTreeWidgetItem*>selectedItems=ui->treeWidget->selectedItems();
-		if (!selectedItems.isEmpty()) {
-			rv=selectedItems[0];
-		}
-	} else if (rNodeInfoType==NodeInfoType::Resource) {
-		QList<QTreeWidgetItem*>selectedItems=ui->treeWidgetResources->selectedItems();
-		if (!selectedItems.isEmpty()) {
-			rv=selectedItems[0];
-		}
-	}
-	return rv;
+QTreeWidgetItem* SceneTreeDock::getSelectedSceneItem() {
+	return mTabInfoScene.getSelectedItem();
 }
 
-QTreeWidgetItem* SceneTreeDock::getRootItem(NodeInfoType rNodeInfoType) {
-	QTreeWidgetItem* rv=nullptr;
-	if (rNodeInfoType==NodeInfoType::Scene) {
-		if (ui->treeWidget->topLevelItemCount()>0) {
-			rv=ui->treeWidget->topLevelItem(0);
-		}
-	} else if (rNodeInfoType==NodeInfoType::Resource) {
-		if (ui->treeWidgetResources->topLevelItemCount()>0) {
-			rv=ui->treeWidgetResources->topLevelItem(0);
-		}
-	}
-	return rv;
+QTreeWidgetItem* SceneTreeDock::getSelectedResourceItem() {
+	return mTabInfoResource.getSelectedItem();
 }
 
-
-Node* SceneTreeDock::getSelectedNode(NodeInfoType rNodeInfoType) {
-	QTreeWidgetItem*r=getSelectedItem(rNodeInfoType);
-	Node *rv=nullptr;
-	if (r) {
-		rv=TreeUtil::getNodeFromTreeItem(r);
-	}
-	return rv;
+Node* SceneTreeDock::getSelectedSceneNode() {
+	return mTabInfoScene.getSelectedNode();
+}
+Node* SceneTreeDock::getSelectedResourceNode() {
+	return mTabInfoResource.getSelectedNode();
+}
+Node* SceneTreeDock::getRootSceneNode() {
+	return mTabInfoScene.getRootNode();
+}
+Node* SceneTreeDock::getRootResourceNode() {
+	return mTabInfoResource.getRootNode();
 }
 
-void SceneTreeDock::deleteChilds(QTreeWidgetItem *parent) {
-	if (parent) {
-		int cnt=parent->childCount();
-		for (int i=cnt-1;i>=0;i--) {
-			QTreeWidgetItem *child=parent->child(i);
-			if (child) {
-				parent->removeChild(child);
-				delete child;
-			}
-		}
-	}
+QTreeWidgetItem* SceneTreeDock::getRootSceneItem() {
+	return mTabInfoScene.getRootItem();
+}
+QTreeWidgetItem* SceneTreeDock::getRootResourceItem() {
+	return mTabInfoResource.getRootItem();
 }
 
-QTreeWidgetItem* SceneTreeDock::searchTreeWidgetItemByNode(QTreeWidgetItem *parent, Node* rNode) {
-	QTreeWidgetItem* rv=nullptr;
-
-	if (parent && TreeUtil::getNodeFromTreeItem(parent)==rNode) {
-		rv=parent;
-	}
-	if (!rv) {
-		int count=parent->childCount();
-		for (int i=0;i<count;i++) {
-			QTreeWidgetItem *r=parent->child(i);
-			if (r && TreeUtil::getNodeFromTreeItem(r)==rNode) {
-				rv=r;
-			}
-		}
-	}
-	if (!rv) {
-		int count=parent->childCount();
-		for (int i=0;i<count && !rv;i++) {
-			QTreeWidgetItem *r=parent->child(i);
-			rv=searchTreeWidgetItemByNode(r, rNode);
-		}
-	}
-	return rv;
+void SceneTreeDock::updateNodeName(Node* rUpdateNode) {
+	mTabInfoScene.updateNodeName(rUpdateNode);
+	mTabInfoResource.updateNodeName(rUpdateNode);
 }
 
-QTreeWidget* SceneTreeDock::getTreeWidgetFromNodeInfoType(NodeInfoType rNodeInfoType) {
-	QTreeWidget* rv=nullptr;
-	if (rNodeInfoType==NodeInfoType::Scene) {
-		rv=ui->treeWidget;
-	} else {
-		rv=ui->treeWidgetResources;
-	}
-	return rv;
+void SceneTreeDock::updateChildNodes(Node* rNode) {
+	mTabInfoScene.updateChildNodes(rNode);
+	mTabInfoResource.updateChildNodes(rNode);
 }
 
-void SceneTreeDock::updateChildNodes(Node* rNode, NodeInfoType rNodeInfoType) {
-	QTreeWidget* rQTreeWidget=getTreeWidgetFromNodeInfoType(rNodeInfoType);
-	if (rQTreeWidget) {
-		int count=rQTreeWidget->topLevelItemCount();
-		QTreeWidgetItem* rQTreeWidgetItem_found=nullptr;
-		for (int i=0;i<count && !rQTreeWidgetItem_found;i++) {
-			QTreeWidgetItem* p=rQTreeWidget->topLevelItem(i);
-
-			rQTreeWidgetItem_found=searchTreeWidgetItemByNode(p,rNode);
-		}
-		if (rQTreeWidgetItem_found) {
-			deleteChilds(rQTreeWidgetItem_found);
-
-			int childNodes=rNode->getChildCount();
-			for (int i=0;i<childNodes;i++) {
-				Node *rNodeChild=rNode->getNodeFromIndex(i);
-				if (rNodeChild) {
-					addNode(rQTreeWidgetItem_found, rNodeChild, rNodeInfoType);
-				}
-			}
-		}
+void SceneTreeDock::addSceneNodeToSelectedItem(Node *rNode) {
+	QTreeWidgetItem* r=mTabInfoScene.getSelectedItem();
+	if (r==nullptr) {
+		r=mTabInfoScene.getRootItem();
 	}
+	mTabInfoScene.addNode(r,rNode, true);
 }
 
-void SceneTreeDock::updateAllNodeNamesX(QTreeWidgetItem *parent) {
-	if (parent) {
-		Node* rNode=TreeUtil::getNodeFromTreeItem(parent);
-		if (rNode) {
-			setNodeName(parent, rNode->getName());
-		}
-		int count=parent->childCount();
-		for (int i=0;i<count;i++) {
-			QTreeWidgetItem *r=parent->child(i);
-			updateAllNodeNamesX(r);
-		}
+void SceneTreeDock::addResourceNodeToSelectedItem(Node *rNode) {
+	QTreeWidgetItem* r=mTabInfoResource.getSelectedItem();
+	if (r==nullptr) {
+		r=mTabInfoResource.getRootItem();
 	}
+	mTabInfoResource.addNode(r,rNode, true);
 }
 
-void SceneTreeDock::updateAllNodeNames(NodeInfoType rNodeInfoType) {
-	if (rNodeInfoType==NodeInfoType::Scene) {
-		updateAllNodeNamesX(ui->treeWidget->topLevelItem(0));
-	} else {
-		updateAllNodeNamesX(ui->treeWidgetResources->topLevelItem(0));
-	}
+void SceneTreeDock::addSceneNodeToRootItem(Node *rNode) {
+	QTreeWidgetItem	*r=mTabInfoScene.getRootItem();
+	mTabInfoScene.addNode(r,rNode, true);
 }
 
-bool SceneTreeDock::updateNodeNameX(QTreeWidgetItem *parent, Node* rUpdateNode) {
-	bool updated=false;
-	if (parent) {
-		Node* rNode=TreeUtil::getNodeFromTreeItem(parent);
-		if (rNode && rNode==rUpdateNode) {
-			setNodeName(parent, rNode->getName());
-			updated=true;
-		}
-		if (!updated) {
-			int count=parent->childCount();
-			for (int i=0;i<count && !updated;i++) {
-				QTreeWidgetItem *r=parent->child(i);
-				updated=updateNodeNameX(r, rUpdateNode);
-			}
-		}
-	}
-	return updated;
+void SceneTreeDock::addResourceNodeToRootItem(Node *rNode) {
+	QTreeWidgetItem	*r=mTabInfoResource.getRootItem();
+	mTabInfoResource.addNode(r,rNode, true);
 }
 
-void SceneTreeDock::updateNodeName(Node* rUpdateNode, NodeInfoType rNodeInfoType) {
-	if (rNodeInfoType==NodeInfoType::Scene) {
-		updateNodeNameX(ui->treeWidget->topLevelItem(0), rUpdateNode);
-	} else {
-		updateNodeNameX(ui->treeWidgetResources->topLevelItem(0), rUpdateNode);
-	}
-}
-
-QTreeWidgetItem* SceneTreeDock::addNode(QTreeWidgetItem *parent, Node* rNode, NodeInfoType rNodeInfoType) {
-	if (rNodeInfoType==NodeInfoType::Scene) {
-		return addNodeX(parent, rNode, ui->treeWidget, true);
-	} else {
-		return addNodeX(parent, rNode, ui->treeWidgetResources, false);
-	}
-}
-
-void SceneTreeDock::setNodeName(QTreeWidgetItem *item, const string& rName) {
-	if (item) {
-		item->setText(1,QString::fromStdString(rName));
-	}
-}
-
-QTreeWidgetItem* SceneTreeDock::addNodeX(QTreeWidgetItem *parent, Node* rNode, QTreeWidget* rQTreeWidget, bool expandTree) {
-	QTreeWidgetItem* r=nullptr;
-	if (rNode) {
-		if (parent) {
-			r=new QTreeWidgetItem(parent);
-		} else {
-			r=new QTreeWidgetItem(rQTreeWidget);
-		}
-		// Type + ID
-		TreeUtil::setTypeNameToTreeItem(r,rNode);
-		// Name
-		TreeUtil::setNodeNameToTreeItem(r, rNode);
-		//r->setText(1,QString::fromStdString(rNode->getName()));
-		TreeUtil::setNodeToTreeItem(r,rNode);
-		//r->setIcon(0, QIcon(":/icons/new.png"));
-		if (parent) {
-			parent->addChild(r);
-			if (expandTree) {
-				parent->setExpanded(true);
-			}
-		} else {
-			rQTreeWidget->addTopLevelItem(r);
-			r->setExpanded(true);
-		}
-		if (rNode->getNodeType()==NodeType::Texture) {
-			QPushButton *rButton=new QPushButton("T",rQTreeWidget);
-			rButton->setToolTip(tr("Edit Frames..."));
-			rButton->setFixedWidth(rButton->fontMetrics().width(" ... "));
-			connect(rButton, &QPushButton::clicked, this, [rButton, rNode, this]() {
-				TextureFrameEditor *rTextureFrameEditor=new TextureFrameEditor(rNode, this);
-				rTextureFrameEditor->show();
-			});
-			rQTreeWidget->setItemWidget(r, 2, rButton);
-		} else if (rNode->getNodeType()==NodeType::Animation) {
-			QPushButton *rButton=new QPushButton("A",rQTreeWidget);
-			rButton->setToolTip(tr("Edit Animation Frames..."));
-			rButton->setFixedWidth(rButton->fontMetrics().width(" ... "));
-			connect(rButton, &QPushButton::clicked, this, [rButton, rNode, this]() {
-				AnimationFrameEditor *rAnimationFrameEditor=new AnimationFrameEditor(rNode, this);
-				rAnimationFrameEditor->show();
-			});
-			rQTreeWidget->setItemWidget(r, 2, rButton);
-		} else if (rNode->getNodeType()==NodeType::Sprite) {
-			QPushButton *rButton=new QPushButton("S",rQTreeWidget);
-			rButton->setToolTip(tr("Edit Sprite..."));
-			rButton->setFixedWidth(rButton->fontMetrics().width(" ... "));
-			connect(rButton, &QPushButton::clicked, this, [rButton, rNode, this]() {
-				SpriteEditor *rSpriteEditor=new SpriteEditor(rNode, this);
-				rSpriteEditor->show();
-			});
-			rQTreeWidget->setItemWidget(r, 2, rButton);
-		}
-
-
-		if (rNode->getChildCount()>0) {
-			unsigned long count=rNode->getChildCount();
-			for (unsigned long i=0;i<count;i++) {
-				Node *rNodeChild=rNode->getNodeFromIndex(i);
-				if (rNodeChild) {
-					addNodeX(r, rNodeChild, rQTreeWidget, expandTree);
-				}
-			}
-		}
-	}
-	return r;
-}
-
-void SceneTreeDock::updateSceneOrResourceDropdownWithCurrent(NodeInfoType rNodeInfoType) {
+void SceneTreeDock::updateSceneDropdownWithCurrent() {
 	int i=0;
-	if (rNodeInfoType==NodeInfoType::Scene) {
-		ui->sceneNameOpm->clear();
-	} else if (rNodeInfoType==NodeInfoType::Resource) {
-		ui->resourceNameOpm->clear();
-	}
-	vector<string> v=ProjectContext::getInstance().getFileNamesForType(rNodeInfoType);
-
+	ui->sceneNameOpm->clear();
+	vector<string> v=ProjectContext::getInstance().getSceneNames();
 	for (auto& s : v) {
-		if (rNodeInfoType==NodeInfoType::Scene) {
-			ui->sceneNameOpm->addItem(QString::fromStdString(s));
-			if (GuiContext::getInstance().getCurrentScene() && GuiContext::getInstance().getCurrentScene()->getName()==s) {
-				ui->sceneNameOpm->setCurrentIndex(i);
-			}
-		} else if (rNodeInfoType==NodeInfoType::Resource) {
-			ui->resourceNameOpm->addItem(QString::fromStdString(s));
-			if (GuiContext::getInstance().getCurrentResource() && GuiContext::getInstance().getCurrentResource()->getName()==s) {
-				ui->resourceNameOpm->setCurrentIndex(i);
-			}
+		ui->sceneNameOpm->addItem(QString::fromStdString(s));
+		if (GuiContext::getInstance().getCurrentScene() && GuiContext::getInstance().getCurrentScene()->getName()==s) {
+			ui->sceneNameOpm->setCurrentIndex(i);
 		}
 		i++;
 	}
 }
 
-void SceneTreeDock::switchToSceneOrResource(Node *rNode, NodeInfoType rNodeInfoType) {
-	if (rNodeInfoType==NodeInfoType::Scene) {
-		clearScene();
-		if (rNode) {
-			setSceneEditable(true);
-			addNode(nullptr, rNode, rNodeInfoType);
-		} else {
-			setSceneEditable(false);
+void SceneTreeDock::updateResourceDropdownWithCurrent() {
+	int i=0;
+	ui->resourceNameOpm->clear();
+	vector<string> v=ProjectContext::getInstance().getResourceNames();
+	for (auto& s : v) {
+		ui->resourceNameOpm->addItem(QString::fromStdString(s));
+		if (GuiContext::getInstance().getCurrentResource() && GuiContext::getInstance().getCurrentResource()->getName()==s) {
+			ui->resourceNameOpm->setCurrentIndex(i);
 		}
-	} else if (rNodeInfoType==NodeInfoType::Resource) {
-		clearResource();
-		if (rNode) {
-			setResourceEditable(true);
-			addNode(nullptr, rNode, rNodeInfoType);
-		} else {
-			setResourceEditable(false);
-		}
+		i++;
 	}
+}
+
+void SceneTreeDock::switchToScene(Node *rNode) {
+	clearScene();
+	if (rNode) {
+		setSceneEditable(true);
+		mTabInfoScene.addNode(nullptr, rNode, false);
+	}
+	GuiContext::getInstance().getMainWindow().getPropertyTreeDock().setPropertiesForNode(nullptr);
+}
+void SceneTreeDock::switchToResource(Node *rNode) {
+	clearResource();
+	if (rNode) {
+		setResourceEditable(true);
+		mTabInfoResource.addNode(nullptr, rNode, false);
+	}
+	GuiContext::getInstance().getMainWindow().getPropertyTreeDock().setPropertiesForNode(nullptr);
 }
 
 void SceneTreeDock::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)
 {
 	if (column>=0) {
 		Node* rNode=TreeUtil::getNodeFromTreeItem(item);
-		GuiContext::getInstance().switchProperties(rNode, NodeInfoType::Scene);
+		GuiContext::getInstance().getMainWindow().getPropertyTreeDock().setPropertiesForNode(rNode);
+		GuiContext::getInstance().replaceSelectedSceneNode(rNode);
+		GuiContext::getInstance().updateGlWidget();
 	}
 }
 
-void SceneTreeDock::on_treeWidgetResources_itemDoubleClicked(QTreeWidgetItem *item, int column)
-{
-	if (column>=0) {
-		Node* rNode=TreeUtil::getNodeFromTreeItem(item);
-		if (rNode) {
-			if (rNode->getNodeType()==NodeType::Texture) {
-				QMessageBox::information(this, "Brickleedit", "Das ist eine Texture");
-			}
-		}
+void SceneTreeDock::setSceneNodeAsSelected(Node *rNode) {
+	if (rNode) {
+		mTabInfoScene.setItemAsSelectedFromNode(rNode);
+		GuiContext::getInstance().getMainWindow().getPropertyTreeDock().setPropertiesForNode(rNode);
 	}
 }
 
@@ -365,23 +184,21 @@ void SceneTreeDock::on_treeWidgetResources_itemClicked(QTreeWidgetItem *item, in
 {
 	if (column>=0) {
 		Node* rNode=TreeUtil::getNodeFromTreeItem(item);
-		GuiContext::getInstance().switchProperties(rNode, NodeInfoType::Resource);
+		GuiContext::getInstance().getMainWindow().getPropertyTreeDock().setPropertiesForNode(rNode);
 	}
 }
 
 void SceneTreeDock::on_tabWidget_currentChanged(int index)
 {
-	NodeInfoType rNodeInfoType=NodeInfoType::Scene;
 	Node* rNode=nullptr;
 	if (index==0) {
-		rNodeInfoType=NodeInfoType::Scene;
+		rNode=getSelectedSceneNode();
 	} else {
-		rNodeInfoType=NodeInfoType::Resource;
+		rNode=getSelectedResourceNode();
 	}
-	rNode=getSelectedNode(rNodeInfoType);
 	if (rNode) {
 		// do not switch if in the current tab nothing is selected/available -> do not remove the current property if anyone is currently outlined
-		GuiContext::getInstance().switchProperties(rNode, rNodeInfoType);
+		GuiContext::getInstance().getMainWindow().getPropertyTreeDock().setPropertiesForNode(rNode);
 	}
 }
 
@@ -409,25 +226,6 @@ void SceneTreeDock::on_resourceNameOpm_currentIndexChanged(int index)
 		name=ui->resourceNameOpm->itemText(index).toStdString();
 	}
 	GuiContext::getInstance().setCurrentResource(name);
-}
-
-
-void SceneTreeDock::on_newNode_clicked()
-{
-	if (newSceneNodeDialog==nullptr) {
-		newSceneNodeDialog=new NewSceneNodeDialog(NodeInfoType::Scene, this);
-		QObject::connect(newSceneNodeDialog, &NewSceneNodeDialog::newNodeSelected, &GuiContext::getInstance(), &GuiContext::onCreateNewNode);
-	}
-	newSceneNodeDialog->show();
-}
-
-void SceneTreeDock::on_newResource_clicked()
-{
-	if (newResourceNodeDialog==nullptr) {
-		newResourceNodeDialog=new NewSceneNodeDialog(NodeInfoType::Resource, this);
-		QObject::connect(newResourceNodeDialog, &NewSceneNodeDialog::newNodeSelected, &GuiContext::getInstance(), &GuiContext::onCreateNewNode);
-	}
-	newResourceNodeDialog->show();
 }
 
 void SceneTreeDock::on_newTexture_clicked()

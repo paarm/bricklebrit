@@ -2,7 +2,6 @@
 #define NEWSCENEDIALOG_H
 
 #include <QDialog>
-#include "../../project/nodeinfotype.h"
 
 namespace Ui {
 class NewSceneDialog;
@@ -11,12 +10,11 @@ class NewSceneDialog;
 class NewSceneDialog : public QDialog
 {
 private:
-	NodeInfoType		mNodeInfoType;
 	Ui::NewSceneDialog *ui;
 	Q_OBJECT
-
+	bool mIsResource;
 public:
-	explicit NewSceneDialog(NodeInfoType rNodeInfoType, QWidget *parent = 0);
+	explicit NewSceneDialog(bool isResource, QWidget *parent = 0);
 	~NewSceneDialog();
 	void setName(QString rName);
 	QString getName();

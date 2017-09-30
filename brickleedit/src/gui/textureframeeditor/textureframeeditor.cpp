@@ -115,10 +115,10 @@ void TextureFrameEditor::on_okButton_clicked()
 			i++;
 		}
 		if (isNewNode) {
-			GuiContext::getInstance().insertNewNode(mNode, NodeInfoType::Resource);
+			GuiContext::getInstance().insertNewResourceNode(mNode);
 		} else {
-			GuiContext::getInstance().updateChildNodes(mNode, NodeInfoType::Resource);
-			GuiContext::getInstance().updateNodeName(mNode, NodeInfoType::Resource);
+			GuiContext::getInstance().updateChildNodes(mNode);
+			GuiContext::getInstance().updateNodeName(mNode);
 		}
 	}
     deleteLater();
