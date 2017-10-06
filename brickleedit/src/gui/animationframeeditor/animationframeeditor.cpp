@@ -160,6 +160,8 @@ void AnimationFrameEditor::on_AnimationFrameEditor_rejected()
 
 void AnimationFrameEditor::on_resourceNameOpm_currentIndexChanged(int index)
 {
+	ignoreparam(index);
+
 	QString rCurrentResource=ui->resourceNameOpm->currentText();
 	TreeUtil::fillTreeWidgetWithTexturesFromResource(ui->treeWidgetTextures, rCurrentResource.toStdString(), true, false);
 }
@@ -167,6 +169,9 @@ void AnimationFrameEditor::on_resourceNameOpm_currentIndexChanged(int index)
 
 void AnimationFrameEditor::on_treeWidgetTextures_itemDoubleClicked(QTreeWidgetItem *item, int column)
 {
+	ignoreparam(item);
+	ignoreparam(column);
+
 	addSelectedFrames(false);
 }
 
@@ -259,20 +264,16 @@ void AnimationFrameEditor::moveUpDown(int rIndex, bool rDown) {
 
 void AnimationFrameEditor::on_moveDown_clicked()
 {
-    int firstSelectedRow=-1;
     QModelIndexList indexes = ui->treeWidgetAnimation->selectionModel()->selectedRows();
     if (indexes.size()>0) {
-        firstSelectedRow=indexes.at(0).row();
         moveUpDown(indexes.at(0).row(), true);
     }
 }
 
 void AnimationFrameEditor::on_moveUp_clicked()
 {
-    int firstSelectedRow=-1;
     QModelIndexList indexes = ui->treeWidgetAnimation->selectionModel()->selectedRows();
     if (indexes.size()>0) {
-        firstSelectedRow=indexes.at(0).row();
         moveUpDown(indexes.at(0).row(), false);
     }
 }

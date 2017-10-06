@@ -1,15 +1,16 @@
 #pragma once
 #include "mainwindow.h"
 #include "../project/projectcontext.h"
+#include "selectionmanager/selectionmanager.h"
 #include <QObject>
 class GuiContext : public QObject
 {
 private:
 	Q_OBJECT
 	MainWindow *mMainWindow=nullptr;
-	vector<Node*>	mSelectedSceneNodes;
 	NodeResource * mCurrentResource=nullptr;
 	NodeScene * mCurrentScene=nullptr;
+	SelectionManager mSelectionManager;
 	GuiContext();
 	void sceneSwitched();
 	void resourceSwitched();
@@ -49,11 +50,7 @@ public:
 
 	void setSceneNodeInTreeAsSelected(Node *rNode);
 
-	void clearSelectedSceneNodes();
-	void clearSelectedSceneNode(Node *rDeselectedNode);
-	void replaceSelectedSceneNode(Node *rSelectedNode);
-	bool isSceneNodeSelected(Node*);
-	void setSceneNodeAsSelected(Node*);
+	SelectionManager& getSelectionManager();
 	void onZoomLevelChanged(int rZoomLevel);
 public slots:
 	void onNewProjectClicked();

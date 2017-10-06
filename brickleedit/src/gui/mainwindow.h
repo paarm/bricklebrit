@@ -7,6 +7,7 @@
 #include "newscene/newscenedialog.h"
 #include "scenetree/scenetreedock.h"
 #include "propertygrid/propertytreedock.h"
+#include "brushmanager/brushdock.h"
 
 class MainWindow : public QMainWindow
 {
@@ -16,6 +17,7 @@ private:
 	ToolBar			*mToolBar=nullptr;
 	SceneTreeDock	*mSceneTreeDock=nullptr;
 	PropertyTreeDock*mScenePropertyTreeDock=nullptr;
+	BrushDock		*mBrushDock=nullptr;
 	NewProjectDialog *mNewProjectDialog=nullptr;
 	NewSceneDialog  *mNewSceneDialog=nullptr;
 	NewSceneDialog *mNewResourceDialog=nullptr;
@@ -45,6 +47,7 @@ public:
 
 	SceneTreeDock& getSceneTreeDock();
 	PropertyTreeDock& getPropertyTreeDock();
+	BrushDock& getBrushDock();
 	SceneGlWidget& getSceneGlWidget();
 
 	void setProjectAvailable(bool isAvailable);

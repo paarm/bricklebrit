@@ -241,12 +241,6 @@ public:
 	void addSceneNodeToRootItem(Node *rNode);
 	void addResourceNodeToRootItem(Node *rNode);
 	void setSceneNodeAsSelected(Node *rNode);
-
-
-	QTreeWidgetItem* searchTreeWidgetItemByNode(QTreeWidgetItem *parent, Node* rNode);
-
-	void setNodeToTreeItem(QTreeWidgetItem* r, Node *rNode);
-	Node* getNodeFromTreeItem(QTreeWidgetItem* r);
 	void clearScene();
 	void clearResource();
 	void updateResourceDropdownWithCurrent();

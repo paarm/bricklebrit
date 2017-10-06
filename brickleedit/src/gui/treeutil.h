@@ -6,6 +6,7 @@
 #include <QTreeWidgetItem>
 #include <QImage>
 
+
 Q_DECLARE_METATYPE(Node*);
 
 class TreeUtil {
@@ -18,6 +19,8 @@ public:
 	static string getNodeNameWithId(Node *rNode);
 	static void fillTreeWidgetWithTexturesFromResource(QTreeWidget *rQTreeWidget, const string &rResourceName, bool addTextures, bool addAnimations);
 	static void setPixmapToTreeItem(QTreeWidget *rQTreeWidget, QTreeWidgetItem *r, QImage& rImageSrc, int srcX, int srcY, int srcWidht, int srcHeight, int destWidth, int destHeight);
+	static QTreeWidgetItem* getTreeWidgetItemFromNode(QTreeWidget *rQTreeWidget, Node *rNode);
+	static QTreeWidgetItem* getTreeWidgetItemFromNode_Parent(QTreeWidget *rQTreeWidget, QTreeWidgetItem* rParent, Node *rNode);
 };
 
 #endif // TREEUTIL_H

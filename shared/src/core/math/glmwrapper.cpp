@@ -11,6 +11,18 @@ GLMVector3::GLMVector3(const GLMVector3& other) {
 	v3[2]=other.v3[2];
 }
 
+float GLMVector3::getX() {
+	return v3[0];
+}
+
+float GLMVector3::getY() {
+	return v3[1];
+}
+
+float GLMVector3::getZ() {
+	return v3[2];
+}
+
 float* GLMVector3::getPointer() {
 	return v3;
 }

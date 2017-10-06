@@ -195,7 +195,7 @@ bool PropertyTreeDock::onPropertyChange(PropertyInfo* rPropertyInfo, QString dat
 					rPropertyInfo->getTreeWidgetItem()->setText(1,rPropertyString);
 				}
 			} else if (rPropertyType==PropertyType::List) {
-				PropertyList *pp=static_cast<PropertyList*>(p);
+				//PropertyList *pp=static_cast<PropertyList*>(p);
 				rv=true;
 			}
 			GuiContext::getInstance().currentPropertyValueChanged(rPropertyInfo->getNode());
@@ -257,7 +257,7 @@ QString PropertyTreeDock::propertyToString(PropertyBase* p) {
 						   "X="+std::to_string(pp->value.x)+
 						   " | Y="+std::to_string(pp->value.y));
 		} else if (rPropertyType==PropertyType::List) {
-			PropertyList *pp=static_cast<PropertyList*>(p);
+			//PropertyList *pp=static_cast<PropertyList*>(p);
 		}
 	}
 	return rv;
@@ -289,16 +289,16 @@ void PropertyTreeDock::setPropertiesForNode(Node* rNode) {
 				setPropertyInfoToTreeItem(r, rPropertyInfo);
 				PropertyType rPropertyType=p->getPropertyType();
 				if (rPropertyType==PropertyType::Bool) {
-					PropertyBool *pp=static_cast<PropertyBool*>(p);
+					//PropertyBool *pp=static_cast<PropertyBool*>(p);
 					r->setFlags(r->flags()|Qt::ItemIsEditable);
 				} else if (rPropertyType==PropertyType::Int) {
-					PropertyInt *pp=static_cast<PropertyInt*>(p);
+					//PropertyInt *pp=static_cast<PropertyInt*>(p);
 					r->setFlags(r->flags()|Qt::ItemIsEditable);
 				} else if (rPropertyType==PropertyType::String) {
-					PropertyString *pp=static_cast<PropertyString*>(p);
+					//PropertyString *pp=static_cast<PropertyString*>(p);
 					r->setFlags(r->flags()|Qt::ItemIsEditable);
 				} else if (rPropertyType==PropertyType::Float) {
-					PropertyFloat *pp=static_cast<PropertyFloat*>(p);
+					//PropertyFloat *pp=static_cast<PropertyFloat*>(p);
 					r->setFlags(r->flags()|Qt::ItemIsEditable);
 				} else if (rPropertyType==PropertyType::Ref) {
 					PropertyRef *pp=static_cast<PropertyRef*>(p);
@@ -330,7 +330,7 @@ void PropertyTreeDock::setPropertiesForNode(Node* rNode) {
 					addSubProperty(rNode, p, pp->getPropertyName(), r, std::to_string(pp->value.x), "X");
 					addSubProperty(rNode, p, pp->getPropertyName(), r, std::to_string(pp->value.y), "Y");
 				} else if (rPropertyType==PropertyType::List) {
-					PropertyList *pp=static_cast<PropertyList*>(p);
+					//PropertyList *pp=static_cast<PropertyList*>(p);
 				}
 				r->setText(0,QString::fromStdString(p->getPropertyName()));
 				QString rPropertyString=propertyToString(p);
@@ -344,6 +344,8 @@ void PropertyTreeDock::setPropertiesForNode(Node* rNode) {
 
 void PropertyTreeDock::on_propertyTree_itemDoubleClicked(QTreeWidgetItem *item, int column)
 {
+	ignoreparam(item);
+	ignoreparam(column);
 	/*if (column==1) {
 		ui->propertyTree->setItemDelegateForColumn(column, mPropertyNumberDelegate);
 		ui->propertyTree->editItem(item, column);

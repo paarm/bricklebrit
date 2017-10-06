@@ -4,8 +4,8 @@
 
 NewSceneDialog::NewSceneDialog(bool rIsResource, QWidget *parent) :
 	QDialog(parent),
-	mIsResource(rIsResource),
-	ui(new Ui::NewSceneDialog)
+	ui(new Ui::NewSceneDialog),
+	mIsResource(rIsResource)
 {
 	ui->setupUi(this);
 }

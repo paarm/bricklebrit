@@ -8,6 +8,7 @@ PropertyEditDelegate::~PropertyEditDelegate() {
 }
 
 QWidget* PropertyEditDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem & option, const QModelIndex & index) const {
+	ignoreparam(option);
 	QModelIndex xxx=index.model()->index(index.row(),0, index.parent());
 	QVariant v=index.model()->data(xxx,Qt::UserRole);
 	PropertyInfo rPropertyInfo=v.value<PropertyInfo>();
@@ -79,5 +80,6 @@ void PropertyEditDelegate::setModelData(QWidget *editor, QAbstractItemModel *mod
 }
 
 void PropertyEditDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const {
+	ignoreparam(index);
 	editor->setGeometry(option.rect);
 }

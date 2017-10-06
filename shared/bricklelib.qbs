@@ -59,6 +59,7 @@ Project {
             "src/core/tree/tree.h",
             "src/core/utils/dirutil.cpp",
             "src/core/utils/dirutil.h",
+            "src/core/utils/ignoreparam.h",
         ]
         Depends {
             name: "cpp"

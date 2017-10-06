@@ -252,7 +252,7 @@ void TextureFrameEditor::on_treeWidget_itemClicked(QTreeWidgetItem *item, int co
 {
 	if (mImageLoaded && item && column>=0) {
 		int rIndex=ui->treeWidget->indexOfTopLevelItem(item);
-		if (rIndex>=0 && mTextureFrameEntryList.size()>rIndex) {
+		if (rIndex>=0 && static_cast<int>(mTextureFrameEntryList.size())>rIndex) {
 			TextureFrameEntry &rTextureFrameEntry=mTextureFrameEntryList.at(rIndex);
 			mImageFrame=mImage.copy(rTextureFrameEntry.x, rTextureFrameEntry.y, rTextureFrameEntry.w, rTextureFrameEntry.h);
 			mImageFrame=mImageFrame.scaled(QSize(100,100), Qt::KeepAspectRatio);

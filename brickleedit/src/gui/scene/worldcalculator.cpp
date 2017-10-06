@@ -34,20 +34,31 @@ void WorldCalculator::updateNodeMatrix(GLMMatrix4 parentMatrix, Node* rNode) {
 	}
 }
 
+bool WorldCalculator::isNodeIntersecting(Node* rNode, float worldX, float worldY) {
+	bool rv=false;
+	if (rNode) {
+		NodeSprite *rNodeSprite=static_cast<NodeSprite*>(rNode);
+		vector<PointFloat> v1;
+		vector<PointFloat> v2;
+		v2.emplace_back(worldX, worldY);
+		v2.emplace_back(worldX+1.0, worldY+1.0);
+		v1.emplace_back(rNodeSprite->getCurrentLeftTop());
+		v1.emplace_back(rNodeSprite->getCurrentRightTop());
+		v1.emplace_back(rNodeSprite->getCurrentRightBottom());
+		v1.emplace_back(rNodeSprite->getCurrentLeftBottom());
+		v1.emplace_back(rNodeSprite->getCurrentLeftTop());
+		if (Intersection::isPolygonsIntersecting(v1, v2)) {
+			rv=true;
+		}
+	}
+	return rv;
+}
+
+
 void WorldCalculator::intersectTestForNode(vector<Node*> &rv, Node* rNode, float worldX, float worldY) {
 	if (rNode) {
 		if (rNode->getNodeType()==NodeType::Sprite) {
-			NodeSprite *rNodeSprite=static_cast<NodeSprite*>(rNode);
-			vector<PointFloat> v1;
-			vector<PointFloat> v2;
-			v2.emplace_back(worldX, worldY);
-			v2.emplace_back(worldX+1.0, worldY+1.0);
-			v1.emplace_back(rNodeSprite->getCurrentLeftTop());
-			v1.emplace_back(rNodeSprite->getCurrentRightTop());
-			v1.emplace_back(rNodeSprite->getCurrentRightBottom());
-			v1.emplace_back(rNodeSprite->getCurrentLeftBottom());
-			v1.emplace_back(rNodeSprite->getCurrentLeftTop());
-			if (Intersection::isPolygonsIntersecting(v1, v2)) {
+			if (isNodeIntersecting(rNode, worldX, worldY)) {
 				rv.push_back(rNode);
 			}
 		}

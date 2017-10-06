@@ -30,11 +30,13 @@ SceneTreeDock::~SceneTreeDock()
 void SceneTreeDock::clearScene() {
 	mTabInfoScene.clear();
 	setSceneEditable(false);
+	ui->sceneNameOpm->clear();
 }
 
 void SceneTreeDock::clearResource() {
 	mTabInfoResource.clear();
 	setResourceEditable(false);
+	ui->resourceNameOpm->clear();
 }
 
 void SceneTreeDock::setSceneEditable(bool isEditable) {
@@ -168,7 +170,7 @@ void SceneTreeDock::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)
 	if (column>=0) {
 		Node* rNode=TreeUtil::getNodeFromTreeItem(item);
 		GuiContext::getInstance().getMainWindow().getPropertyTreeDock().setPropertiesForNode(rNode);
-		GuiContext::getInstance().replaceSelectedSceneNode(rNode);
+		GuiContext::getInstance().getSelectionManager().replaceAllSelectedWithNode(rNode);
 		GuiContext::getInstance().updateGlWidget();
 	}
 }
@@ -204,10 +206,12 @@ void SceneTreeDock::on_tabWidget_currentChanged(int index)
 
 void SceneTreeDock::on_sceneNameOpm_currentIndexChanged(const QString &arg1)
 {
+	ignoreparam(arg1);
 }
 
 void SceneTreeDock::on_resourceNameOpm_currentIndexChanged(const QString &arg1)
 {
+	ignoreparam(arg1);
 }
 
 void SceneTreeDock::on_sceneNameOpm_currentIndexChanged(int index)

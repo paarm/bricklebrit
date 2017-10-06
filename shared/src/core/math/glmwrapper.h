@@ -13,6 +13,9 @@ public:
 	float* getPointer();
 	void setFromPointer(float* v3_src);
 	std::string toString();
+	float getX();
+	float getY();
+	float getZ();
 };
 
 class GLMMatrix4 {

@@ -60,6 +60,38 @@ void TreeUtil::setPixmapToTreeItem(QTreeWidget *rQTreeWidget, QTreeWidgetItem *r
 	rQTreeWidget->setItemWidget(r,1, rPreviewImage);
 }
 
+QTreeWidgetItem *TreeUtil::getTreeWidgetItemFromNode_Parent(QTreeWidget *rQTreeWidget, QTreeWidgetItem* rParent, Node *rNode) {
+	QTreeWidgetItem *rv=nullptr;
+	int cnt=rParent->childCount();
+	for (int i=0;i<cnt && !rv;i++) {
+		QTreeWidgetItem *r=rParent->child(i);
+		if (r) {
+			Node *rNodeCurrent=TreeUtil::getNodeFromTreeItem(r);
+			if (rNodeCurrent && rNodeCurrent->getId()==rNode->getId()) {
+				rv=r;
+				break;
+			}
+			rv=TreeUtil::getTreeWidgetItemFromNode_Parent(rQTreeWidget, r, rNode);
+		}
+	}
+	return rv;
+}
+
+QTreeWidgetItem *TreeUtil::getTreeWidgetItemFromNode(QTreeWidget *rQTreeWidget, Node *rNode) {
+	QTreeWidgetItem *rv=nullptr;
+	int cnt=rQTreeWidget->topLevelItemCount();
+	for (int i=0;i<cnt && !rv;i++) {
+		QTreeWidgetItem *r=rQTreeWidget->topLevelItem(i);
+		Node *rNodeCurrent=TreeUtil::getNodeFromTreeItem(r);
+		if (rNodeCurrent && rNodeCurrent->getId()==rNode->getId()) {
+			rv=r;
+			break;
+		}
+		rv=TreeUtil::getTreeWidgetItemFromNode_Parent(rQTreeWidget, r, rNode);
+	}
+	return rv;
+}
+
 void TreeUtil::fillTreeWidgetWithTexturesFromResource(QTreeWidget *rQTreeWidget, const string &rResourceName, bool addTextures, bool addAnimations) {
 	rQTreeWidget->clear();
 	NodeResource* rNodeResource=ProjectContext::getInstance().getOrLoadResourceByName(rResourceName);

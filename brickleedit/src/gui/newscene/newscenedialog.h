@@ -9,9 +9,9 @@ class NewSceneDialog;
 
 class NewSceneDialog : public QDialog
 {
+	Q_OBJECT
 private:
 	Ui::NewSceneDialog *ui;
-	Q_OBJECT
 	bool mIsResource;
 public:
 	explicit NewSceneDialog(bool isResource, QWidget *parent = 0);

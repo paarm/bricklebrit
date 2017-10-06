@@ -105,6 +105,56 @@ void SceneGlWidget::mouseMoveEvent(QMouseEvent * event ) {
 	}
 }
 
+GLMVector3 SceneGlWidget::unprojectedScreenCoord(int mx, int my) {
+	GLfloat matrixArray[16];
+	glGetFloatv (GL_PROJECTION_MATRIX, matrixArray);
+	GLMMatrix4 pr;
+	pr.setFromPointer(matrixArray);
+
+	GLMVector3 pos=mCamera.unproject(mx, my, pr);
+	float x=pos.getX()*this->size().width()/2.0;
+	float y=pos.getY()*this->size().height()/2.0;
+
+	return GLMVector3(x,y,0.0);
+}
+
+void SceneGlWidget::hoverMove(QHoverEvent *event) {
+	if(GuiContext::getInstance().getSelectionManager().haveSelectedNodes()) {
+	   GLMVector3 worldCoord=unprojectedScreenCoord(event->pos().x(), event->pos().y());
+	   const vector<Node*> v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
+	   bool isOverSelection=false;
+	   for (Node* n : v) {
+		   if (WorldCalculator::isNodeIntersecting(n, worldCoord.getX(), worldCoord.getY())) {
+			   isOverSelection=true;
+			   break;
+		   }
+	   }
+	   GuiContext::getInstance().getSelectionManager().setIsMouseOverSelection(isOverSelection);
+	}
+}
+
+bool SceneGlWidget::event(QEvent *e) {
+	bool handled=false;
+	switch(e->type()) {
+	case QEvent::Enter:
+		this->setMouseTracking(true);
+		break;
+	case QEvent::Leave:
+		this->setMouseTracking(false);
+		break;;
+	case QEvent::HoverMove:
+		hoverMove(static_cast<QHoverEvent*>(e));
+		break;
+	default:
+		break;
+	}
+	cout << e->type()<< endl;
+
+	if (!handled) {
+		return QWidget::event(e);
+	}
+	return handled;
+}
 
 void SceneGlWidget::onMouseClicked(int mx, int my) {
 	float x=(float)mx;
@@ -125,10 +175,10 @@ void SceneGlWidget::onMouseClicked(int mx, int my) {
 
 	vector<Node*> v;
 	WorldCalculator::intersectTestForNode(v, GuiContext::getInstance().getCurrentScene(), posVec.x*this->size().width()/2.0, this->size().height()/2.0*posVec.y);
-	GuiContext::getInstance().clearSelectedSceneNodes();
+	GuiContext::getInstance().getSelectionManager().deselectAllNodes();
 	for (Node* n : v) {
 		GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
-		GuiContext::getInstance().setSceneNodeAsSelected(n);
+		GuiContext::getInstance().getSelectionManager().setNodeAsSelected(n);
 	}
 	update();
 }
@@ -334,11 +384,15 @@ void SceneGlWidget::paintNode(Node* rNode) {
 					glDisable(GL_TEXTURE_2D);
 
 
-					if (GuiContext::getInstance().isSceneNodeSelected(rNode)) {
+					if (GuiContext::getInstance().getSelectionManager().isNodeSelected(rNode)) {
+						if (GuiContext::getInstance().getSelectionManager().isMouseOverSelection()) {
+							glColor3f(0.1, 0.3, 0.0);
+						} else {
+							glColor3f(0.3, 0.5, 0.0);
+						}
 						glPolygonMode(GL_FRONT, GL_LINE);
 						glPolygonMode(GL_BACK, GL_LINE);
 						glLineWidth(0.5);
-						glColor3f(0.3, 0.5, 0.0);
 						glBegin(GL_LINE_STRIP);
 							glVertex3d(-w2,-h2,0);
 							glVertex3d( w2, -h2,0);

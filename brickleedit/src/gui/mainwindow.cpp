@@ -57,6 +57,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	// Tree Dock
 	mSceneTreeDock=new SceneTreeDock(this);
 	this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, mSceneTreeDock);
+	// Brush Dock
+	mBrushDock=new BrushDock(this);
+	this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, mBrushDock);
 	// Scene Properties Dock
 	mScenePropertyTreeDock=new PropertyTreeDock(this);
 	this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, mScenePropertyTreeDock);
@@ -148,6 +151,10 @@ SceneTreeDock& MainWindow::getSceneTreeDock() {
 
 PropertyTreeDock& MainWindow::getPropertyTreeDock() {
 	return *mScenePropertyTreeDock;
+}
+
+BrushDock& MainWindow::getBrushDock() {
+	return *mBrushDock;
 }
 
 SceneGlWidget& MainWindow::getSceneGlWidget() {

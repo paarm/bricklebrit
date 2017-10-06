@@ -8,6 +8,7 @@ NodeManager::~NodeManager() {
 }
 
 bool NodeManager::createNewProject(const string& rName) {
+	ignoreparam(rName);
 	closeNodes();
 	NodeIdGenerator::getInstance().resetNumber(0);
 	mNodeProject=static_cast<NodeProject*>(getInstanceFromNodeType(NodeType::Project, true));
@@ -15,12 +16,14 @@ bool NodeManager::createNewProject(const string& rName) {
 }
 
 bool NodeManager::createNewScene(const string& rName) {
+	ignoreparam(rName);
 	NodeScene* rNodeScene=static_cast<NodeScene*>(getInstanceFromNodeType(NodeType::Scene, true));
 	mNodeSceneList.push_back(rNodeScene);
 	return true;
 }
 
 bool NodeManager::createNewResource(const string& rName) {
+	ignoreparam(rName);
 	NodeResource* rNodeResource=static_cast<NodeResource*>(getInstanceFromNodeType(NodeType::Resource, true));
 	mNodeResourceList.push_back(rNodeResource);
 	return true;

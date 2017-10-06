@@ -31,6 +31,12 @@ struct ViewportMoveInfo {
 	int startY=0;
 };
 
+struct SceneItemMoveInfo {
+	bool isOnMove=false;
+	int startX=0;
+	int startY=0;
+};
+
 class SceneGlWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
 private:
@@ -47,14 +53,17 @@ public:
 	void mouseReleaseEvent(QMouseEvent * event ) override;
 	void mouseMoveEvent(QMouseEvent *event) override;
 	void wheelEvent(QWheelEvent *event) override;
-
 	void initializeGL();
 	void resizeGL(int w, int h);
 	void zoomInOut(int units);
+	GLMVector3 unprojectedScreenCoord(int mx, int my);
 protected:
+	void hoverMove(QHoverEvent *event);
+	bool event(QEvent *e) override;
 	QImage *mImage;
 	Camera mCamera;
 	ViewportMoveInfo mViewportMoveInfo;
+	SceneItemMoveInfo mSceneItemMoveInfo;
     //QOpenGLTexture *texture;
 	//BTexturePng bTexture;
 	GLuint vbonum;
