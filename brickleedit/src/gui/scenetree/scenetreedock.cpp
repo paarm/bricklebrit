@@ -30,12 +30,18 @@ SceneTreeDock::~SceneTreeDock()
 void SceneTreeDock::clearScene() {
 	mTabInfoScene.clear();
 	setSceneEditable(false);
+}
+
+void SceneTreeDock::clearSceneOpm() {
 	ui->sceneNameOpm->clear();
 }
 
 void SceneTreeDock::clearResource() {
 	mTabInfoResource.clear();
 	setResourceEditable(false);
+}
+
+void SceneTreeDock::clearResourceOpm() {
 	ui->resourceNameOpm->clear();
 }
 
@@ -51,6 +57,10 @@ void SceneTreeDock::setResourceEditable(bool isEditable) {
 void SceneTreeDock::setProjectAvailable(bool isActive) {
 	ui->sceneMenu->setEnabled(isActive);
 	ui->resourceMenu->setEnabled(isActive);
+	if (!isActive) {
+		clearResourceOpm();
+		clearSceneOpm();
+	}
 }
 
 
@@ -216,20 +226,19 @@ void SceneTreeDock::on_resourceNameOpm_currentIndexChanged(const QString &arg1)
 
 void SceneTreeDock::on_sceneNameOpm_currentIndexChanged(int index)
 {
-	string name="";
-	if (index>=0) {
-		name=ui->sceneNameOpm->itemText(index).toStdString();
-	}
-	GuiContext::getInstance().setCurrentScene(name);
+}
+
+void SceneTreeDock::on_sceneNameOpm_activated(const QString &arg1)
+{
+	GuiContext::getInstance().setCurrentScene(arg1.toStdString());
 }
 
 void SceneTreeDock::on_resourceNameOpm_currentIndexChanged(int index)
 {
-	string name="";
-	if (index>=0) {
-		name=ui->resourceNameOpm->itemText(index).toStdString();
-	}
-	GuiContext::getInstance().setCurrentResource(name);
+}
+void SceneTreeDock::on_resourceNameOpm_activated(const QString &arg1)
+{
+	GuiContext::getInstance().setCurrentResource(arg1.toStdString());
 }
 
 void SceneTreeDock::on_newTexture_clicked()

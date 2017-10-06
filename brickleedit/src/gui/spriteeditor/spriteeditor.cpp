@@ -112,7 +112,7 @@ void SpriteEditor::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)
 
 void SpriteEditor::drawPreviewImage(bool setWidthAndHeight) {
 	if (mSelectedItem.rNodeTexture) {
-		QPixmap pixmap=PreviewImageUtil::getPreviewImage(mSelectedItem, 100, 100);
+		QPixmap pixmap=PreviewImageUtil::getPreviewImage(mSelectedItem, 200, 200);
 		ui->previewImage->setPixmap(pixmap);
 
 		if (mSelectedItem.rNodeTextureFrame) {

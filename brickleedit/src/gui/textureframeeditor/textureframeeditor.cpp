@@ -46,7 +46,7 @@ void TextureFrameEditor::setupTexture(const string &rPath) {
         mImageLoaded=true;
         mImageWidth=mImage.width();
         mImageHeight=mImage.height();
-        mImageScaled=mImage.scaled(QSize(100,100),
+		mImageScaled=mImage.scaled(QSize(200,200),
                       Qt::KeepAspectRatio);
         ui->imageWidth->setText(QString::number(mImageWidth));
         ui->imageHeight->setText(QString::number(mImageHeight));
@@ -255,7 +255,7 @@ void TextureFrameEditor::on_treeWidget_itemClicked(QTreeWidgetItem *item, int co
 		if (rIndex>=0 && static_cast<int>(mTextureFrameEntryList.size())>rIndex) {
 			TextureFrameEntry &rTextureFrameEntry=mTextureFrameEntryList.at(rIndex);
 			mImageFrame=mImage.copy(rTextureFrameEntry.x, rTextureFrameEntry.y, rTextureFrameEntry.w, rTextureFrameEntry.h);
-			mImageFrame=mImageFrame.scaled(QSize(100,100), Qt::KeepAspectRatio);
+			mImageFrame=mImageFrame.scaled(QSize(200,200), Qt::KeepAspectRatio);
 			ui->previewFrame->setPixmap(mImageFrame);
 		}
 	}

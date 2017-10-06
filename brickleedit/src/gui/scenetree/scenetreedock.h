@@ -243,6 +243,8 @@ public:
 	void setSceneNodeAsSelected(Node *rNode);
 	void clearScene();
 	void clearResource();
+	void clearSceneOpm();
+	void clearResourceOpm();
 	void updateResourceDropdownWithCurrent();
 	void updateSceneDropdownWithCurrent();
 	void setSceneEditable(bool isEditable);
@@ -270,6 +272,10 @@ private slots:
 	void on_newAnimation_clicked();
 
 	void on_newSprite_clicked();
+
+	void on_sceneNameOpm_activated(const QString &arg1);
+
+	void on_resourceNameOpm_activated(const QString &arg1);
 
 private:
 	TabInfo		mTabInfoScene;

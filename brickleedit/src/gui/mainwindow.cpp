@@ -139,6 +139,8 @@ NewSceneDialog& MainWindow::getNewResourceDialog() {
 
 void MainWindow::setProjectAvailable(bool isAvailable) {
 	getActionCloseProject()->setEnabled(isAvailable);
+	getActionNewProject()->setEnabled(!isAvailable);
+	getActionOpenProject()->setEnabled(!isAvailable);
 }
 void MainWindow::setProjectRequireSave(bool rRequireSave) {
 	getActionSaveProject()->setEnabled(rRequireSave);
