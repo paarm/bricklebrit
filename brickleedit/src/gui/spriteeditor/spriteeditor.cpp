@@ -12,6 +12,8 @@ SpriteEditor::SpriteEditor(Node *rNode, QWidget *parent) :
 {
 	ui->setupUi(this);
 	mNode=static_cast<NodeSprite*>(rNode);
+	ui->treeWidget->setColumnWidth(0, 350);
+
 	mTexturePicker=new TexturePicker(ui->treeWidget);
 
 	string currentResourceName="";

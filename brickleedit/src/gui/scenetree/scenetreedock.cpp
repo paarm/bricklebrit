@@ -226,6 +226,7 @@ void SceneTreeDock::on_resourceNameOpm_currentIndexChanged(const QString &arg1)
 
 void SceneTreeDock::on_sceneNameOpm_currentIndexChanged(int index)
 {
+	ignoreparam(index);
 }
 
 void SceneTreeDock::on_sceneNameOpm_activated(const QString &arg1)
@@ -235,6 +236,7 @@ void SceneTreeDock::on_sceneNameOpm_activated(const QString &arg1)
 
 void SceneTreeDock::on_resourceNameOpm_currentIndexChanged(int index)
 {
+	ignoreparam(index);
 }
 void SceneTreeDock::on_resourceNameOpm_activated(const QString &arg1)
 {

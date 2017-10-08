@@ -10,6 +10,7 @@ AnimationFrameEditor::AnimationFrameEditor(Node *rNode, QWidget *parent) :
 {
 	mNode=rNode;
 	ui->setupUi(this);
+	ui->treeWidgetTextures->setColumnWidth(0, 300);
 	//ui->treeWidget->setRootIsDecorated(true);
 	setupNode();
 }

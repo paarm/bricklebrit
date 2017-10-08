@@ -95,8 +95,21 @@ public:
 	void setItemAsSelectedFromNode(Node* rNode) {
 		QTreeWidgetItem* item=searchTreeWidgetItemByNode(getRootItem(), rNode);
 		if (item) {
-			mTreeWidget->clearSelection();
+			auto selectedItems=mTreeWidget->selectedItems();
+			for(QTreeWidgetItem* r: selectedItems) {
+				r->setSelected(false);
+				if (r->parent() && r->parent()->isExpanded()) {
+					Node *rNode=TreeUtil::getNodeFromTreeItem(r->parent());
+					if (rNode && rNode->getNodeType()!=NodeType::Scene && rNode->getNodeType()!=NodeType::Resource) {
+						r->parent()->setExpanded(false);
+					}
+				}
+			}
+			//mTreeWidget->clearSelection();
 			item->setSelected(true);
+			if (item->parent() && !item->parent()->isExpanded()) {
+				item->parent()->setExpanded(true);
+			}
 		}
 	}
 
