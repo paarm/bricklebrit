@@ -27,15 +27,30 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	mActionCloseProject->setStatusTip(tr("Close a existing Project"));
 	QObject::connect(mActionCloseProject, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onCloseProjectClicked);
 
-	mActionNewScene = new QAction(QIcon(":/icons/new.png"), tr("&New Scene..."), this);
+	mActionNewScene = new QAction(QIcon(":/icons/new.png"), tr("New Scene..."), this);
 	mActionNewScene->setShortcuts(QKeySequence::New);
 	mActionNewScene->setStatusTip(tr("Create a new Scene"));
 	QObject::connect(mActionNewScene, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onNewSceneClicked);
 
-	mActionNewResource = new QAction(QIcon(":/icons/new.png"), tr("&New Resource..."), this);
+	mActionNewResource = new QAction(QIcon(":/icons/new.png"), tr("New Resource..."), this);
 	mActionNewResource->setShortcuts(QKeySequence::New);
 	mActionNewResource->setStatusTip(tr("Create a new Resource"));
 	QObject::connect(mActionNewResource, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onNewResourceClicked);
+
+	mActionToolSelection = new QAction(QIcon(":/icons/selection.png"), tr("Selection Tool"), this);
+	mActionToolSelection->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_T));
+	mActionToolSelection->setStatusTip(tr("Selection Tool"));
+	QObject::connect(mActionToolSelection, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onToolSelectionActivated);
+	mActionToolSelection->setEnabled(false);
+	mActionToolSelection->setCheckable(true);
+	//mActionToolSelection->setChecked(true);
+
+	mActionToolBrush = new QAction(QIcon(":/icons/brush.png"), tr("Brush Tool"), this);
+	mActionToolBrush->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_B));
+	mActionToolBrush->setStatusTip(tr("Brush Tool"));
+	QObject::connect(mActionToolBrush, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onToolBrushActivated);
+	mActionToolBrush->setEnabled(false);
+	mActionToolBrush->setCheckable(true);
 
 //	QAction			*mActionOpenProject=nullptr;
 //	QAction			*mActionNewScene=nullptr;
@@ -108,6 +123,14 @@ QAction*	MainWindow::getActionNewResource() {
 	return mActionNewResource;
 }
 
+QAction*	MainWindow::getActionToolSelection() {
+	return mActionToolSelection;
+}
+
+QAction*	MainWindow::getActionToolBrush() {
+	return mActionToolBrush;
+}
+
 ToolBar& MainWindow::getToolBar() {
 	return *mToolBar;
 }
@@ -142,6 +165,17 @@ void MainWindow::setProjectAvailable(bool isAvailable) {
 	getActionNewProject()->setEnabled(!isAvailable);
 	getActionOpenProject()->setEnabled(!isAvailable);
 }
+
+void MainWindow::setSceneAvailable(bool isAvailable) {
+	getActionToolSelection()->setEnabled(isAvailable);
+	getActionToolBrush()->setEnabled(isAvailable);
+	if (isAvailable) {
+		if (!getActionToolSelection()->isChecked() && !getActionToolBrush()->isChecked()) {
+			getActionToolSelection()->setChecked(true);
+		}
+	}
+}
+
 void MainWindow::setProjectRequireSave(bool rRequireSave) {
 	getActionSaveProject()->setEnabled(rRequireSave);
 }

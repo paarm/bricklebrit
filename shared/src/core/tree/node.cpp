@@ -615,6 +615,10 @@ void Node::deserializeSelf(JSONValue *rJSONValueParent) {
 	} while (0);
 }
 
+GLMMatrix4 Node2d::getCurrentModelMatrix() {
+	return mCurrentModelMatrix;
+}
+
 void Node2d::setCurrentModelMatrix(GLMMatrix4 &m) {
 	mCurrentModelMatrix.setFromPointer(m.getPointer());
 	glm::mat4 matrix=glm::make_mat4x4(m.getPointer());
@@ -630,12 +634,12 @@ void Node2d::setCurrentModelMatrix(GLMMatrix4 &m) {
 	glm::vec4 rRT=matrix*glm::vec4{w2,-h2,0.0,1.0};
 	glm::vec4 rRB=matrix*glm::vec4{w2,h2,0.0,1.0};
 	setCurrentPos(rCenter.x, rCenter.y, rLT.x, rLT.y, rLB.x, rLB.y, rRT.x, rRT.y, rRB.x, rRB.y);
-	cout<<getName()<<std::endl;
-	cout<<"CE X=" << std::to_string(rCenter.x)<<"Y="<< std::to_string(rCenter.y)<<std::endl;
-	cout<<"LT X=" << std::to_string(rLT.x)<<"Y="<< std::to_string(rLT.y)<<std::endl;
-	cout<<"LB X=" << std::to_string(rLB.x)<<"Y="<< std::to_string(rLB.y)<<std::endl;
-	cout<<"RT X=" << std::to_string(rRT.x)<<"Y="<< std::to_string(rRT.y)<<std::endl;
-	cout<<"RB X=" << std::to_string(rRB.x)<<"Y="<< std::to_string(rRB.y)<<std::endl;
+//	cout<<getName()<<std::endl;
+//	cout<<"CE X=" << std::to_string(rCenter.x)<<"Y="<< std::to_string(rCenter.y)<<std::endl;
+//	cout<<"LT X=" << std::to_string(rLT.x)<<"Y="<< std::to_string(rLT.y)<<std::endl;
+//	cout<<"LB X=" << std::to_string(rLB.x)<<"Y="<< std::to_string(rLB.y)<<std::endl;
+//	cout<<"RT X=" << std::to_string(rRT.x)<<"Y="<< std::to_string(rRT.y)<<std::endl;
+//	cout<<"RB X=" << std::to_string(rRB.x)<<"Y="<< std::to_string(rRB.y)<<std::endl;
 }
 
 void Node2d::setCurrentPos(float rCenterX, float rCenterY, float rLeftTopX, float rLeftTopY, float rLeftBottomX, float rLeftBottomY, float rRightTopX, float rRightTopY, float rRightBottomX, float rRightBottomY) {

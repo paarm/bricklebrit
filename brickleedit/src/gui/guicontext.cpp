@@ -209,8 +209,10 @@ void GuiContext::setCurrentScene(const string& rName) {
 		} else {
 			mCurrentScene=nullptr;
 		}
+		getMainWindow().setSceneAvailable(getCurrentScene());
 		getMainWindow().getSceneTreeDock().switchToScene(getCurrentScene());
 		getMainWindow().getBrushDock().setBrushEnabled(getCurrentScene()?true:false);
+		setCurrentPaintCanvas(getCurrentScene());
 		setWindowTitle();
 		updateGlWidget();
 	}
@@ -298,10 +300,11 @@ void GuiContext::updateChildNodes(Node *rNode_parent) {
 
 void GuiContext::insertNewSceneNode(Node *rNode) {
 	if (rNode) {
-		Node *rParentNode=getMainWindow().getSceneTreeDock().getSelectedSceneNode();
+		//Node *rParentNode=getMainWindow().getSceneTreeDock().getSelectedSceneNode();
+		Node *rParentNode=getCurrentPaintCanvas();
 		if (rParentNode) {
 			rParentNode->addChildNode(rNode);
-			getMainWindow().getSceneTreeDock().addSceneNodeToSelectedItem(rNode);
+			getMainWindow().getSceneTreeDock().addSceneNodeToParent(rNode, rParentNode);
 			updateGlWidget();
 		}
 	}
@@ -362,4 +365,34 @@ SelectionManager& GuiContext::getSelectionManager() {
 void GuiContext::onZoomLevelChanged(int rZoomLevel) {
 	getMainWindow().getToolBar().updateZoomLevel(rZoomLevel);
 }
+
+void GuiContext::onToolSelectionActivated() {
+	setCurrentTool(Tool::Selection);
+}
+
+void GuiContext::onToolBrushActivated() {
+	setCurrentTool(Tool::Brush);
+}
+
+void GuiContext::setCurrentTool(Tool rTool) {
+	mCurrentTool=rTool;
+}
+
+Tool GuiContext::getCurrentTool() {
+	return mCurrentTool;
+}
+
+void GuiContext::setCurrentPaintCanvas(Node2d *rNode) {
+	mCurrentPaintCanvas=rNode;
+	getMainWindow().getBrushDock().setCurrentPaintCanvas(rNode);
+}
+
+Node2d* GuiContext::getCurrentPaintCanvas() {
+	return mCurrentPaintCanvas;
+}
+
+GLMVector3 GuiContext::unprojectedScreenCoord(int mx, int my) {
+	return getMainWindow().getSceneGlWidget().unprojectedScreenCoord(mx,my);
+}
+
 

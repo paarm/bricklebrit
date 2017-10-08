@@ -11,6 +11,13 @@ SceneTreeDock::SceneTreeDock(QWidget *parent) :
 	ui(new Ui::SceneTreeDock)
 {
 	ui->setupUi(this);
+
+	ui->treeWidget->setColumnWidth(0,170);
+	ui->treeWidget->setColumnWidth(2,50);
+
+	ui->treeWidgetResources->setColumnWidth(0,170);
+	ui->treeWidgetResources->setColumnWidth(2,50);
+
 	ui->sceneMenu->addAction(GuiContext::getInstance().getMainWindow().getActionNewScene());
 	ui->resourceMenu->addAction(GuiContext::getInstance().getMainWindow().getActionNewResource());
 
@@ -112,6 +119,14 @@ void SceneTreeDock::addSceneNodeToSelectedItem(Node *rNode) {
 		r=mTabInfoScene.getRootItem();
 	}
 	mTabInfoScene.addNode(r,rNode, true);
+}
+
+void SceneTreeDock::addSceneNodeToParent(Node *rNode, Node *rParent) {
+	QTreeWidgetItem* r=mTabInfoScene.searchTreeWidgetItemByNode(rParent);
+	if (r==nullptr) {
+		r=mTabInfoScene.getRootItem();
+	}
+	mTabInfoScene.addNode(r,rNode, false);
 }
 
 void SceneTreeDock::addResourceNodeToSelectedItem(Node *rNode) {
@@ -259,4 +274,14 @@ void SceneTreeDock::on_newSprite_clicked()
 {
 	SpriteEditor *rSpriteEditor=new SpriteEditor(nullptr, this);
 	rSpriteEditor->show();
+}
+
+void SceneTreeDock::on_pushButton_clicked()
+{
+	Node *rNode=mTabInfoScene.getSelectedNode();
+	if (rNode &&
+			(rNode->getNodeType()==NodeType::Scene || rNode->getNodeType()==NodeType::Sprite)
+			) {
+		GuiContext::getInstance().setCurrentPaintCanvas(static_cast<Node2d*>(rNode));
+	}
 }

@@ -22,6 +22,8 @@ private:
 	Q_OBJECT
 	QLineEdit *mZoomLevel;
 	BrushFields mBrushFields;
+	QActionGroup	*mActionGroupTools=nullptr;
+
 public:
 	explicit ToolBar(const QString &title, QWidget *parent = Q_NULLPTR);
 	void updateZoomLevel(int rZoomLevel);

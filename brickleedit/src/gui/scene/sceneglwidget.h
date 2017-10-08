@@ -37,6 +37,12 @@ struct SceneItemMoveInfo {
 	int startY=0;
 };
 
+struct SceneMouseInfo {
+	bool isInside=false;
+	int x=0;
+	int y=0;
+};
+
 class SceneGlWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
 private:
@@ -57,6 +63,7 @@ public:
 	void resizeGL(int w, int h);
 	void zoomInOut(int units);
 	GLMVector3 unprojectedScreenCoord(int mx, int my);
+	Camera& getCamera();
 protected:
 	void hoverMove(QHoverEvent *event);
 	bool event(QEvent *e) override;
@@ -64,10 +71,11 @@ protected:
 	Camera mCamera;
 	ViewportMoveInfo mViewportMoveInfo;
 	SceneItemMoveInfo mSceneItemMoveInfo;
+	SceneMouseInfo	mSceneMouseInfo;
     //QOpenGLTexture *texture;
 	//BTexturePng bTexture;
 	GLuint vbonum;
-	void paintNode(Node* rNode);
+	void paintNode(Node* rNode, bool isBrushCanvas);
 	void paintGL();
 signals:
 	void zoomChanged(int rZoomLevel);

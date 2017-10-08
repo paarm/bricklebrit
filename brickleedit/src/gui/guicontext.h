@@ -3,14 +3,22 @@
 #include "../project/projectcontext.h"
 #include "selectionmanager/selectionmanager.h"
 #include <QObject>
+
+enum class Tool {
+	Selection,
+	Brush
+};
+
 class GuiContext : public QObject
 {
 private:
 	Q_OBJECT
-	MainWindow *mMainWindow=nullptr;
-	NodeResource * mCurrentResource=nullptr;
-	NodeScene * mCurrentScene=nullptr;
-	SelectionManager mSelectionManager;
+	MainWindow*			mMainWindow=nullptr;
+	NodeResource*		mCurrentResource=nullptr;
+	NodeScene*			mCurrentScene=nullptr;
+	SelectionManager	mSelectionManager;
+	Tool				mCurrentTool;
+	Node2d*				mCurrentPaintCanvas=nullptr;
 	GuiContext();
 	void sceneSwitched();
 	void resourceSwitched();
@@ -52,6 +60,13 @@ public:
 
 	SelectionManager& getSelectionManager();
 	void onZoomLevelChanged(int rZoomLevel);
+
+	Tool getCurrentTool();
+	void setCurrentTool(Tool rTool);
+
+	void setCurrentPaintCanvas(Node2d *rNode);
+	Node2d* getCurrentPaintCanvas();
+	GLMVector3 unprojectedScreenCoord(int mx, int my);
 public slots:
 	void onNewProjectClicked();
 	void onOpenProjectClicked();
@@ -59,6 +74,8 @@ public slots:
 	void onCloseProjectClicked();
 	void onNewSceneClicked();
 	void onNewResourceClicked();
+	void onToolSelectionActivated();
+	void onToolBrushActivated();
 	// Scene Tree
 };
 

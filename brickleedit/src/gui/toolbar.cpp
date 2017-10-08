@@ -6,6 +6,13 @@ ToolBar::ToolBar(const QString& title, QWidget* parent) : QToolBar (title, paren
 	mZoomLevel->setEnabled(false);
 	mZoomLevel->setMaximumWidth(80);
 	updateZoomLevel(0);
+	mActionGroupTools = new QActionGroup(this);
+	mActionGroupTools->addAction(GuiContext::getInstance().getMainWindow().getActionToolSelection());
+	mActionGroupTools->addAction(GuiContext::getInstance().getMainWindow().getActionToolBrush());
+	mActionGroupTools->setExclusive(true);
+	addAction(GuiContext::getInstance().getMainWindow().getActionToolSelection());
+	addAction(GuiContext::getInstance().getMainWindow().getActionToolBrush());
+	addSeparator();
 	addWidget(mZoomLevel);
 #if 0
 	{

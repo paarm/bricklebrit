@@ -202,7 +202,7 @@ Node * ProjectContext::getFrameReferenceNodeForSprite(NodeSprite *rNodeSprite) {
 		if (rNodeResource) {
 			Node *rNodeTextureOrAnimation=rNodeResource->getNodeWithNodeId(rNodeSprite->getFrameRef().textureid);
 			if (rNodeTextureOrAnimation) {
-				Node *rNodeFrame=nullptr;
+				//Node *rNodeFrame=nullptr;
 				if (rNodeSprite->getFrameRef().frame.length()>0) {
 					rv=rNodeTextureOrAnimation->getChildNodeWithName(rNodeSprite->getFrameRef().frame);
 				}

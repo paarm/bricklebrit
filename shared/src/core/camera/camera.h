@@ -16,6 +16,7 @@ private:
 	const float maxZ=100;
 	const float maxScalePlusFactor=8.0;
 	float scaleFactor=1.0;
+	GLMMatrix4 projectionMatrix;
 	GLMMatrix4 viewMatrixScale;
 	GLMMatrix4 viewMatrixTranslate;
 	GLMMatrix4 viewMatrix;
@@ -23,6 +24,8 @@ private:
 	void updateViewMatrix();
 public:
 	Camera();
+	void setProjectionMatrix(GLMMatrix4 pr);
+	GLMMatrix4 getProjectionMatrix();
 	int getViewportWidth();
 	int getViewportHeight();
 	void setViewport(float width, float height);
@@ -36,7 +39,7 @@ public:
 	GLMMatrix4 getViewMatrix();
 	GLMMatrix4 getViewMatrixScale();
 	GLMMatrix4 getViewMatrixTranslate();
-	GLMVector3 unproject(float mouseX, float mouseY, GLMMatrix4 projectionMatrix);
+	GLMVector3 unproject(float mouseX, float mouseY);
 
 };
 

@@ -181,9 +181,45 @@ public:
 		return r;
 	}
 
+	QTreeWidgetItem* searchTreeWidgetItemByNode(Node* rNode) {
+		int count=mTreeWidget->topLevelItemCount();
+		QTreeWidgetItem* rQTreeWidgetItem_found=nullptr;
+		for (int i=0;i<count && !rQTreeWidgetItem_found;i++) {
+			QTreeWidgetItem* p=mTreeWidget->topLevelItem(i);
+
+			rQTreeWidgetItem_found=searchTreeWidgetItemByNode(p,rNode);
+		}
+		return rQTreeWidgetItem_found;
+	}
+
+
 private:
 	QTreeWidget * mTreeWidget;
 
+	QTreeWidgetItem* searchTreeWidgetItemByNode(QTreeWidgetItem *parent, Node* rNode) {
+		QTreeWidgetItem* rv=nullptr;
+
+		if (parent && TreeUtil::getNodeFromTreeItem(parent)==rNode) {
+			rv=parent;
+		}
+		if (!rv) {
+			int count=parent->childCount();
+			for (int i=0;i<count;i++) {
+				QTreeWidgetItem *r=parent->child(i);
+				if (r && TreeUtil::getNodeFromTreeItem(r)==rNode) {
+					rv=r;
+				}
+			}
+		}
+		if (!rv) {
+			int count=parent->childCount();
+			for (int i=0;i<count && !rv;i++) {
+				QTreeWidgetItem *r=parent->child(i);
+				rv=searchTreeWidgetItemByNode(r, rNode);
+			}
+		}
+		return rv;
+	}
 
 	void setNodeName(QTreeWidgetItem *item, const string& rName) {
 		if (item) {
@@ -209,30 +245,6 @@ private:
 		}
 		return updated;
 	}
-	QTreeWidgetItem* searchTreeWidgetItemByNode(QTreeWidgetItem *parent, Node* rNode) {
-		QTreeWidgetItem* rv=nullptr;
-
-		if (parent && TreeUtil::getNodeFromTreeItem(parent)==rNode) {
-			rv=parent;
-		}
-		if (!rv) {
-			int count=parent->childCount();
-			for (int i=0;i<count;i++) {
-				QTreeWidgetItem *r=parent->child(i);
-				if (r && TreeUtil::getNodeFromTreeItem(r)==rNode) {
-					rv=r;
-				}
-			}
-		}
-		if (!rv) {
-			int count=parent->childCount();
-			for (int i=0;i<count && !rv;i++) {
-				QTreeWidgetItem *r=parent->child(i);
-				rv=searchTreeWidgetItemByNode(r, rNode);
-			}
-		}
-		return rv;
-	}
 };
 
 class SceneTreeDock : public QDockWidget
@@ -251,6 +263,7 @@ public:
 	void switchToScene(Node *rNode);
 	void switchToResource(Node *rNode);
 	void addSceneNodeToSelectedItem(Node *rNode);
+	void addSceneNodeToParent(Node *rNode, Node *rNodeParent);
 	void addResourceNodeToSelectedItem(Node *rNode);
 	void addSceneNodeToRootItem(Node *rNode);
 	void addResourceNodeToRootItem(Node *rNode);
@@ -290,6 +303,8 @@ private slots:
 	void on_sceneNameOpm_activated(const QString &arg1);
 
 	void on_resourceNameOpm_activated(const QString &arg1);
+
+	void on_pushButton_clicked();
 
 private:
 	TabInfo		mTabInfoScene;

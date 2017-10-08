@@ -193,6 +193,7 @@ public:
 	}
 
 	void setCurrentModelMatrix(GLMMatrix4 &m);
+	GLMMatrix4 getCurrentModelMatrix();
 	PointFloat &getCurrentCenter() {
 		return mCenter;
 	}

@@ -11,5 +11,7 @@
         <file>icons/plus.png</file>
         <file>icons/up.png</file>
         <file>icons/newSprite.png</file>
+        <file>icons/brush.png</file>
+        <file>icons/selection.png</file>
     </qresource>
 </RCC>

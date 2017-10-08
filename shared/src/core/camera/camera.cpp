@@ -10,6 +10,15 @@ Camera::Camera() {
 	updateViewMatrix();
 }
 
+void Camera::setProjectionMatrix(GLMMatrix4 pr) {
+	projectionMatrix=pr;
+}
+
+GLMMatrix4 Camera::getProjectionMatrix() {
+	return projectionMatrix;
+}
+
+
 void Camera::setViewport(float width, float height) {
 	viewportWidth=width;
 	viewportHeight=height;
@@ -95,9 +104,9 @@ GLMMatrix4 Camera::getViewMatrixTranslate() {
 	return viewMatrixTranslate;
 }
 
-GLMVector3 Camera::unproject(float mouseX, float mouseY, GLMMatrix4 projectionMatrix) {
+GLMVector3 Camera::unproject(float mouseX, float mouseY) {
 	float _x = ((2.0/viewportWidth)*mouseX)-1.0f;
-	float _y = ((2.0/viewportHeight)*mouseY)-1.0f;
+	float _y = ((2.0/viewportHeight)*(viewportHeight-mouseY))-1.0f;
 	float _z = 0.0f;
 	//std::cout << "Mouse click normalized X="<< std::to_string(_x) << " Y=" << std::to_string(_y) << std::endl;
 	glm::vec4 ray_wor(_x,_y, _z, 1.0);
@@ -105,9 +114,9 @@ GLMVector3 Camera::unproject(float mouseX, float mouseY, GLMMatrix4 projectionMa
 	ray_wor=glm::inverse(glm::make_mat4x4(getViewMatrixScale().getPointer()))*ray_wor;
 	glm::mat4x4 t=glm::inverse(glm::make_mat4x4(getViewMatrixTranslate().getPointer()));
 	// normalize the translation part
-	float *p=glm::value_ptr(t);
-	p[12]=p[12]/(viewportWidth/2.0);
-	p[13]=p[13]/(viewportHeight/2.0);
+//	float *p=glm::value_ptr(t);
+//	p[12]=p[12]/(viewportWidth/2.0);
+//	p[13]=p[13]/(viewportHeight/2.0);
 	ray_wor=t*ray_wor;
 	GLMVector3 rv(ray_wor.x, ray_wor.y, ray_wor.z);
 	std::cout << "unprojected="<< rv.toString() << std::endl;

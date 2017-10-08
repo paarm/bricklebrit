@@ -53,7 +53,18 @@ void SceneGlWidget::updateViewport() {
 	float orthoBottom=(h/2.0);
 	float orthoTop=(-h/2.0);
 	glOrtho(orthoLeft, orthoRight, orthoBottom, orthoTop, 0.0f, 1.0f);
+
+	GLfloat matrixArray[16];
+	glGetFloatv (GL_PROJECTION_MATRIX, matrixArray);
+	GLMMatrix4 pr;
+	pr.setFromPointer(matrixArray);
+	mCamera.setProjectionMatrix(pr);
 	glMatrixMode(GL_MODELVIEW);
+}
+
+
+Camera& SceneGlWidget::getCamera() {
+	return mCamera;
 }
 
 void SceneGlWidget::wheelEvent(QWheelEvent *event){
@@ -94,6 +105,9 @@ void SceneGlWidget::mouseReleaseEvent(QMouseEvent * event ) {
 }
 
 void SceneGlWidget::mouseMoveEvent(QMouseEvent * event ) {
+	mSceneMouseInfo.x=event->pos().x();
+	mSceneMouseInfo.y=event->pos().y();
+
 	if (mViewportMoveInfo.isOnMove) {
 		int distanceX=mViewportMoveInfo.startX-event->pos().x();
 		int distanceY=mViewportMoveInfo.startY-event->pos().y();
@@ -102,20 +116,16 @@ void SceneGlWidget::mouseMoveEvent(QMouseEvent * event ) {
 		mViewportMoveInfo.startY=event->pos().y();
 
 		this->update();//update();
+	} else if (GuiContext::getInstance().getCurrentPaintCanvas() &&
+			GuiContext::getInstance().getCurrentTool()==Tool::Brush &&
+			GuiContext::getInstance().getMainWindow().getBrushDock().getSelectedBrushNode()) {
+		this->update();
 	}
 }
 
 GLMVector3 SceneGlWidget::unprojectedScreenCoord(int mx, int my) {
-	GLfloat matrixArray[16];
-	glGetFloatv (GL_PROJECTION_MATRIX, matrixArray);
-	GLMMatrix4 pr;
-	pr.setFromPointer(matrixArray);
-
-	GLMVector3 pos=mCamera.unproject(mx, my, pr);
-	float x=pos.getX()*this->size().width()/2.0;
-	float y=pos.getY()*this->size().height()/2.0;
-
-	return GLMVector3(x,y,0.0);
+	GLMVector3 pos=mCamera.unproject(mx, my);
+	return pos;//GLMVector3(x,y,0.0);
 }
 
 void SceneGlWidget::hoverMove(QHoverEvent *event) {
@@ -138,17 +148,19 @@ bool SceneGlWidget::event(QEvent *e) {
 	switch(e->type()) {
 	case QEvent::Enter:
 		this->setMouseTracking(true);
+		mSceneMouseInfo.isInside=true;
 		break;
 	case QEvent::Leave:
 		this->setMouseTracking(false);
+		mSceneMouseInfo.isInside=false;
 		break;;
 	case QEvent::HoverMove:
-		hoverMove(static_cast<QHoverEvent*>(e));
+		//hoverMove(static_cast<QHoverEvent*>(e));
 		break;
 	default:
 		break;
 	}
-	cout << e->type()<< endl;
+	//cout << e->type()<< endl;
 
 	if (!handled) {
 		return QWidget::event(e);
@@ -157,30 +169,37 @@ bool SceneGlWidget::event(QEvent *e) {
 }
 
 void SceneGlWidget::onMouseClicked(int mx, int my) {
-	float x=(float)mx;
-	float y=(float)my;
-	GLfloat matrixArray[16];
-	glGetFloatv (GL_PROJECTION_MATRIX, matrixArray);
-	GLMMatrix4 pr;
-	pr.setFromPointer(matrixArray);
-	std::cout << "View Matrix in Camera:\n" << mCamera.getViewMatrix().toString() << std::endl;
-	std::cout << "Proj Matrix:\n" << pr.toString() << std::endl;
+	if (GuiContext::getInstance().getCurrentTool()==Tool::Selection) {
+		float x=(float)mx;
+		float y=(float)my;
+		std::cout << "View Matrix in Camera:\n" << mCamera.getViewMatrix().toString() << std::endl;
+		//std::cout << "Proj Matrix:\n" << pr.toString() << std::endl;
 
-	GLMVector3 pos=mCamera.unproject(mx, my, pr);
-	glm::vec3 posVec=glm::make_vec3(pos.getPointer());
+		GLMVector3 pos=mCamera.unproject(mx, my);
+		//glm::vec3 posVec=glm::make_vec3(pos.getPointer());
 
-	cout<<"Mouse X=" << std::to_string(x)<<" Y="<< std::to_string(y)<<std::endl;
-	cout<<"World X Factor=" << std::to_string(posVec.x)<<" Y="<< std::to_string(posVec.y)<<std::endl;
-	cout<<"World X=" << std::to_string(posVec.x*this->size().width()/2.0)<<" Y="<< std::to_string(this->size().height()/2.0*posVec.y)<<std::endl;
+		cout<<"Mouse X=" << std::to_string(x)<<" Y="<< std::to_string(y)<<std::endl;
+		cout<<"World X=" << std::to_string(pos.getX())<<" Y="<< std::to_string(pos.getY())<<std::endl;
+		//cout<<"World X=" << std::to_string(posVec.x*this->size().width()/2.0)<<" Y="<< std::to_string(this->size().height()/2.0*posVec.y)<<std::endl;
 
-	vector<Node*> v;
-	WorldCalculator::intersectTestForNode(v, GuiContext::getInstance().getCurrentScene(), posVec.x*this->size().width()/2.0, this->size().height()/2.0*posVec.y);
-	GuiContext::getInstance().getSelectionManager().deselectAllNodes();
-	for (Node* n : v) {
-		GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
-		GuiContext::getInstance().getSelectionManager().setNodeAsSelected(n);
+		vector<Node*> v;
+		WorldCalculator::intersectTestForNode(v, GuiContext::getInstance().getCurrentScene(), pos.getX(), pos.getY());
+		GuiContext::getInstance().getSelectionManager().deselectAllNodes();
+		for (Node* n : v) {
+			GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
+			GuiContext::getInstance().getSelectionManager().setNodeAsSelected(n);
+		}
+		update();
+	} else if ( GuiContext::getInstance().getCurrentTool()==Tool::Brush &&
+				GuiContext::getInstance().getCurrentPaintCanvas() &&
+				GuiContext::getInstance().getMainWindow().getBrushDock().getSelectedBrushNode()) {
+		GLMVector3 pos=mCamera.unproject(mx, my);
+		NodeSprite* rNodeSprite=GuiContext::getInstance().getMainWindow().getBrushDock().getNewNodeFromBrush(pos.getX(), pos.getY());
+		if (rNodeSprite) {
+			GuiContext::getInstance().insertNewSceneNode(rNodeSprite);
+			update();
+		}
 	}
-	update();
 }
 
 
@@ -267,13 +286,13 @@ void SceneGlWidget::paintGL()
 	if (scene) {
 		GLMMatrix4 m;
 		WorldCalculator::updateNodeMatrix(m, scene);
-		paintNode(scene);
+		paintNode(scene, false);
 	}
 	glDisable(GL_TEXTURE_2D);
 
 }
 
-void SceneGlWidget::paintNode(Node* rNode) {
+void SceneGlWidget::paintNode(Node* rNode, bool isBrushCanvas) {
 	glPushMatrix();
 	if (rNode->getNodeType()==NodeType::Sprite) {
 		NodeSprite *paintNode=(NodeSprite*)rNode;
@@ -409,7 +428,53 @@ void SceneGlWidget::paintNode(Node* rNode) {
 	unsigned long i;
 	for (i=0;i<count;i++) {
 		Node *child=rNode->getNodeFromIndex(i);
-		paintNode(child);
+		paintNode(child, isBrushCanvas);
+	}
+	if ((rNode->getNodeType()==NodeType::Sprite || rNode->getNodeType()==NodeType::Scene) &&
+		mSceneMouseInfo.isInside &&
+		rNode==GuiContext::getInstance().getCurrentPaintCanvas() &&
+		GuiContext::getInstance().getCurrentTool()==Tool::Brush &&
+		GuiContext::getInstance().getMainWindow().getBrushDock().getSelectedBrushNode()) {
+
+
+		GLMVector3 v=unprojectedScreenCoord(mSceneMouseInfo.x, mSceneMouseInfo.y);
+		NodeSprite *rNodeBrush=GuiContext::getInstance().getMainWindow().getBrushDock().getNodeFromBrush(v.getX(), v.getY());
+		if (rNodeBrush) {
+			paintNode(rNodeBrush, true);
+		}
+#if 0
+
+		cout << mSceneMouseInfo.x << " : "<<mSceneMouseInfo.y << endl;
+
+		//QPoint p = this->mapFromGlobal(QCursor::pos());
+		GLMVector3 v=unprojectedScreenCoord(mSceneMouseInfo.x, mSceneMouseInfo.y);
+
+		Node2d *rParentNode=static_cast<Node2d*>(rNode);
+		glm::mat4 parentMatrix=glm::make_mat4(rParentNode->getCurrentModelMatrix().getPointer());
+		glm::mat4 reverseMatrix=glm::inverse(parentMatrix);
+		glm::vec4 v4(v.getX(), v.getY(), 0.0, 1.0);
+		v4=reverseMatrix*v4;
+		PointInt pp(static_cast<int>(v4.x), static_cast<int>(v4.y));
+
+		rNodeBrush.setPosition(pp);
+		rNodeBrush.setSize(GuiContext::getInstance().getMainWindow().getBrushDock().getBrushSize());
+		rNodeBrush.setScale(GuiContext::getInstance().getMainWindow().getBrushDock().getBrushScale());
+		rNodeBrush.setRotation(GuiContext::getInstance().getMainWindow().getBrushDock().getRotation());
+		SelectedItem rSelectedItem = GuiContext::getInstance().getMainWindow().getBrushDock().getSelectedBrush();
+		if (rSelectedItem.rNodeAnimationFrame) {
+			rNodeBrush.getFrameRef().frame=rSelectedItem.rNodeAnimationFrame->getFrameRef().frame;
+			rNodeBrush.getFrameRef().resourcefile=rSelectedItem.rNodeAnimationFrame->getFrameRef().resourcefile;
+			rNodeBrush.getFrameRef().textureid=rSelectedItem.rNodeAnimationFrame->getFrameRef().textureid;
+		} else if(rSelectedItem.rNodeTextureFrame) {
+			rNodeBrush.getFrameRef().frame=rSelectedItem.rNodeTextureFrame->getName();
+			rNodeBrush.getFrameRef().resourcefile=rSelectedItem.resourceName;
+			rNodeBrush.getFrameRef().textureid=rSelectedItem.rNodeTexture->getId();
+		} else if (rSelectedItem.rNodeTexture) {
+			rNodeBrush.getFrameRef().resourcefile=rSelectedItem.resourceName;
+			rNodeBrush.getFrameRef().textureid=rSelectedItem.rNodeTexture->getId();
+		}
+		paintNode(&rNodeBrush, true);
+#endif
 	}
 	glPopMatrix();
 }

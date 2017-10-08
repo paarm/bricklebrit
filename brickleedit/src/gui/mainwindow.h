@@ -29,6 +29,9 @@ private:
 	QAction			*mActionNewScene=nullptr;
 	QAction			*mActionNewResource=nullptr;
 
+	QAction			*mActionToolSelection=nullptr;
+	QAction			*mActionToolBrush=nullptr;
+
 	Q_OBJECT
 public:
 	explicit MainWindow(QWidget *parent = 0);
@@ -45,12 +48,16 @@ public:
 	QAction*	getActionNewScene();
 	QAction*	getActionNewResource();
 
+	QAction*	getActionToolSelection();
+	QAction*	getActionToolBrush();
+
 	SceneTreeDock& getSceneTreeDock();
 	PropertyTreeDock& getPropertyTreeDock();
 	BrushDock& getBrushDock();
 	SceneGlWidget& getSceneGlWidget();
 
 	void setProjectAvailable(bool isAvailable);
+	void setSceneAvailable(bool isAvailable);
 	void setProjectRequireSave(bool rRequireSave);
 };
 

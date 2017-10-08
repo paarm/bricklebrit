@@ -111,6 +111,21 @@
             </property>
            </spacer>
           </item>
+          <item>
+           <widget class="QPushButton" name="pushButton">
+            <property name="toolTip">
+             <string>Set as paint canvas node</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normalon>:/icons/brush.png</normalon>
+             </iconset>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <item>

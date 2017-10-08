@@ -73,7 +73,6 @@ Project {
             "src/project/projectcontext.cpp",
             "src/project/projectcontext.h",
             "style.qrc"
-
         ]
         Depends {
             name: "Qt";

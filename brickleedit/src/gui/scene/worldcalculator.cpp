@@ -26,6 +26,9 @@ void WorldCalculator::updateNodeMatrix(GLMMatrix4 parentMatrix, Node* rNode) {
 		pM*=m;
 		pMM.setFromPointer(glm::value_ptr(pM));
 		rNodeSprite->setCurrentModelMatrix(pMM);
+	} else if (rNode->getNodeType()==NodeType::Scene) {
+		NodeScene * rNodeScene=static_cast<NodeScene*>(rNode);
+		rNodeScene->setCurrentModelMatrix(pMM);
 	}
 	int childCount=rNode->getChildCount();
 	for (int i=0;i<childCount;i++) {
