@@ -110,6 +110,7 @@ public:
 			if (item->parent() && !item->parent()->isExpanded()) {
 				item->parent()->setExpanded(true);
 			}
+			mTreeWidget->scrollToItem(item);
 		}
 	}
 
