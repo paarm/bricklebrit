@@ -304,7 +304,9 @@ private slots:
 
 	void on_resourceNameOpm_activated(const QString &arg1);
 
-	void on_pushButton_clicked();
+    void on_setAsBrush_clicked();
+
+    void on_setAsCanvas_clicked();
 
 private:
 	TabInfo		mTabInfoScene;

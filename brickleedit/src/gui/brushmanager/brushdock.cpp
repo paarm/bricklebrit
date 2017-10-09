@@ -45,31 +45,41 @@ void BrushDock::setBrushEnabled(bool enabled) {
 	ui->sizeX->setEnabled(enabled);
 	ui->sizeY->setEnabled(enabled);
 	ui->rotate->setEnabled(enabled);
+    ui->gridActive->setEnabled(enabled);
+    setGridFieldsState();
 }
 
-void BrushDock::setAsBrush(SelectedItem rSelectedItem) {
+void BrushDock::setAsBrush(SelectedItem rSelectedItem, SelectedItemPref *rSelectedItemPref) {
 	ui->sizeX->setValue(0);
 	ui->sizeY->setValue(0);
-	ui->scale->setValue(1.0);
+    ui->scale->setValue(1.0);
+    ui->rotate->setValue(0.0);
 
 	if (rSelectedItem.rNodeTexture) {
 		QPixmap pixmap=PreviewImageUtil::getPreviewImage(rSelectedItem, 100, 100);
 		ui->previewImage->setPixmap(pixmap);
 		mSelectedItem=rSelectedItem;
 
-		//ui->currentBrush->setText(rSelected);
-		BTexturePng *bTexture=ProjectContext::getInstance().getTexture(rSelectedItem.rNodeTexture->getPath());
-		if (bTexture) {
-			if (rSelectedItem.rNodeTextureFrame) {
-				ui->sizeX->setValue(rSelectedItem.rNodeTextureFrame->getFrame().width);
-				ui->sizeY->setValue(rSelectedItem.rNodeTextureFrame->getFrame().height);
-				ui->scale->setValue(1.0);
-			} else {
-				ui->sizeX->setValue(bTexture->width);
-				ui->sizeY->setValue(bTexture->height);
-				ui->scale->setValue(1.0);
-			}
-		}
+        if (rSelectedItemPref) {
+            ui->sizeX->setValue(rSelectedItemPref->sizeWH.x);
+            ui->sizeY->setValue(rSelectedItemPref->sizeWH.y);
+            ui->scale->setValue(rSelectedItemPref->scale.x);
+            ui->rotate->setValue(rSelectedItemPref->rotation);
+        } else {
+            //ui->currentBrush->setText(rSelected);
+            BTexturePng *bTexture=ProjectContext::getInstance().getTexture(rSelectedItem.rNodeTexture->getPath());
+            if (bTexture) {
+                if (rSelectedItem.rNodeTextureFrame) {
+                    ui->sizeX->setValue(rSelectedItem.rNodeTextureFrame->getFrame().width);
+                    ui->sizeY->setValue(rSelectedItem.rNodeTextureFrame->getFrame().height);
+                    ui->scale->setValue(1.0);
+                } else {
+                    ui->sizeX->setValue(bTexture->width);
+                    ui->sizeY->setValue(bTexture->height);
+                    ui->scale->setValue(1.0);
+                }
+            }
+        }
 	}
 }
 
@@ -134,6 +144,27 @@ NodeSprite* BrushDock::getNewNodeFromBrush(float worldX, float worldY) {
 	return rv;
 }
 
+int BrushDock::calcGridPos(int worldPos, int gridSize, int gridOffset) {
+    int rv=worldPos;
+    if (gridSize>0) {
+        int gridField=0;
+        if (worldPos>0) {
+            gridField=(worldPos+gridSize/2)/gridSize;
+        } else if (worldPos<0) {
+            gridField=(worldPos-gridSize/2)/gridSize;
+        }
+        rv=gridField*gridSize;//+rGridState.gridX/2;
+        if (gridOffset>0) {
+            if (worldPos>=0) {
+                rv+=gridOffset;
+            } else {
+                rv-=gridOffset;
+            }
+        }
+    }
+    return rv;
+}
+
 NodeSprite* BrushDock::getNodeFromBrush(float worldX, float worldY) {
 	NodeSprite *rv=nullptr;
 	if (GuiContext::getInstance().getCurrentPaintCanvas() &&
@@ -146,6 +177,11 @@ NodeSprite* BrushDock::getNodeFromBrush(float worldX, float worldY) {
 		v4=reverseMatrix*v4;
 		PointInt pp(static_cast<int>(v4.x), static_cast<int>(v4.y));
 
+        GridState rGridState=getGridState();
+        if (rGridState.isActive) {
+            pp.x=calcGridPos(pp.x, rGridState.gridX, rGridState.offsetX);
+            pp.y=calcGridPos(pp.y, rGridState.gridY, rGridState.offsetY);
+        }
 		mNodeFromBrush.setPosition(pp);
 		mNodeFromBrush.setSize(GuiContext::getInstance().getMainWindow().getBrushDock().getBrushSize());
 		mNodeFromBrush.setScale(GuiContext::getInstance().getMainWindow().getBrushDock().getBrushScale());
@@ -168,3 +204,31 @@ NodeSprite* BrushDock::getNodeFromBrush(float worldX, float worldY) {
 	}
 	return rv;
 }
+
+void BrushDock::setGridFieldsState() {
+    bool enable=false;
+    if (ui->gridActive->isEnabled() && ui->gridActive->isChecked()) {
+        enable=true;
+    }
+    ui->gridX->setEnabled(enable);
+    ui->gridY->setEnabled(enable);
+    ui->offsetX->setEnabled(enable);
+    ui->offsetY->setEnabled(enable);
+}
+
+void BrushDock::on_gridActive_clicked(bool checked)
+{
+    ignoreparam(checked);
+    setGridFieldsState();
+}
+
+GridState BrushDock::getGridState() {
+    GridState rGridState;
+    rGridState.isActive=ui->gridActive->isChecked();
+    rGridState.gridX=ui->gridX->value();
+    rGridState.gridY=ui->gridY->value();
+    rGridState.offsetX=ui->offsetX->value();
+    rGridState.offsetY=ui->offsetY->value();
+    return rGridState;
+}
+

@@ -195,22 +195,3 @@ NodeResource* ProjectContext::getDefaultResource() {
 	return rNodeResource;
 }
 
-Node * ProjectContext::getFrameReferenceNodeForSprite(NodeSprite *rNodeSprite) {
-	Node *rv=nullptr;
-	if (rNodeSprite) {
-		NodeResource* rNodeResource=ProjectContext::getInstance().getOrLoadResourceByName(rNodeSprite->getFrameRef().resourcefile);
-		if (rNodeResource) {
-			Node *rNodeTextureOrAnimation=rNodeResource->getNodeWithNodeId(rNodeSprite->getFrameRef().textureid);
-			if (rNodeTextureOrAnimation) {
-				//Node *rNodeFrame=nullptr;
-				if (rNodeSprite->getFrameRef().frame.length()>0) {
-					rv=rNodeTextureOrAnimation->getChildNodeWithName(rNodeSprite->getFrameRef().frame);
-				}
-				if (!rv) {
-					rv=rNodeTextureOrAnimation;
-				}
-			}
-		}
-	}
-	return rv;
-}

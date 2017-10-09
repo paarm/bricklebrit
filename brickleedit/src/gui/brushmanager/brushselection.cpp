@@ -74,6 +74,6 @@ void BrushSelection::on_BrushSelection_rejected()
 
 void BrushSelection::on_okButton_clicked()
 {
-	GuiContext::getInstance().getMainWindow().getBrushDock().setAsBrush(mSelectedItem);
+    GuiContext::getInstance().setCurrentBrush(mSelectedItem, nullptr);
 	this->deleteLater();
 }

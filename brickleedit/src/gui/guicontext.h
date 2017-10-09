@@ -64,8 +64,14 @@ public:
 	Tool getCurrentTool();
 	void setCurrentTool(Tool rTool);
 
-	void setCurrentPaintCanvas(Node2d *rNode);
+    void setCurrentPaintCanvas(Node2d *rNode, bool switchToBrushTool);
 	Node2d* getCurrentPaintCanvas();
+    void setCurrentBrush(SelectedItem rSelectedItem, SelectedItemPref *rSelectedItemPref);
+
+    Node * getFrameReferenceNodeForSprite(NodeSprite *rNodeSprite);
+    SelectedItem prepareSelectedNodeFromTextureOrAnimationNode(Node* rNode, const string& rResourceTextureOrAnimation);
+
+
 	GLMVector3 unprojectedScreenCoord(int mx, int my);
 public slots:
 	void onNewProjectClicked();

@@ -10,4 +10,12 @@ struct SelectedItem {
 	NodeAnimationFrame	*rNodeAnimationFrame=nullptr;
 };
 
+struct SelectedItemPref {
+    PointInt    sizeWH;
+    PointFloat  scale;
+    float       rotation;
+    bool        flipX;
+    bool        flipY;
+};
+
 #endif // SELECTEDITEM_H

@@ -112,16 +112,28 @@
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton">
-            <property name="toolTip">
-             <string>Set as paint canvas node</string>
-            </property>
+           <widget class="QPushButton" name="setAsBrush">
             <property name="text">
-             <string/>
+             <string>Set as Brush</string>
             </property>
             <property name="icon">
              <iconset>
               <normalon>:/icons/brush.png</normalon>
+             </iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="setAsCanvas">
+            <property name="toolTip">
+             <string>Set as paint canvas node</string>
+            </property>
+            <property name="text">
+             <string>Set as Canvas</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normalon>:/icons/newTexture.png</normalon>
              </iconset>
             </property>
            </widget>

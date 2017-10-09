@@ -212,7 +212,7 @@ void GuiContext::setCurrentScene(const string& rName) {
 		getMainWindow().setSceneAvailable(getCurrentScene());
 		getMainWindow().getSceneTreeDock().switchToScene(getCurrentScene());
 		getMainWindow().getBrushDock().setBrushEnabled(getCurrentScene()?true:false);
-		setCurrentPaintCanvas(getCurrentScene());
+        setCurrentPaintCanvas(getCurrentScene(), false);
 		setWindowTitle();
 		updateGlWidget();
 	}
@@ -382,9 +382,21 @@ Tool GuiContext::getCurrentTool() {
 	return mCurrentTool;
 }
 
-void GuiContext::setCurrentPaintCanvas(Node2d *rNode) {
+void GuiContext::setCurrentPaintCanvas(Node2d *rNode, bool switchToBrushTool) {
 	mCurrentPaintCanvas=rNode;
 	getMainWindow().getBrushDock().setCurrentPaintCanvas(rNode);
+    if (rNode && switchToBrushTool && getCurrentTool()!=Tool::Brush) {
+        setCurrentTool(Tool::Brush);
+        GuiContext::getInstance().getMainWindow().getActionToolBrush()->setChecked(true);
+    }
+}
+
+void GuiContext::setCurrentBrush(SelectedItem rSelectedItem, SelectedItemPref *rSelectedItemPref) {
+    getMainWindow().getBrushDock().setAsBrush(rSelectedItem, rSelectedItemPref);
+    if (getCurrentTool()!=Tool::Brush) {
+        setCurrentTool(Tool::Brush);
+        GuiContext::getInstance().getMainWindow().getActionToolBrush()->setChecked(true);
+    }
 }
 
 Node2d* GuiContext::getCurrentPaintCanvas() {
@@ -393,6 +405,60 @@ Node2d* GuiContext::getCurrentPaintCanvas() {
 
 GLMVector3 GuiContext::unprojectedScreenCoord(int mx, int my) {
 	return getMainWindow().getSceneGlWidget().unprojectedScreenCoord(mx,my);
+}
+
+Node * GuiContext::getFrameReferenceNodeForSprite(NodeSprite *rNodeSprite) {
+    Node *rv=nullptr;
+    if (rNodeSprite) {
+        NodeResource* rNodeResource=ProjectContext::getInstance().getOrLoadResourceByName(rNodeSprite->getFrameRef().resourcefile);
+        if (rNodeResource) {
+            Node *rNodeTextureOrAnimation=rNodeResource->getNodeWithNodeId(rNodeSprite->getFrameRef().textureid);
+            if (rNodeTextureOrAnimation) {
+                //Node *rNodeFrame=nullptr;
+                if (rNodeSprite->getFrameRef().frame.length()>0) {
+                    rv=rNodeTextureOrAnimation->getChildNodeWithName(rNodeSprite->getFrameRef().frame);
+                }
+                if (!rv) {
+                    rv=rNodeTextureOrAnimation;
+                }
+            }
+        }
+    }
+    return rv;
+}
+
+SelectedItem GuiContext::prepareSelectedNodeFromTextureOrAnimationNode(Node* rNode, const string& rResourceTextureOrAnimation) {
+    SelectedItem rSelectedItem;
+    rSelectedItem.resourceName=rResourceTextureOrAnimation;
+
+    if (rNode) {
+        if (rNode->getNodeType()==NodeType::Texture) {
+            rSelectedItem.rNodeTexture=static_cast<NodeTexture*>(rNode);
+        } else if (rNode->getNodeType()==NodeType::TextureFrame) {
+            rSelectedItem.rNodeTexture=static_cast<NodeTexture*>(rNode->getParent());
+            rSelectedItem.rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNode);
+        } else if (rNode->getNodeType()==NodeType::Animation) {
+            rSelectedItem.rNodeAnimation=static_cast<NodeAnimation*>(rNode);
+            if (rSelectedItem.rNodeAnimation->getChildCount()>0) {
+                rSelectedItem.rNodeAnimationFrame=static_cast<NodeAnimationFrame*>(rSelectedItem.rNodeAnimation->getNodeFromIndex(0));
+            }
+        } else if (rNode->getNodeType()==NodeType::AnimationFrame) {
+            rSelectedItem.rNodeAnimationFrame=static_cast<NodeAnimationFrame*>(rNode);
+            rSelectedItem.rNodeAnimation=static_cast<NodeAnimation*>(rNode->getParent());
+        }
+        if (rSelectedItem.rNodeAnimationFrame) {
+            NodeResource *rNodeResource=ProjectContext::getInstance().getOrLoadResourceByName(rSelectedItem.rNodeAnimationFrame->getFrameRef().resourcefile);
+            if (rNodeResource) {
+                rSelectedItem.rNodeTexture=static_cast<NodeTexture*>(rNodeResource->getNodeWithNodeId(rSelectedItem.rNodeAnimationFrame->getFrameRef().textureid));
+                if (rSelectedItem.rNodeTexture) {
+                    if (!rSelectedItem.rNodeAnimationFrame->getFrameRef().frame.empty()) {
+                        rSelectedItem.rNodeTextureFrame=static_cast<NodeTextureFrame*>(rSelectedItem.rNodeTexture->getChildNodeWithNameAndNodeType(rSelectedItem.rNodeAnimationFrame->getFrameRef().frame, NodeType::TextureFrame));
+                    }
+                }
+            }
+        }
+    }
+    return rSelectedItem;
 }
 
 

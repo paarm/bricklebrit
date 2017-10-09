@@ -19,7 +19,7 @@ SpriteEditor::SpriteEditor(Node *rNode, QWidget *parent) :
 	string currentResourceName="";
 	if (mNode) {
 		currentResourceName=mNode->getFrameRef().resourcefile;
-		Node *rNodeReferenceNode=ProjectContext::getInstance().getFrameReferenceNodeForSprite(mNode);
+        Node *rNodeReferenceNode=GuiContext::getInstance().getFrameReferenceNodeForSprite(mNode);
 		if (rNodeReferenceNode) {
 			mSelectedItem=mTexturePicker->initialize(currentResourceName, rNodeReferenceNode);
 			drawPreviewImage(false);

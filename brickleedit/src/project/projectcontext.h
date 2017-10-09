@@ -40,6 +40,5 @@ public:
 	vector<string> getSceneNames();
 	vector<string> getResourceNames();
 	BTexturePng *getTexture(const string &rPathRelativeToProject);
-	Node * getFrameReferenceNodeForSprite(NodeSprite *rNodeSprite);
 };
 
