@@ -13,5 +13,7 @@
         <file>icons/newSprite.png</file>
         <file>icons/brush.png</file>
         <file>icons/selection.png</file>
+        <file>icons/grid.png</file>
+        <file>icons/pickAsBrush.png</file>
     </qresource>
 </RCC>

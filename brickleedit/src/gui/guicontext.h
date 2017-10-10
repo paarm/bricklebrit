@@ -19,6 +19,7 @@ private:
 	SelectionManager	mSelectionManager;
 	Tool				mCurrentTool;
 	Node2d*				mCurrentPaintCanvas=nullptr;
+
 	GuiContext();
 	void sceneSwitched();
 	void resourceSwitched();
@@ -71,8 +72,11 @@ public:
     Node * getFrameReferenceNodeForSprite(NodeSprite *rNodeSprite);
     SelectedItem prepareSelectedNodeFromTextureOrAnimationNode(Node* rNode, const string& rResourceTextureOrAnimation);
 
-
 	GLMVector3 unprojectedScreenCoord(int mx, int my);
+
+	void updateGridSettings(int gridX, int gridY, int offsetX, int offsetY);
+	bool isGridActive();
+
 public slots:
 	void onNewProjectClicked();
 	void onOpenProjectClicked();
@@ -82,6 +86,9 @@ public slots:
 	void onNewResourceClicked();
 	void onToolSelectionActivated();
 	void onToolBrushActivated();
+	void onPickAsBrush();
+	void onGridCheckedChanged();
+	void onGridEdit();
 	// Scene Tree
 };
 

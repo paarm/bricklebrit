@@ -41,7 +41,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	mActionToolSelection->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_T));
 	mActionToolSelection->setStatusTip(tr("Selection Tool"));
 	QObject::connect(mActionToolSelection, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onToolSelectionActivated);
-	mActionToolSelection->setEnabled(false);
 	mActionToolSelection->setCheckable(true);
 	//mActionToolSelection->setChecked(true);
 
@@ -49,8 +48,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	mActionToolBrush->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_B));
 	mActionToolBrush->setStatusTip(tr("Brush Tool"));
 	QObject::connect(mActionToolBrush, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onToolBrushActivated);
-	mActionToolBrush->setEnabled(false);
 	mActionToolBrush->setCheckable(true);
+
+	mActionGrid = new QAction(QIcon(":/icons/grid.png"), tr("Snap to grid on/off"), this);
+	mActionGrid->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_G));
+	QObject::connect(mActionGrid, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onGridCheckedChanged);
+	mActionGrid->setCheckable(true);
+
+	mActionGridEdit = new QAction("Grid Settings..."/*QIcon(":/icons/grid.png")**/, this);
+	//mActionGridEdit->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_G));
+	QObject::connect(mActionGridEdit, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onGridEdit);
+
+	mActionPickAsBrush = new QAction(QIcon(":/icons/pickAsBrush.png"), tr("Pick selected Node as Brush"), this);
+	mActionPickAsBrush->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Y));
+	QObject::connect(mActionPickAsBrush, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onPickAsBrush);
 
 //	QAction			*mActionOpenProject=nullptr;
 //	QAction			*mActionNewScene=nullptr;
@@ -80,6 +91,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, mScenePropertyTreeDock);
 
 	setProjectAvailable(false);
+	setSceneAvailable(false);
 	setProjectRequireSave(false);
 #if 0
 	QWidget	*panel=new QWidget(mSceneTreeDock);
@@ -131,6 +143,17 @@ QAction*	MainWindow::getActionToolBrush() {
 	return mActionToolBrush;
 }
 
+QAction*	MainWindow::getActionGrid() {
+	return mActionGrid;
+}
+
+QAction*	MainWindow::getActionGridEdit() {
+	return mActionGridEdit;
+}
+
+QAction*	MainWindow::getActionPickAsBrush() {
+	return mActionPickAsBrush;
+}
 ToolBar& MainWindow::getToolBar() {
 	return *mToolBar;
 }
@@ -164,11 +187,19 @@ void MainWindow::setProjectAvailable(bool isAvailable) {
 	getActionCloseProject()->setEnabled(isAvailable);
 	getActionNewProject()->setEnabled(!isAvailable);
 	getActionOpenProject()->setEnabled(!isAvailable);
+	getActionGrid()->setEnabled(isAvailable);
+	getActionGridEdit()->setEnabled(isAvailable);
+	if (!isAvailable) {
+		getActionGrid()->setChecked(false);
+	} else {
+		getActionGrid()->setChecked(ProjectContext::getInstance().getNodeProject()->getGridActive());
+	}
 }
 
 void MainWindow::setSceneAvailable(bool isAvailable) {
 	getActionToolSelection()->setEnabled(isAvailable);
 	getActionToolBrush()->setEnabled(isAvailable);
+	getActionPickAsBrush()->setEnabled(isAvailable);
 	if (isAvailable) {
 		if (!getActionToolSelection()->isChecked() && !getActionToolBrush()->isChecked()) {
 			getActionToolSelection()->setChecked(true);

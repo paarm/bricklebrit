@@ -1,6 +1,8 @@
 #include "guicontext.h"
 #include <QMessageBox>
 #include "treeutil.h"
+
+#include "grideditor/grideditor.h"
 GuiContext::GuiContext()
 {
 
@@ -163,7 +165,6 @@ bool GuiContext::loadProject(const string&rProjectPathWithFileAbs) {
 		}
 		getMainWindow().getSceneTreeDock().updateSceneDropdownWithCurrent();
 		getMainWindow().getSceneTreeDock().updateResourceDropdownWithCurrent();
-
 		setWindowTitle();
 		//projectSwitched();
 	}
@@ -374,6 +375,39 @@ void GuiContext::onToolBrushActivated() {
 	setCurrentTool(Tool::Brush);
 }
 
+void GuiContext::onGridCheckedChanged() {
+	if (ProjectContext::getInstance().getNodeProject()) {
+		ProjectContext::getInstance().getNodeProject()->setGridActive(GuiContext::getMainWindow().getActionGrid()->isChecked());
+	}
+}
+
+void GuiContext::onGridEdit() {
+	PointInt gridSize;
+	PointInt gridOffset;
+	if (ProjectContext::getInstance().getNodeProject()) {
+		gridSize=ProjectContext::getInstance().getNodeProject()->getGridSize();
+		gridOffset=ProjectContext::getInstance().getNodeProject()->getGridOffset();
+	}
+	GridEditor *rGridEditor = new GridEditor(gridSize.x, gridSize.y, gridOffset.x, gridOffset.y, &GuiContext::getMainWindow());
+	rGridEditor->setModal(true);
+	rGridEditor->show();
+}
+
+void GuiContext::updateGridSettings(int gridX, int gridY, int offsetX, int offsetY) {
+	if (ProjectContext::getInstance().getNodeProject()) {
+		ProjectContext::getInstance().getNodeProject()->setGridSize(PointInt(gridX, gridY));
+		ProjectContext::getInstance().getNodeProject()->setGridOffset(PointInt(offsetX, offsetY));
+	}
+}
+
+bool GuiContext::isGridActive() {
+	bool rv=false;
+	if (ProjectContext::getInstance().getNodeProject()) {
+		rv=ProjectContext::getInstance().getNodeProject()->getGridActive();
+	}
+	return rv;
+}
+
 void GuiContext::setCurrentTool(Tool rTool) {
 	mCurrentTool=rTool;
 }
@@ -389,6 +423,28 @@ void GuiContext::setCurrentPaintCanvas(Node2d *rNode, bool switchToBrushTool) {
         setCurrentTool(Tool::Brush);
         GuiContext::getInstance().getMainWindow().getActionToolBrush()->setChecked(true);
     }
+}
+
+void GuiContext::onPickAsBrush() {
+	const vector<Node*> v=mSelectionManager.getSelectedNodes();
+	if (!v.empty()) {
+		Node *rNode=v.at(0);//mTabInfoScene.getSelectedNode();
+		if (rNode && rNode->getNodeType()==NodeType::Sprite) {
+			NodeSprite * rNodeSprite=static_cast<NodeSprite*>(rNode);
+			Node * rNodeTextureOrAnimation=getFrameReferenceNodeForSprite(rNodeSprite);
+			if (rNodeTextureOrAnimation) {
+				SelectedItem rSelectedItem=prepareSelectedNodeFromTextureOrAnimationNode(rNodeTextureOrAnimation, rNodeSprite->getFrameRef().resourcefile);
+				SelectedItemPref rSelectedItemPref;
+				rSelectedItemPref.sizeWH=rNodeSprite->getSize();
+				rSelectedItemPref.scale=rNodeSprite->getScale();
+				rSelectedItemPref.rotation=rNodeSprite->getRotation();
+				rSelectedItemPref.flipX=rNodeSprite->getFlipX();
+				rSelectedItemPref.flipY=rNodeSprite->getFlipY();
+
+				setCurrentBrush(rSelectedItem, &rSelectedItemPref);
+			}
+		}
+	}
 }
 
 void GuiContext::setCurrentBrush(SelectedItem rSelectedItem, SelectedItemPref *rSelectedItemPref) {

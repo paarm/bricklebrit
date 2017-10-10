@@ -7,6 +7,7 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "../scene/worldcalculator.h"
 
 BrushDock::BrushDock(QWidget *parent) :
 	QDockWidget(parent),
@@ -45,8 +46,6 @@ void BrushDock::setBrushEnabled(bool enabled) {
 	ui->sizeX->setEnabled(enabled);
 	ui->sizeY->setEnabled(enabled);
 	ui->rotate->setEnabled(enabled);
-    ui->gridActive->setEnabled(enabled);
-    setGridFieldsState();
 }
 
 void BrushDock::setAsBrush(SelectedItem rSelectedItem, SelectedItemPref *rSelectedItemPref) {
@@ -144,26 +143,6 @@ NodeSprite* BrushDock::getNewNodeFromBrush(float worldX, float worldY) {
 	return rv;
 }
 
-int BrushDock::calcGridPos(int worldPos, int gridSize, int gridOffset) {
-    int rv=worldPos;
-    if (gridSize>0) {
-        int gridField=0;
-        if (worldPos>0) {
-            gridField=(worldPos+gridSize/2)/gridSize;
-        } else if (worldPos<0) {
-            gridField=(worldPos-gridSize/2)/gridSize;
-        }
-        rv=gridField*gridSize;//+rGridState.gridX/2;
-        if (gridOffset>0) {
-            if (worldPos>=0) {
-                rv+=gridOffset;
-            } else {
-                rv-=gridOffset;
-            }
-        }
-    }
-    return rv;
-}
 
 NodeSprite* BrushDock::getNodeFromBrush(float worldX, float worldY) {
 	NodeSprite *rv=nullptr;
@@ -177,10 +156,15 @@ NodeSprite* BrushDock::getNodeFromBrush(float worldX, float worldY) {
 		v4=reverseMatrix*v4;
 		PointInt pp(static_cast<int>(v4.x), static_cast<int>(v4.y));
 
-        GridState rGridState=getGridState();
-        if (rGridState.isActive) {
-            pp.x=calcGridPos(pp.x, rGridState.gridX, rGridState.offsetX);
-            pp.y=calcGridPos(pp.y, rGridState.gridY, rGridState.offsetY);
+		if (GuiContext::getInstance().isGridActive()) {
+			PointInt gridSize;
+			PointInt gridOffset;
+			if (ProjectContext::getInstance().getNodeProject()) {
+				gridSize=ProjectContext::getInstance().getNodeProject()->getGridSize();
+				gridOffset=ProjectContext::getInstance().getNodeProject()->getGridOffset();
+			}
+			pp.x=WorldCalculator::calcGridPos(pp.x, gridSize.x, gridOffset.x);
+			pp.y=WorldCalculator::calcGridPos(pp.y, gridSize.y, gridOffset.y);
         }
 		mNodeFromBrush.setPosition(pp);
 		mNodeFromBrush.setSize(GuiContext::getInstance().getMainWindow().getBrushDock().getBrushSize());
@@ -204,31 +188,3 @@ NodeSprite* BrushDock::getNodeFromBrush(float worldX, float worldY) {
 	}
 	return rv;
 }
-
-void BrushDock::setGridFieldsState() {
-    bool enable=false;
-    if (ui->gridActive->isEnabled() && ui->gridActive->isChecked()) {
-        enable=true;
-    }
-    ui->gridX->setEnabled(enable);
-    ui->gridY->setEnabled(enable);
-    ui->offsetX->setEnabled(enable);
-    ui->offsetY->setEnabled(enable);
-}
-
-void BrushDock::on_gridActive_clicked(bool checked)
-{
-    ignoreparam(checked);
-    setGridFieldsState();
-}
-
-GridState BrushDock::getGridState() {
-    GridState rGridState;
-    rGridState.isActive=ui->gridActive->isChecked();
-    rGridState.gridX=ui->gridX->value();
-    rGridState.gridY=ui->gridY->value();
-    rGridState.offsetX=ui->offsetX->value();
-    rGridState.offsetY=ui->offsetY->value();
-    return rGridState;
-}
-

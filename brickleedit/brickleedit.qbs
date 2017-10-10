@@ -22,6 +22,9 @@ Project {
             "src/gui/brushmanager/brushselection.cpp",
             "src/gui/brushmanager/brushselection.h",
             "src/gui/brushmanager/brushselection.ui",
+            "src/gui/grideditor/grideditor.cpp",
+            "src/gui/grideditor/grideditor.h",
+            "src/gui/grideditor/grideditor.ui",
             "src/gui/guicontext.cpp",
             "src/gui/guicontext.h",
             "src/gui/menubar.cpp",
@@ -72,7 +75,7 @@ Project {
             "src/project/nodemanager.h",
             "src/project/projectcontext.cpp",
             "src/project/projectcontext.h",
-            "style.qrc"
+            "style.qrc",
         ]
         Depends {
             name: "Qt";

@@ -54,7 +54,6 @@ void SceneTreeDock::clearResourceOpm() {
 
 void SceneTreeDock::setSceneEditable(bool isEditable) {
 	ui->newSprite->setEnabled(isEditable);
-    ui->setAsBrush->setEnabled(isEditable);
     ui->setAsCanvas->setEnabled(isEditable);
 }
 
@@ -286,25 +285,5 @@ void SceneTreeDock::on_setAsCanvas_clicked()
 			) {
         GuiContext::getInstance().setCurrentPaintCanvas(static_cast<Node2d*>(rNode), true);
 	}
-}
-
-void SceneTreeDock::on_setAsBrush_clicked()
-{
-    Node *rNode=mTabInfoScene.getSelectedNode();
-    if (rNode && rNode->getNodeType()==NodeType::Sprite) {
-        NodeSprite * rNodeSprite=static_cast<NodeSprite*>(rNode);
-        Node * rNodeTextureOrAnimation=GuiContext::getInstance().getFrameReferenceNodeForSprite(rNodeSprite);
-        if (rNodeTextureOrAnimation) {
-            SelectedItem rSelectedItem=GuiContext::getInstance().prepareSelectedNodeFromTextureOrAnimationNode(rNodeTextureOrAnimation, rNodeSprite->getFrameRef().resourcefile);
-            SelectedItemPref rSelectedItemPref;
-            rSelectedItemPref.sizeWH=rNodeSprite->getSize();
-            rSelectedItemPref.scale=rNodeSprite->getScale();
-            rSelectedItemPref.rotation=rNodeSprite->getRotation();
-            rSelectedItemPref.flipX=rNodeSprite->getFlipX();
-            rSelectedItemPref.flipY=rNodeSprite->getFlipY();
-
-            GuiContext::getInstance().setCurrentBrush(rSelectedItem, &rSelectedItemPref);
-        }
-    }
 }
 

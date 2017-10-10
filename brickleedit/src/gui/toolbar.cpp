@@ -13,6 +13,11 @@ ToolBar::ToolBar(const QString& title, QWidget* parent) : QToolBar (title, paren
 	addAction(GuiContext::getInstance().getMainWindow().getActionToolSelection());
 	addAction(GuiContext::getInstance().getMainWindow().getActionToolBrush());
 	addSeparator();
+	addAction(GuiContext::getInstance().getMainWindow().getActionPickAsBrush());
+	addSeparator();
+	addAction(GuiContext::getInstance().getMainWindow().getActionGrid());
+	addAction(GuiContext::getInstance().getMainWindow().getActionGridEdit());
+	addSeparator();
 	addWidget(mZoomLevel);
 }
 

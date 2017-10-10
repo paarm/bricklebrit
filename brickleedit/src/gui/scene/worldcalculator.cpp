@@ -32,7 +32,7 @@ void WorldCalculator::updateNodeMatrix(GLMMatrix4 parentMatrix, Node* rNode) {
 	}
 	int childCount=rNode->getChildCount();
 	for (int i=0;i<childCount;i++) {
-		Node *rNodeChild=rNode->getNodeFromIndex(i);
+		Node *rNodeChild=rNode->getNodeFromIndex(i);		
 		updateNodeMatrix(pMM, rNodeChild);
 	}
 }
@@ -73,3 +73,23 @@ void WorldCalculator::intersectTestForNode(vector<Node*> &rv, Node* rNode, float
 	}
 }
 
+int WorldCalculator::calcGridPos(int worldPos, int gridSize, int gridOffset) {
+	int rv=worldPos;
+	if (gridSize>0) {
+		int gridField=0;
+		if (worldPos>0) {
+			gridField=(worldPos+gridSize/2)/gridSize;
+		} else if (worldPos<0) {
+			gridField=(worldPos-gridSize/2)/gridSize;
+		}
+		rv=gridField*gridSize;//+rGridState.gridX/2;
+		if (gridOffset>0) {
+			if (worldPos>=0) {
+				rv+=gridOffset;
+			} else {
+				rv-=gridOffset;
+			}
+		}
+	}
+	return rv;
+}

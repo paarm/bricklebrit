@@ -32,6 +32,12 @@ private:
 	QAction			*mActionToolSelection=nullptr;
 	QAction			*mActionToolBrush=nullptr;
 
+	QAction			*mActionGrid=nullptr;
+	QAction			*mActionGridEdit=nullptr;
+
+	QAction			*mActionPickAsBrush=nullptr;
+
+
 	Q_OBJECT
 public:
 	explicit MainWindow(QWidget *parent = 0);
@@ -50,6 +56,11 @@ public:
 
 	QAction*	getActionToolSelection();
 	QAction*	getActionToolBrush();
+
+	QAction*	getActionGrid();
+	QAction*	getActionGridEdit();
+
+	QAction*	getActionPickAsBrush();
 
 	SceneTreeDock& getSceneTreeDock();
 	PropertyTreeDock& getPropertyTreeDock();

@@ -288,6 +288,37 @@ void SceneGlWidget::paintGL()
 		WorldCalculator::updateNodeMatrix(m, scene);
 		paintNode(scene, false);
 	}
+
+	glDisable(GL_TEXTURE_2D);
+	vector<Node*> v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
+	for (Node *n : v) {
+		if (n->getNodeType()==NodeType::Sprite) {
+			NodeSprite* rNodeSprite=static_cast<NodeSprite*>(n);
+			glm::mat4 viewMatrix=glm::make_mat4(mCamera.getViewMatrix().getPointer());
+			glm::mat4 modelMatrix=glm::make_mat4(rNodeSprite->getCurrentModelMatrix().getPointer());
+			viewMatrix*=modelMatrix;
+			glLoadMatrixf (glm::value_ptr(viewMatrix));
+
+			//if (GuiContext::getInstance().getSelectionManager().isNodeSelected(rNode)) {
+				//if (GuiContext::getInstance().getSelectionManager().isMouseOverSelection()) {
+				//	glColor3f(0.1, 0.3, 0.0);
+				//} else {
+			glColor3f(0.3, 0.5, 0.0);
+				//}
+			glPolygonMode(GL_FRONT, GL_LINE);
+			glPolygonMode(GL_BACK, GL_LINE);
+			glLineWidth(0.5);
+			float w2=rNodeSprite->getSize().x/2.0;
+			float h2=rNodeSprite->getSize().y/2.0;
+			glBegin(GL_LINE_STRIP);
+				glVertex3d(-w2,-h2,0);
+				glVertex3d( w2, -h2,0);
+				glVertex3d( w2, h2,0);
+				glVertex3d(-w2, h2,0);
+				glVertex3d(-w2,-h2,0);
+			glEnd();
+		}
+	}
 	glDisable(GL_TEXTURE_2D);
 
 }
@@ -400,26 +431,6 @@ void SceneGlWidget::paintNode(Node* rNode, bool isBrushCanvas) {
 						glTexCoord2f(tw, th); glVertex3f( w2,  h2, 0);
 						glTexCoord2f(tw, ty); glVertex3f( w2, -h2, 0);
 					glEnd();
-					glDisable(GL_TEXTURE_2D);
-
-
-					if (GuiContext::getInstance().getSelectionManager().isNodeSelected(rNode)) {
-						if (GuiContext::getInstance().getSelectionManager().isMouseOverSelection()) {
-							glColor3f(0.1, 0.3, 0.0);
-						} else {
-							glColor3f(0.3, 0.5, 0.0);
-						}
-						glPolygonMode(GL_FRONT, GL_LINE);
-						glPolygonMode(GL_BACK, GL_LINE);
-						glLineWidth(0.5);
-						glBegin(GL_LINE_STRIP);
-							glVertex3d(-w2,-h2,0);
-							glVertex3d( w2, -h2,0);
-							glVertex3d( w2, h2,0);
-							glVertex3d(-w2, h2,0);
-							glVertex3d(-w2,-h2,0);
-						glEnd();
-					}
 				}
 			}
 		}

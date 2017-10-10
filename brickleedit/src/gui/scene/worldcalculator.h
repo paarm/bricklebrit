@@ -8,6 +8,8 @@ public:
 	static void updateNodeMatrix(GLMMatrix4 parentMatrix, Node* rNode);
 	static bool isNodeIntersecting(Node* rNode, float worldX, float worldY);
 	static void intersectTestForNode(vector<Node*> &rv, Node* rNode, float worldX, float worldY);
+	static int calcGridPos(int worldPos, int gridSize, int gridOffset);
+
 };
 
 #endif // WORLDCALCULATOR_H

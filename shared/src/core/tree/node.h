@@ -148,6 +148,11 @@ public:
 	PROPERTY_STRING_GETSET(ProjectResource)
 	PROPERTY_INT_GETSET(NextFreeId)
 	PROPERTY_LIST_GETSET(ListTest)
+	PROPERTY_BOOL_GETSET(GridActive)
+	PROPERTY_POINTINT_GETSET(GridSize)
+	PROPERTY_POINTINT_GETSET(GridOffset)
+
+
 
 	NodeProject(bool rCreateNewId) : Node(rCreateNewId) {
 		mNodeType=NodeType::Project;
@@ -157,6 +162,9 @@ public:
 		setProjectResource("");
 		setNextFreeId(0);
 		setListTest();
+		setGridActive(false);
+		setGridSize();
+		setGridOffset();
 	}
 
 	NodeProject() : NodeProject(true) {
