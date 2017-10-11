@@ -30,28 +30,35 @@ void BrushDock::on_selectBrush_clicked()
 
 void BrushDock::clearBrush() {
 	ui->previewImage->setPixmap(QPixmap());
-	ui->scale->setValue(1.0);
+    ui->scaleX->setValue(1.0);
+    ui->scaleY->setValue(1.0);
 	ui->sizeX->setValue(0);
 	ui->sizeY->setValue(0);
 	ui->rotate->setValue(0);
-	ui->currentBrush->setText("");
+    ui->flipX->setChecked(false);
+    ui->flipY->setChecked(false);
 }
 
 void BrushDock::setBrushEnabled(bool enabled) {
 	if (!enabled) {
 		clearBrush();
 	}
-	ui->selectBrush->setEnabled(enabled);
-	ui->scale->setEnabled(enabled);
-	ui->sizeX->setEnabled(enabled);
+    ui->scaleX->setEnabled(enabled);
+    ui->scaleY->setEnabled(enabled);
+    ui->sizeX->setEnabled(enabled);
 	ui->sizeY->setEnabled(enabled);
-	ui->rotate->setEnabled(enabled);
+    ui->flipX->setEnabled(enabled);
+    ui->flipY->setEnabled(enabled);
+    ui->rotate->setEnabled(enabled);
 }
 
 void BrushDock::setAsBrush(SelectedItem rSelectedItem, SelectedItemPref *rSelectedItemPref) {
 	ui->sizeX->setValue(0);
 	ui->sizeY->setValue(0);
-    ui->scale->setValue(1.0);
+    ui->scaleX->setValue(1.0);
+    ui->scaleY->setValue(1.0);
+    ui->flipX->setChecked(false);
+    ui->flipY->setChecked(false);
     ui->rotate->setValue(0.0);
 
 	if (rSelectedItem.rNodeTexture) {
@@ -62,8 +69,11 @@ void BrushDock::setAsBrush(SelectedItem rSelectedItem, SelectedItemPref *rSelect
         if (rSelectedItemPref) {
             ui->sizeX->setValue(rSelectedItemPref->sizeWH.x);
             ui->sizeY->setValue(rSelectedItemPref->sizeWH.y);
-            ui->scale->setValue(rSelectedItemPref->scale.x);
+            ui->scaleX->setValue(rSelectedItemPref->scale.x);
+            ui->scaleY->setValue(rSelectedItemPref->scale.y);
             ui->rotate->setValue(rSelectedItemPref->rotation);
+            ui->flipX->setChecked(rSelectedItemPref->flipX);
+            ui->flipY->setChecked(rSelectedItemPref->flipY);
         } else {
             //ui->currentBrush->setText(rSelected);
             BTexturePng *bTexture=ProjectContext::getInstance().getTexture(rSelectedItem.rNodeTexture->getPath());
@@ -71,11 +81,9 @@ void BrushDock::setAsBrush(SelectedItem rSelectedItem, SelectedItemPref *rSelect
                 if (rSelectedItem.rNodeTextureFrame) {
                     ui->sizeX->setValue(rSelectedItem.rNodeTextureFrame->getFrame().width);
                     ui->sizeY->setValue(rSelectedItem.rNodeTextureFrame->getFrame().height);
-                    ui->scale->setValue(1.0);
                 } else {
                     ui->sizeX->setValue(bTexture->width);
                     ui->sizeY->setValue(bTexture->height);
-                    ui->scale->setValue(1.0);
                 }
             }
         }
@@ -94,7 +102,6 @@ Node* BrushDock::getSelectedBrushNode() {
 	} else {
 		return mSelectedItem.rNodeTexture;
 	}
-	return nullptr;
 }
 
 void BrushDock::setCurrentPaintCanvas(Node2d *rNode2d) {
@@ -106,6 +113,10 @@ void BrushDock::setCurrentPaintCanvas(Node2d *rNode2d) {
 	mCurrentPaintCanvas=rNode2d;
 }
 
+Node2d* BrushDock::getCurrentPaintCanvas() {
+    return mCurrentPaintCanvas;
+}
+
 int BrushDock::getBrushWidth() {
 	return ui->sizeX->value();
 }
@@ -114,12 +125,20 @@ int BrushDock::getBrushHeight() {
 	return ui->sizeY->value();
 }
 
+bool BrushDock::getBrushFlipX() {
+    return ui->flipX->isChecked();
+}
+
+bool BrushDock::getBrushFlipY() {
+    return ui->flipY->isChecked();
+}
+
 PointInt BrushDock::getBrushSize() {
 	return PointInt(getBrushWidth(), getBrushHeight());
 }
 
 PointFloat BrushDock::getBrushScale() {
-	return PointFloat(ui->scale->value(), ui->scale->value());
+    return PointFloat(ui->scaleX->value(), ui->scaleY->value());
 }
 
 float BrushDock::getRotation() {
@@ -138,7 +157,9 @@ NodeSprite* BrushDock::getNewNodeFromBrush(float worldX, float worldY) {
 		rv->setScale(rvv->getScale());
 		rv->setRotation(rvv->getRotation());
 		rv->setFrameRef(rvv->getFrameRef());
-		rv->setName("Sprite");
+        rv->setFlipX(rvv->getFlipX());
+        rv->setFlipY(rvv->getFlipY());
+        rv->setName("Sprite");
 	}
 	return rv;
 }
@@ -170,7 +191,9 @@ NodeSprite* BrushDock::getNodeFromBrush(float worldX, float worldY) {
 		mNodeFromBrush.setSize(GuiContext::getInstance().getMainWindow().getBrushDock().getBrushSize());
 		mNodeFromBrush.setScale(GuiContext::getInstance().getMainWindow().getBrushDock().getBrushScale());
 		mNodeFromBrush.setRotation(GuiContext::getInstance().getMainWindow().getBrushDock().getRotation());
-		SelectedItem rSelectedItem = GuiContext::getInstance().getMainWindow().getBrushDock().getSelectedBrush();
+        mNodeFromBrush.setFlipX(getBrushFlipX());
+        mNodeFromBrush.setFlipY(getBrushFlipY());
+        SelectedItem rSelectedItem = GuiContext::getInstance().getMainWindow().getBrushDock().getSelectedBrush();
 		if (rSelectedItem.rNodeAnimationFrame) {
 			mNodeFromBrush.getFrameRef().frame=rSelectedItem.rNodeAnimationFrame->getFrameRef().frame;
 			mNodeFromBrush.getFrameRef().resourcefile=rSelectedItem.rNodeAnimationFrame->getFrameRef().resourcefile;

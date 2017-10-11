@@ -157,6 +157,20 @@ Node* Node::getNodeWithNodeId(int rNodeId) {
 	return rv;
 }
 
+Node* Node::getChildNodeWithNodeIdRecursive(int rNodeId) {
+    Node *rv=nullptr;
+    rv=getNodeWithNodeId(rNodeId);
+    if (!rv) {
+        for (auto *rNode : mNodes) {
+            rv=rNode->getChildNodeWithNodeIdRecursive(rNodeId);
+            if (rv) {
+                break;
+            }
+        }
+    }
+    return rv;
+}
+
 Node* Node::getChildNodeWithName(const string &rName) {
 	Node *rv=nullptr;
 	for (auto *rNode : mNodes) {
@@ -224,6 +238,16 @@ void Node::deleteChildNodes() {
 	}
 	mNodes.clear();
 	mNodes.shrink_to_fit();
+}
+
+void Node::deleteChildNode(Node *rNodeToDelete) {
+    for (auto it=mNodes.begin();it!=mNodes.end();it++) {
+        if (*it.base()==rNodeToDelete) {
+            delete *it.base();
+            mNodes.erase(it);
+            break;
+        }
+    }
 }
 
 void Node::deleteNode(Node *rNodeToDelete) {

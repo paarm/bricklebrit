@@ -60,8 +60,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	QObject::connect(mActionGridEdit, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onGridEdit);
 
 	mActionPickAsBrush = new QAction(QIcon(":/icons/pickAsBrush.png"), tr("Pick selected Node as Brush"), this);
-	mActionPickAsBrush->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Y));
+    mActionPickAsBrush->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
 	QObject::connect(mActionPickAsBrush, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onPickAsBrush);
+
+    mActionEraseSelected = new QAction(QIcon(":/icons/erase.png"), tr("Delete selected Nodes"), this);
+    mActionEraseSelected->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X));
+    QObject::connect(mActionEraseSelected, &QAction::triggered, &GuiContext::getInstance(), &GuiContext::onEraseSelected);
 
 //	QAction			*mActionOpenProject=nullptr;
 //	QAction			*mActionNewScene=nullptr;
@@ -154,6 +158,10 @@ QAction*	MainWindow::getActionGridEdit() {
 QAction*	MainWindow::getActionPickAsBrush() {
 	return mActionPickAsBrush;
 }
+
+QAction*	MainWindow::getActionEraseSelected() {
+    return mActionEraseSelected;
+}
 ToolBar& MainWindow::getToolBar() {
 	return *mToolBar;
 }
@@ -200,7 +208,8 @@ void MainWindow::setSceneAvailable(bool isAvailable) {
 	getActionToolSelection()->setEnabled(isAvailable);
 	getActionToolBrush()->setEnabled(isAvailable);
 	getActionPickAsBrush()->setEnabled(isAvailable);
-	if (isAvailable) {
+    getActionEraseSelected()->setEnabled(isAvailable);
+    if (isAvailable) {
 		if (!getActionToolSelection()->isChecked() && !getActionToolBrush()->isChecked()) {
 			getActionToolSelection()->setChecked(true);
 		}

@@ -4,7 +4,7 @@
 ToolBar::ToolBar(const QString& title, QWidget* parent) : QToolBar (title, parent) {
 	mZoomLevel=new QLineEdit(this);
 	mZoomLevel->setEnabled(false);
-	mZoomLevel->setMaximumWidth(80);
+    mZoomLevel->setMaximumWidth(120);
 	updateZoomLevel(0);
 	mActionGroupTools = new QActionGroup(this);
 	mActionGroupTools->addAction(GuiContext::getInstance().getMainWindow().getActionToolSelection());
@@ -14,7 +14,8 @@ ToolBar::ToolBar(const QString& title, QWidget* parent) : QToolBar (title, paren
 	addAction(GuiContext::getInstance().getMainWindow().getActionToolBrush());
 	addSeparator();
 	addAction(GuiContext::getInstance().getMainWindow().getActionPickAsBrush());
-	addSeparator();
+    addAction(GuiContext::getInstance().getMainWindow().getActionEraseSelected());
+    addSeparator();
 	addAction(GuiContext::getInstance().getMainWindow().getActionGrid());
 	addAction(GuiContext::getInstance().getMainWindow().getActionGridEdit());
 	addSeparator();

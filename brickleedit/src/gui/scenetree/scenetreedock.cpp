@@ -130,6 +130,13 @@ void SceneTreeDock::addSceneNodeToParent(Node *rNode, Node *rParent) {
 	mTabInfoScene.addNode(r,rNode, false);
 }
 
+void SceneTreeDock::eraseSceneNode(Node *rNode) {
+    QTreeWidgetItem* r=mTabInfoScene.searchTreeWidgetItemByNode(rNode);
+    if (r) {
+        mTabInfoScene.deleteItemAndItsChilds(r);
+    }
+}
+
 void SceneTreeDock::addResourceNodeToSelectedItem(Node *rNode) {
 	QTreeWidgetItem* r=mTabInfoResource.getSelectedItem();
 	if (r==nullptr) {

@@ -55,7 +55,8 @@ public:
 	void updateChildNodes(Node *rNode_parent);
 	void updateNodeName(Node *rNode);
 	void insertNewSceneNode(Node *rNode);
-	void insertNewResourceNode(Node *rNode);
+    void eraseSceneNodeWithId(int rNodeId);
+    void insertNewResourceNode(Node *rNode);
 
 	void setSceneNodeInTreeAsSelected(Node *rNode);
 
@@ -66,6 +67,7 @@ public:
 	void setCurrentTool(Tool rTool);
 
     void setCurrentPaintCanvas(Node2d *rNode, bool switchToBrushTool);
+
 	Node2d* getCurrentPaintCanvas();
     void setCurrentBrush(SelectedItem rSelectedItem, SelectedItemPref *rSelectedItemPref);
 
@@ -87,7 +89,8 @@ public slots:
 	void onToolSelectionActivated();
 	void onToolBrushActivated();
 	void onPickAsBrush();
-	void onGridCheckedChanged();
+    void onEraseSelected();
+    void onGridCheckedChanged();
 	void onGridEdit();
 	// Scene Tree
 };

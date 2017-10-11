@@ -311,6 +311,23 @@ void GuiContext::insertNewSceneNode(Node *rNode) {
 	}
 }
 
+void GuiContext::eraseSceneNodeWithId(int rNodeId) {
+    NodeScene *rNodeScene=getCurrentScene();
+    if (rNodeScene) {
+        Node *rNodeToDelete=rNodeScene->getChildNodeWithNodeIdRecursive(rNodeId);
+        if (rNodeToDelete && rNodeToDelete->getParent()) {
+            getMainWindow().getSceneTreeDock().eraseSceneNode(rNodeToDelete);
+
+            if (getCurrentPaintCanvas()) {
+                if (rNodeToDelete==getCurrentPaintCanvas() || rNodeToDelete->getChildNodeWithNodeIdRecursive(getCurrentPaintCanvas()->getId())) {
+                    setCurrentPaintCanvas(rNodeScene, false);
+                }
+            }
+            rNodeToDelete->getParent()->deleteChildNode(rNodeToDelete);
+        }
+    }
+}
+
 void GuiContext::insertNewResourceNode(Node *rNode) {
 	if (rNode) {
 		Node *rParentNode=getMainWindow().getSceneTreeDock().getRootResourceNode();
@@ -445,6 +462,21 @@ void GuiContext::onPickAsBrush() {
 			}
 		}
 	}
+}
+
+void GuiContext::onEraseSelected() {
+    const vector<Node*> v=mSelectionManager.getSelectedNodes();
+    if (v.size()>0) {
+        vector<int> vId;
+        for (Node* n : v) {
+            vId.push_back(n->getId());
+        }
+        for (int rNodeId : vId) {
+            eraseSceneNodeWithId(rNodeId);
+        }
+        mSelectionManager.deselectAllNodes();
+        updateGlWidget();
+    }
 }
 
 void GuiContext::setCurrentBrush(SelectedItem rSelectedItem, SelectedItemPref *rSelectedItemPref) {

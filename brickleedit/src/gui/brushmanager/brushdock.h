@@ -23,9 +23,12 @@ public:
 	SelectedItem &getSelectedBrush();
 	Node* getSelectedBrushNode();
 	void setCurrentPaintCanvas(Node2d *rNode2d);
-	int getBrushWidth();
+    Node2d* getCurrentPaintCanvas();
+    int getBrushWidth();
 	int getBrushHeight();
-	PointFloat getBrushScale();
+    bool getBrushFlipX();
+    bool getBrushFlipY();
+    PointFloat getBrushScale();
 	PointInt getBrushSize();
 	float getRotation();
 	NodeSprite* getNodeFromBrush(float worldX, float worldY);

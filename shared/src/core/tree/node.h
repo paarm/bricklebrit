@@ -65,11 +65,13 @@ public:
 	Node* getFirstChildNode();
 	void moveChildNode(Node* rNodeToMove);
 	void deleteChildNodes();
-	void deleteNode(Node *rNodeToDelete);
+    void deleteChildNode(Node *rNodeToDelete);
+    void deleteNode(Node *rNodeToDelete);
 	unsigned long getChildCount();
 	Node* getNodeFromIndex(unsigned long rIndex);
 	Node* getNodeWithNodeId(int rNodeId);
-	Node* getChildNodeWithName(const string &rName);
+    Node* getChildNodeWithNodeIdRecursive(int rNodeId);
+    Node* getChildNodeWithName(const string &rName);
 	Node* getChildNodeWithNameAndNodeType(const string &rName, NodeType rNodeType);
 	vector<Node*> getChildNodesWithNodeType(NodeType rNodeType);
 

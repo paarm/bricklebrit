@@ -36,6 +36,7 @@ private:
 	QAction			*mActionGridEdit=nullptr;
 
 	QAction			*mActionPickAsBrush=nullptr;
+    QAction			*mActionEraseSelected=nullptr;
 
 
 	Q_OBJECT
@@ -61,6 +62,7 @@ public:
 	QAction*	getActionGridEdit();
 
 	QAction*	getActionPickAsBrush();
+    QAction*	getActionEraseSelected();
 
 	SceneTreeDock& getSceneTreeDock();
 	PropertyTreeDock& getPropertyTreeDock();

@@ -64,6 +64,21 @@ public:
 			}
 		}
 	}
+
+    void deleteItemAndItsChilds(QTreeWidgetItem *toDelete) {
+        if (toDelete) {
+            if (toDelete->childCount()>0) {
+                int cnt=toDelete->childCount();
+                for (int i=cnt-1;i>=0;i--) {
+                    QTreeWidgetItem *child=toDelete->child(i);
+                    deleteItemAndItsChilds(child);
+                }
+            }
+            toDelete->parent()->removeChild(toDelete);
+            delete toDelete;
+        }
+    }
+
 	void updateChildNodes(Node* rNode) {
 		int count=mTreeWidget->topLevelItemCount();
 		QTreeWidgetItem* rQTreeWidgetItem_found=nullptr;
@@ -264,7 +279,8 @@ public:
 	void switchToResource(Node *rNode);
 	void addSceneNodeToSelectedItem(Node *rNode);
 	void addSceneNodeToParent(Node *rNode, Node *rNodeParent);
-	void addResourceNodeToSelectedItem(Node *rNode);
+    void eraseSceneNode(Node *rNode);
+    void addResourceNodeToSelectedItem(Node *rNode);
 	void addSceneNodeToRootItem(Node *rNode);
 	void addResourceNodeToRootItem(Node *rNode);
 	void setSceneNodeAsSelected(Node *rNode);
