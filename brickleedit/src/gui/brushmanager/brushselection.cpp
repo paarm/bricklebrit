@@ -36,7 +36,7 @@ BrushSelection::BrushSelection(const string& rResourceName, Node *rBrushNode, QW
 
 void BrushSelection::drawPreviewImage() {
 	if (mSelectedItem.rNodeTexture) {
-		QPixmap pixmap=PreviewImageUtil::getPreviewImage(mSelectedItem, 200, 200);
+		QPixmap pixmap=PreviewImageUtil::getPreviewImage(mSelectedItem.rNodeTexture, mSelectedItem.rNodeTextureFrame, 200, 200);
 		ui->previewImage->setPixmap(pixmap);
 	}
 }

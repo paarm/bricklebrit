@@ -8,6 +8,13 @@ struct SelectedItem {
 	NodeTextureFrame	*rNodeTextureFrame=nullptr;
 	NodeAnimation		*rNodeAnimation=nullptr;
 	NodeAnimationFrame	*rNodeAnimationFrame=nullptr;
+	void clear() {
+		resourceName="";
+		rNodeTexture=nullptr;
+		rNodeTextureFrame=nullptr;
+		rNodeAnimation=nullptr;
+		rNodeAnimationFrame=nullptr;
+	}
 };
 
 struct SelectedItemPref {

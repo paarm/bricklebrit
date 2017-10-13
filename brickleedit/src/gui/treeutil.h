@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <bricklelib.h>
 #include <QTreeWidgetItem>
-#include <QImage>
+#include <QPixmap>
 
 
 Q_DECLARE_METATYPE(Node*);
@@ -18,7 +18,7 @@ public:
 	static void setNodeToTreeItem(QTreeWidgetItem* r, Node *rNode);
 	static string getNodeNameWithId(Node *rNode);
 	static void fillTreeWidgetWithTexturesFromResource(QTreeWidget *rQTreeWidget, const string &rResourceName, bool addTextures, bool addAnimations);
-	static void setPixmapToTreeItem(QTreeWidget *rQTreeWidget, QTreeWidgetItem *r, QImage& rImageSrc, int srcX, int srcY, int srcWidht, int srcHeight, int destWidth, int destHeight);
+	static void setPixmapToTreeItem(QTreeWidget *rQTreeWidget, QTreeWidgetItem *r, QPixmap& rPixmap);
 	static QTreeWidgetItem* getTreeWidgetItemFromNode(QTreeWidget *rQTreeWidget, Node *rNode);
 	static QTreeWidgetItem* getTreeWidgetItemFromNode_Parent(QTreeWidget *rQTreeWidget, QTreeWidgetItem* rParent, Node *rNode);
 };

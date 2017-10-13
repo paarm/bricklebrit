@@ -3,6 +3,7 @@
 #include "../../project/projectcontext.h"
 #include "../guicontext.h"
 #include "../treeutil.h"
+#include "../previewimageutil.h"
 
 AnimationFrameEditor::AnimationFrameEditor(Node *rNode, QWidget *parent) :
 	QDialog(parent),
@@ -65,25 +66,10 @@ void AnimationFrameEditor::addContentForFrameItem(QTreeWidgetItem* r, AnimationF
                     rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeF);
                 }
             }
-            BTexturePng *bTexture=ProjectContext::getInstance().getTexture(rNodeTexture->getPath());
-            if (bTexture) {
-                QLabel *rPreviewImage=new QLabel(QString::fromStdString(to_string(iEntryIndex)));
-                QImage img(bTexture->getRawData(), bTexture->width, bTexture->height, QImage::Format_RGBA8888);
-                if (rNodeTextureFrame) {
-                    QImage imgFrame=img.copy(rNodeTextureFrame->getFrame().x,
-                                             rNodeTextureFrame->getFrame().y,
-                                             rNodeTextureFrame->getFrame().width,
-                                             rNodeTextureFrame->getFrame().height);
-                    QImage scaled = imgFrame.scaled(30, 30, Qt::AspectRatioMode::KeepAspectRatio); // Scale image to show results better
-                    QPixmap rQPixmap = QPixmap::fromImage(scaled); // Create pixmap from image
-                    rPreviewImage->setPixmap(rQPixmap);
-                } else {
-                    QImage scaled = img.scaled(30, 30, Qt::AspectRatioMode::KeepAspectRatio); // Scale image to show results better
-                    QPixmap rQPixmap = QPixmap::fromImage(scaled); // Create pixmap from image
-                    rPreviewImage->setPixmap(rQPixmap);
-                }
-                ui->treeWidgetAnimation->setItemWidget(r,0, rPreviewImage);
-            }
+			QPixmap rPixmap=PreviewImageUtil::getPreviewImage(rNodeTexture, rNodeTextureFrame, 30, 30);
+			QLabel *rPreviewImage=new QLabel(QString::fromStdString(to_string(iEntryIndex)));
+			rPreviewImage->setPixmap(rPixmap);
+			ui->treeWidgetAnimation->setItemWidget(r,0, rPreviewImage);
             //r->setText(0, QString::fromStdString(to_string(i)));
             // Texture Name
             r->setText(1, QString::fromStdString(rNodeTexture->getName()));

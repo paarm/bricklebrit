@@ -29,20 +29,23 @@ void BrushDock::on_selectBrush_clicked()
 }
 
 void BrushDock::clearBrush() {
-	ui->previewImage->setPixmap(QPixmap());
-    ui->scaleX->setValue(1.0);
+	//ui->previewImage->setPixmap(QPixmap());
+	ui->selectBrush->setIcon(QIcon(":icons/brush.png"));
+	ui->scaleX->setValue(1.0);
     ui->scaleY->setValue(1.0);
 	ui->sizeX->setValue(0);
 	ui->sizeY->setValue(0);
 	ui->rotate->setValue(0);
     ui->flipX->setChecked(false);
     ui->flipY->setChecked(false);
+	mSelectedItem.clear();
 }
 
 void BrushDock::setBrushEnabled(bool enabled) {
 	if (!enabled) {
 		clearBrush();
 	}
+	ui->selectBrush->setEnabled(enabled);
     ui->scaleX->setEnabled(enabled);
     ui->scaleY->setEnabled(enabled);
     ui->sizeX->setEnabled(enabled);
@@ -62,8 +65,9 @@ void BrushDock::setAsBrush(SelectedItem rSelectedItem, SelectedItemPref *rSelect
     ui->rotate->setValue(0.0);
 
 	if (rSelectedItem.rNodeTexture) {
-		QPixmap pixmap=PreviewImageUtil::getPreviewImage(rSelectedItem, 100, 100);
-		ui->previewImage->setPixmap(pixmap);
+		QPixmap pixmap=PreviewImageUtil::getPreviewImage(rSelectedItem.rNodeTexture, rSelectedItem.rNodeTextureFrame, 100, 100);
+		ui->selectBrush->setIcon(pixmap);
+		//ui->previewImage->setPixmap(pixmap);
 		mSelectedItem=rSelectedItem;
 
         if (rSelectedItemPref) {
