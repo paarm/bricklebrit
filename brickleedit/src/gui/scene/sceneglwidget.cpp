@@ -92,7 +92,7 @@ void SceneGlWidget::mousePressEvent(QMouseEvent * event ) {
 		mViewportMoveInfo.startX=event->pos().x();
 		mViewportMoveInfo.startY=event->pos().y();
 	} else if (event->button()==Qt::LeftButton) {
-		onMouseClicked(event->pos().x(), event->pos().y());
+		onLeftMouseClicked(event, event->pos().x(), event->pos().y());
 	}
 }
 
@@ -101,6 +101,12 @@ void SceneGlWidget::mouseReleaseEvent(QMouseEvent * event ) {
 		mViewportMoveInfo.isOnMove=false;
 		mViewportMoveInfo.startX=0;
 		mViewportMoveInfo.startY=0;
+	} else 	if (event->button()==Qt::LeftButton) {
+		mSceneItemMoveInfo.isOnMove=false;
+		mSceneItemMoveInfo.startX=0;
+		mSceneItemMoveInfo.startY=0;
+		mSceneItemMoveInfo.worldPosStartX=0;
+		mSceneItemMoveInfo.worldPosStartY=0;
 	}
 }
 
@@ -116,10 +122,51 @@ void SceneGlWidget::mouseMoveEvent(QMouseEvent * event ) {
 		mViewportMoveInfo.startY=event->pos().y();
 
 		this->update();//update();
-	} else if (GuiContext::getInstance().getCurrentPaintCanvas() &&
-			GuiContext::getInstance().getCurrentTool()==Tool::Brush &&
+	} else if (GuiContext::getInstance().getCurrentTool()==Tool::Brush) {
+		if (GuiContext::getInstance().getCurrentPaintCanvas() &&
 			GuiContext::getInstance().getMainWindow().getBrushDock().getSelectedBrushNode()) {
-		this->update();
+			this->update();
+		}
+	} else if (GuiContext::getInstance().getCurrentTool()==Tool::Selection) {
+		if (mSceneItemMoveInfo.isOnMove) {
+			GLMVector3 worldPosCurrent=mCamera.unproject(event->pos().x(), event->pos().y());
+			float distanceX=mSceneItemMoveInfo.worldPosStartX-worldPosCurrent.getX();
+			float distanceY=mSceneItemMoveInfo.worldPosStartY-worldPosCurrent.getY();
+			//int distanceMouseX=mSceneItemMoveInfo.startX-event->pos().x();
+			//int distanceMouseY=mSceneItemMoveInfo.startY-event->pos().y();
+			//mSceneItemMoveInfo.worldPosStartX=worldPosCurrent.getX();
+			//mSceneItemMoveInfo.worldPosStartY=worldPosCurrent.getY();
+			//mSceneItemMoveInfo.startX=mSceneItemMoveInfo.startX-event->pos().x();
+			//mSceneItemMoveInfo.startY=mSceneItemMoveInfo.startY-event->pos().y();
+			vector<Node*> v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
+			for (Node *n : v) {
+				if (n->getNodeType()==NodeType::Sprite) {
+					NodeSprite* rNodeSprite=static_cast<NodeSprite*>(n);
+					PointFloat pos=GuiContext::getInstance().getSelectionManager().getStartWorldPositionOfNode(rNodeSprite);
+					if (n->getParent() && (n->getParent()->getNodeType()==NodeType::Sprite || n->getParent()->getNodeType()==NodeType::Scene)) {
+						Node2d* rNode2dParent=static_cast<Node2d*>(n->getParent());
+						glm::mat4 parentMatrix=glm::make_mat4(rNode2dParent->getCurrentModelMatrix().getPointer());
+						glm::mat4 reverseMatrix=glm::inverse(parentMatrix);
+
+						glm::vec4 v4(pos.x-distanceX, pos.y-distanceY, 0.0, 1.0);
+						v4=reverseMatrix*v4;
+						PointInt pp(static_cast<int>(v4.x), static_cast<int>(v4.y));
+						if (GuiContext::getInstance().isGridActive()) {
+							PointInt gridSize;
+							PointInt gridOffset;
+							if (ProjectContext::getInstance().getNodeProject()) {
+								gridSize=ProjectContext::getInstance().getNodeProject()->getGridSize();
+								gridOffset=ProjectContext::getInstance().getNodeProject()->getGridOffset();
+							}
+							pp.x=WorldCalculator::calcGridPos(pp.x, gridSize.x, gridOffset.x);
+							pp.y=WorldCalculator::calcGridPos(pp.y, gridSize.y, gridOffset.y);
+						}
+						rNodeSprite->setPosition(pp);
+					}
+				}
+			}
+			this->update();
+		}
 	}
 }
 
@@ -168,7 +215,7 @@ bool SceneGlWidget::event(QEvent *e) {
 	return handled;
 }
 
-void SceneGlWidget::onMouseClicked(int mx, int my) {
+void SceneGlWidget::onLeftMouseClicked(QMouseEvent *event, int mx, int my) {
 	if (GuiContext::getInstance().getCurrentTool()==Tool::Selection) {
 		float x=(float)mx;
 		float y=(float)my;
@@ -184,10 +231,54 @@ void SceneGlWidget::onMouseClicked(int mx, int my) {
 
 		vector<Node*> v;
 		WorldCalculator::intersectTestForNode(v, GuiContext::getInstance().getCurrentScene(), pos.getX(), pos.getY());
-		GuiContext::getInstance().getSelectionManager().deselectAllNodes();
-		for (Node* n : v) {
-			GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
-			GuiContext::getInstance().getSelectionManager().setNodeAsSelected(n);
+		bool startMoveOnExistingSelection=false;
+		if (!event->modifiers().testFlag(Qt::ControlModifier)) {
+			for (Node* n : v) {
+				if (GuiContext::getInstance().getSelectionManager().isNodeSelected(n)) {
+					startMoveOnExistingSelection=true;
+				}
+			}
+			if (!startMoveOnExistingSelection) {
+				GuiContext::getInstance().getSelectionManager().deselectAllNodes();
+			}
+		}
+		if (!startMoveOnExistingSelection) {
+			for (Node* n : v) {
+				bool select=false;
+				bool deselect=false;
+				if (event->modifiers().testFlag(Qt::ControlModifier)) {
+					if (GuiContext::getInstance().getSelectionManager().isNodeSelected(n)) {
+						deselect=true;
+					} else {
+						select=true;
+					}
+				} else {
+					select=true;
+				}
+				if (select) {
+					GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
+					GuiContext::getInstance().getSelectionManager().setNodeAsSelected(n);
+				} else if (deselect) {
+					//GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
+					GuiContext::getInstance().getSelectionManager().deselectNode(n);
+				}
+			}
+		}
+		if (GuiContext::getInstance().getSelectionManager().haveSelectedNodes()) {
+			mSceneItemMoveInfo.isOnMove=true;
+			mSceneItemMoveInfo.startX=mx;
+			mSceneItemMoveInfo.startY=my;
+			GLMVector3 worldPosStart=mCamera.unproject(mx, my);
+			mSceneItemMoveInfo.worldPosStartX=worldPosStart.getX();
+			mSceneItemMoveInfo.worldPosStartY=worldPosStart.getY();
+
+			const vector<Node*> v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
+			for (Node* n : v) {
+				if (n->getNodeType()==NodeType::Sprite) {
+					NodeSprite* rNodeSprite=static_cast<NodeSprite*>(n);
+					GuiContext::getInstance().getSelectionManager().setStartWorldPositionOfNode(rNodeSprite, rNodeSprite->getCurrentCenter());
+				}
+			}
 		}
 		update();
 	} else if ( GuiContext::getInstance().getCurrentTool()==Tool::Brush &&
@@ -453,39 +544,6 @@ void SceneGlWidget::paintNode(Node* rNode, bool isBrushCanvas) {
 		if (rNodeBrush) {
 			paintNode(rNodeBrush, true);
 		}
-#if 0
-
-		cout << mSceneMouseInfo.x << " : "<<mSceneMouseInfo.y << endl;
-
-		//QPoint p = this->mapFromGlobal(QCursor::pos());
-		GLMVector3 v=unprojectedScreenCoord(mSceneMouseInfo.x, mSceneMouseInfo.y);
-
-		Node2d *rParentNode=static_cast<Node2d*>(rNode);
-		glm::mat4 parentMatrix=glm::make_mat4(rParentNode->getCurrentModelMatrix().getPointer());
-		glm::mat4 reverseMatrix=glm::inverse(parentMatrix);
-		glm::vec4 v4(v.getX(), v.getY(), 0.0, 1.0);
-		v4=reverseMatrix*v4;
-		PointInt pp(static_cast<int>(v4.x), static_cast<int>(v4.y));
-
-		rNodeBrush.setPosition(pp);
-		rNodeBrush.setSize(GuiContext::getInstance().getMainWindow().getBrushDock().getBrushSize());
-		rNodeBrush.setScale(GuiContext::getInstance().getMainWindow().getBrushDock().getBrushScale());
-		rNodeBrush.setRotation(GuiContext::getInstance().getMainWindow().getBrushDock().getRotation());
-		SelectedItem rSelectedItem = GuiContext::getInstance().getMainWindow().getBrushDock().getSelectedBrush();
-		if (rSelectedItem.rNodeAnimationFrame) {
-			rNodeBrush.getFrameRef().frame=rSelectedItem.rNodeAnimationFrame->getFrameRef().frame;
-			rNodeBrush.getFrameRef().resourcefile=rSelectedItem.rNodeAnimationFrame->getFrameRef().resourcefile;
-			rNodeBrush.getFrameRef().textureid=rSelectedItem.rNodeAnimationFrame->getFrameRef().textureid;
-		} else if(rSelectedItem.rNodeTextureFrame) {
-			rNodeBrush.getFrameRef().frame=rSelectedItem.rNodeTextureFrame->getName();
-			rNodeBrush.getFrameRef().resourcefile=rSelectedItem.resourceName;
-			rNodeBrush.getFrameRef().textureid=rSelectedItem.rNodeTexture->getId();
-		} else if (rSelectedItem.rNodeTexture) {
-			rNodeBrush.getFrameRef().resourcefile=rSelectedItem.resourceName;
-			rNodeBrush.getFrameRef().textureid=rSelectedItem.rNodeTexture->getId();
-		}
-		paintNode(&rNodeBrush, true);
-#endif
 	}
 	glPopMatrix();
 }

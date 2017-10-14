@@ -35,6 +35,8 @@ struct SceneItemMoveInfo {
 	bool isOnMove=false;
 	int startX=0;
 	int startY=0;
+	float worldPosStartX;
+	float worldPosStartY;
 };
 
 struct SceneMouseInfo {
@@ -49,7 +51,7 @@ private:
 	int mVirtualWidth=1280;
 	int mVirtualHeight=768;
 	bool mCameraInitialized=false;
-	 void onMouseClicked(int mx, int my);
+	 void onLeftMouseClicked(QMouseEvent *event, int mx, int my);
 	 void updateViewport();
 public:
 	SceneGlWidget(QWidget *parent) : QOpenGLWidget(parent) {}
