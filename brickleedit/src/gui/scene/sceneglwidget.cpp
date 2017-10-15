@@ -103,6 +103,7 @@ void SceneGlWidget::mouseReleaseEvent(QMouseEvent * event ) {
 		mViewportMoveInfo.startY=0;
 	} else 	if (event->button()==Qt::LeftButton) {
 		mSceneItemMoveManager.stopMove();
+		mSceneItemResizeManager.stopResize();
 	}
 }
 
@@ -124,21 +125,24 @@ void SceneGlWidget::mouseMoveEvent(QMouseEvent * event ) {
 			this->update();
 		}
 	} else if (GuiContext::getInstance().getCurrentTool()==Tool::Selection) {
-		bool requireUpdate=mSceneItemMoveManager.updateMove(event->pos().x(), event->pos().y());
-		if (requireUpdate) {
-			this->update();
+		if (mSceneItemResizeManager.isOnResize()) {
+			bool requireUpdate=mSceneItemResizeManager.updateResize(event->pos().x(), event->pos().y());
+			if (requireUpdate) {
+				this->update();
+			}
+		} else if (mSceneItemMoveManager.isOnMove()) {
+			bool requireUpdate=mSceneItemMoveManager.updateMove(event->pos().x(), event->pos().y());
+			if (requireUpdate) {
+				this->update();
+			}
 		}
 	}
 }
 
-GLMVector3 SceneGlWidget::unprojectedScreenCoord(int mx, int my) {
-	GLMVector3 pos=mCamera.unproject(mx, my);
-	return pos;//GLMVector3(x,y,0.0);
-}
 #if 0
 void SceneGlWidget::hoverMove(QHoverEvent *event) {
 	if(GuiContext::getInstance().getSelectionManager().haveSelectedNodes()) {
-	   GLMVector3 worldCoord=unprojectedScreenCoord(event->pos().x(), event->pos().y());
+	   GLMVector3 worldCoord=mCamera.unproject(event->pos().x(), event->pos().y());
 	   const vector<Node*> v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
 	   bool isOverSelection=false;
 	   for (Node* n : v) {
@@ -190,43 +194,57 @@ void SceneGlWidget::onLeftMouseClicked(QMouseEvent *event, int mx, int my) {
 		cout<<"World X=" << std::to_string(pos.getX())<<" Y="<< std::to_string(pos.getY())<<std::endl;
 		//cout<<"World X=" << std::to_string(posVec.x*this->size().width()/2.0)<<" Y="<< std::to_string(this->size().height()/2.0*posVec.y)<<std::endl;
 
-		vector<Node*> v;
-		WorldCalculator::intersectTestForNode(v, GuiContext::getInstance().getCurrentScene(), pos.getX(), pos.getY());
-		bool startMoveOnExistingSelection=false;
-		if (!event->modifiers().testFlag(Qt::ControlModifier)) {
+		if (GuiContext::getInstance().getSelectionManager().haveSelectedNodes()) {
+			const vector<Node*> v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
 			for (Node* n : v) {
-				if (GuiContext::getInstance().getSelectionManager().isNodeSelected(n)) {
-					startMoveOnExistingSelection=true;
+				if (n->getNodeType()==NodeType::Sprite) {
+					NodeSprite* rNodeSprite=static_cast<NodeSprite*>(n);
+					if (WorldCalculator::isBoxIntersecting(rNodeSprite->getResizeHandleBottomRight(), pos.getX(), pos.getY())) {
+						mSceneItemResizeManager.startResize(&mCamera, rNodeSprite, mx, my);
+						break;
+					}
+				}
+			}
+		}
+		if (!mSceneItemResizeManager.isOnResize()) {
+			vector<Node*> v;
+			WorldCalculator::intersectTestForNode(v, GuiContext::getInstance().getCurrentScene(), pos.getX(), pos.getY());
+			bool startMoveOnExistingSelection=false;
+			if (!event->modifiers().testFlag(Qt::ControlModifier)) {
+				for (Node* n : v) {
+					if (GuiContext::getInstance().getSelectionManager().isNodeSelected(n)) {
+						startMoveOnExistingSelection=true;
+					}
+				}
+				if (!startMoveOnExistingSelection) {
+					GuiContext::getInstance().getSelectionManager().deselectAllNodes();
 				}
 			}
 			if (!startMoveOnExistingSelection) {
-				GuiContext::getInstance().getSelectionManager().deselectAllNodes();
-			}
-		}
-		if (!startMoveOnExistingSelection) {
-			for (Node* n : v) {
-				bool select=false;
-				bool deselect=false;
-				if (event->modifiers().testFlag(Qt::ControlModifier)) {
-					if (GuiContext::getInstance().getSelectionManager().isNodeSelected(n)) {
-						deselect=true;
+				for (Node* n : v) {
+					bool select=false;
+					bool deselect=false;
+					if (event->modifiers().testFlag(Qt::ControlModifier)) {
+						if (GuiContext::getInstance().getSelectionManager().isNodeSelected(n)) {
+							deselect=true;
+						} else {
+							select=true;
+						}
 					} else {
 						select=true;
 					}
-				} else {
-					select=true;
-				}
-				if (select) {
-					GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
-					GuiContext::getInstance().getSelectionManager().setNodeAsSelected(n);
-				} else if (deselect) {
-					//GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
-					GuiContext::getInstance().getSelectionManager().deselectNode(n);
+					if (select) {
+						GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
+						GuiContext::getInstance().getSelectionManager().setNodeAsSelected(n);
+					} else if (deselect) {
+						//GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
+						GuiContext::getInstance().getSelectionManager().deselectNode(n);
+					}
 				}
 			}
-		}
-		if (GuiContext::getInstance().getSelectionManager().haveSelectedNodes()) {
-			mSceneItemMoveManager.startMove(&mCamera, mx,my);
+			if (GuiContext::getInstance().getSelectionManager().haveSelectedNodes()) {
+				mSceneItemMoveManager.startMove(&mCamera, mx,my);
+			}
 		}
 		update();
 	} else if ( GuiContext::getInstance().getCurrentTool()==Tool::Brush &&
@@ -355,6 +373,18 @@ void SceneGlWidget::paintGL()
 				glVertex3d( w2, h2,0);
 				glVertex3d(-w2, h2,0);
 				glVertex3d(-w2,-h2,0);
+			glEnd();
+
+			glColor3f(1.0, 0.5, 0.0);
+
+			PointFloat resizeHandle[4]=rNodeSprite->getResizeHandleLocalBottomRight();
+
+			glBegin(GL_LINE_STRIP);
+				glVertex3d(resizeHandle[0].x,resizeHandle[0].y,0);
+				glVertex3d(resizeHandle[1].x,resizeHandle[1].y,0);
+				glVertex3d(resizeHandle[2].x,resizeHandle[2].y,0);
+				glVertex3d(resizeHandle[3].x,resizeHandle[3].y,0);
+				glVertex3d(resizeHandle[0].x,resizeHandle[0].y,0);
 			glEnd();
 		}
 	}
@@ -487,7 +517,7 @@ void SceneGlWidget::paintNode(Node* rNode, bool isBrushCanvas) {
 		GuiContext::getInstance().getMainWindow().getBrushDock().getSelectedBrushNode()) {
 
 
-		GLMVector3 v=unprojectedScreenCoord(mSceneMouseInfo.x, mSceneMouseInfo.y);
+		GLMVector3 v=mCamera.unproject(mSceneMouseInfo.x, mSceneMouseInfo.y);
 		NodeSprite *rNodeBrush=GuiContext::getInstance().getMainWindow().getBrushDock().getNodeFromBrush(v.getX(), v.getY());
 		if (rNodeBrush) {
 			paintNode(rNodeBrush, true);

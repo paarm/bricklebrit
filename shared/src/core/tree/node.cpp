@@ -653,31 +653,56 @@ void Node2d::setCurrentModelMatrix(GLMMatrix4 &m) {
 	float h2=h/2.0;
 
 	glm::vec4 rCenter=matrix*glm::vec4{0.0,0.0,0.0,1.0};
-	glm::vec4 rLT=matrix*glm::vec4{-w2,-h2,0.0,1.0};
-	glm::vec4 rLB=matrix*glm::vec4{-w2,h2,0.0,1.0};
-	glm::vec4 rRT=matrix*glm::vec4{w2,-h2,0.0,1.0};
-	glm::vec4 rRB=matrix*glm::vec4{w2,h2,0.0,1.0};
-	setCurrentPos(rCenter.x, rCenter.y, rLT.x, rLT.y, rLB.x, rLB.y, rRT.x, rRT.y, rRB.x, rRB.y);
-//	cout<<getName()<<std::endl;
-//	cout<<"CE X=" << std::to_string(rCenter.x)<<"Y="<< std::to_string(rCenter.y)<<std::endl;
-//	cout<<"LT X=" << std::to_string(rLT.x)<<"Y="<< std::to_string(rLT.y)<<std::endl;
-//	cout<<"LB X=" << std::to_string(rLB.x)<<"Y="<< std::to_string(rLB.y)<<std::endl;
-//	cout<<"RT X=" << std::to_string(rRT.x)<<"Y="<< std::to_string(rRT.y)<<std::endl;
-//	cout<<"RB X=" << std::to_string(rRB.x)<<"Y="<< std::to_string(rRB.y)<<std::endl;
-}
+	mCurrentWorldLocationCenter.x=rCenter.x;
+	mCurrentWorldLocationCenter.y=rCenter.y;
 
-void Node2d::setCurrentPos(float rCenterX, float rCenterY, float rLeftTopX, float rLeftTopY, float rLeftBottomX, float rLeftBottomY, float rRightTopX, float rRightTopY, float rRightBottomX, float rRightBottomY) {
-	mCenter.x=rCenterX;
-	mCenter.y=rCenterY;
-	mLeftTop.x=rLeftTopX;
-	mLeftTop.y=rLeftTopY;
-	mLeftBottom.x=rLeftBottomX;
-	mLeftBottom.y=rLeftBottomY;
-	mRightTop.x=rRightTopX;
-	mRightTop.y=rRightTopY;
-	mRightBottom.x=rRightBottomX;
-	mRightBottom.y=rRightBottomY;
-}
+	// top left
+	glm::vec4 rW=matrix*glm::vec4{-w2,-h2,0.0,1.0};
+	mCurrentWorldLocationBox[0].x=rW.x;
+	mCurrentWorldLocationBox[0].y=rW.y;
+	// top right
+	rW=matrix*glm::vec4{w2,-h2,0.0,1.0};
+	mCurrentWorldLocationBox[1].x=rW.x;
+	mCurrentWorldLocationBox[1].y=rW.y;
+	// bottom right
+	rW=matrix*glm::vec4{w2,h2,0.0,1.0};
+	mCurrentWorldLocationBox[2].x=rW.x;
+	mCurrentWorldLocationBox[2].y=rW.y;
+	// bottom left
+	rW=matrix*glm::vec4{-w2,h2,0.0,1.0};
+	mCurrentWorldLocationBox[3].x=rW.x;
+	mCurrentWorldLocationBox[3].y=rW.y;
 
+	// Resize handle box
+	float a=5.0;
+	// top left
+	glm::vec4 vh=matrix*glm::vec4{w2,h2,0.0,1.0};
+	mResizeHandleBR[0].x=vh.x;
+	mResizeHandleBR[0].y=vh.y;
+
+	mResizeHandleLocalBR[0].x=w2;
+	mResizeHandleLocalBR[0].y=h2;
+	// top right
+	vh=matrix*glm::vec4{w2+a,h2,0.0,1.0};
+	mResizeHandleBR[1].x=vh.x;
+	mResizeHandleBR[1].y=vh.y;
+
+	mResizeHandleLocalBR[1].x=w2+a;
+	mResizeHandleLocalBR[1].y=h2;
+	// bottom right
+	vh=matrix*glm::vec4{w2+a,h2+a,0.0,1.0};
+	mResizeHandleBR[2].x=vh.x;
+	mResizeHandleBR[2].y=vh.y;
+
+	mResizeHandleLocalBR[2].x=w2+a;
+	mResizeHandleLocalBR[2].y=h2+a;
+	// bottom left
+	vh=matrix*glm::vec4{w2,h2+a,0.0,1.0};
+	mResizeHandleBR[3].x=vh.x;
+	mResizeHandleBR[3].y=vh.y;
+
+	mResizeHandleLocalBR[3].x=w2;
+	mResizeHandleLocalBR[3].y=h2+a;
+}
 
 

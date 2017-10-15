@@ -176,14 +176,15 @@ public:
 
 class Node2d : public Node {
 private:
-	PointFloat mCenter;
-	PointFloat mLeftTop;
-	PointFloat mLeftBottom;
-	PointFloat mRightTop;
-	PointFloat mRightBottom;
+	PointFloat mCurrentWorldLocationCenter;
+	PointFloat mCurrentWorldLocationBox[4];
+
+	PointFloat mResizeHandleBR[4];
+	PointFloat mResizeHandleLocalBR[4];
+	//PointFloat mResizeHandleR[4];
+	//PointFloat mResizeHandleB[4];
 	GLMMatrix4 mCurrentModelMatrix;
 	float z;
-	void setCurrentPos(float rCenterX, float rCenterY, float rLeftTopX, float rLeftTopY, float rLeftBottomX, float rLeftBottomY, float rRightTopX, float rRightTopY, float rRightBottomX, float rRightBottomY);
 public:
 	PROPERTY_POINTINT_GETSET(Position)
 	PROPERTY_POINTINT_GETSET(Size)
@@ -204,20 +205,19 @@ public:
 
 	void setCurrentModelMatrix(GLMMatrix4 &m);
 	GLMMatrix4 getCurrentModelMatrix();
-	PointFloat &getCurrentCenter() {
-		return mCenter;
+
+	PointFloat (& getResizeHandleBottomRight())[4] {
+		return mResizeHandleBR;
 	}
-	PointFloat &getCurrentLeftTop() {
-		return mLeftTop;
+	PointFloat (& getResizeHandleLocalBottomRight())[4] {
+		return mResizeHandleLocalBR;
 	}
-	PointFloat &getCurrentLeftBottom() {
-		return mLeftBottom;
+
+	PointFloat &getCurrentWorldLocationCenter() {
+		return mCurrentWorldLocationCenter;
 	}
-	PointFloat &getCurrentRightTop() {
-		return mRightTop;
-	}
-	PointFloat &getCurrentRightBottom() {
-		return mRightBottom;
+	PointFloat (& getCurrentWorldLocationBox())[4] {
+		return mCurrentWorldLocationBox;
 	}
 
 	Node2d() : Node2d(true) {

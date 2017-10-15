@@ -18,6 +18,7 @@ public:
 	void startMove(Camera *rCamera, int rStartMouseX, int rStartMouseY);
 	bool updateMove(int rMouseX, int rMouseY);
 	void stopMove();
+	bool isOnMove();
 };
 
 #endif // SCENEITEMMOVEMANAGER_H

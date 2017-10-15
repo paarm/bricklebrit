@@ -22,7 +22,7 @@ void SceneItemMoveManager::startMove(Camera *rCamera, int rStartMouseX, int rSta
 	for (Node* n : v) {
 		if (n->getNodeType()==NodeType::Sprite) {
 			NodeSprite* rNodeSprite=static_cast<NodeSprite*>(n);
-			mStartPositionsOnMove[rNodeSprite]=rNodeSprite->getCurrentCenter();
+			mStartPositionsOnMove[rNodeSprite]=rNodeSprite->getCurrentWorldLocationCenter();
 		}
 	}
 }
@@ -70,4 +70,8 @@ PointFloat SceneItemMoveManager::getStartWorldPositionOfNode(Node* rNode) {
 		return mStartPositionsOnMove[rNode];
 	}
 	return PointFloat();
+}
+
+bool SceneItemMoveManager::isOnMove() {
+	return mIsOnMove;
 }

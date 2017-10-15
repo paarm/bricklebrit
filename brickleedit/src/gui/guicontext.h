@@ -74,8 +74,6 @@ public:
     Node * getFrameReferenceNodeForSprite(NodeSprite *rNodeSprite);
     SelectedItem prepareSelectedNodeFromTextureOrAnimationNode(Node* rNode, const string& rResourceTextureOrAnimation);
 
-	GLMVector3 unprojectedScreenCoord(int mx, int my);
-
 	void updateGridSettings(int gridX, int gridY, int offsetX, int offsetY);
 	bool isGridActive();
 

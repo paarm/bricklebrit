@@ -491,10 +491,6 @@ Node2d* GuiContext::getCurrentPaintCanvas() {
 	return mCurrentPaintCanvas;
 }
 
-GLMVector3 GuiContext::unprojectedScreenCoord(int mx, int my) {
-	return getMainWindow().getSceneGlWidget().unprojectedScreenCoord(mx,my);
-}
-
 Node * GuiContext::getFrameReferenceNodeForSprite(NodeSprite *rNodeSprite) {
     Node *rv=nullptr;
     if (rNodeSprite) {

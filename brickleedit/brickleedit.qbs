@@ -50,6 +50,8 @@ Project {
             "src/gui/scene/sceneglwidget.h",
             "src/gui/scene/sceneitemmovemanager.cpp",
             "src/gui/scene/sceneitemmovemanager.h",
+            "src/gui/scene/sceneitemresizemanager.cpp",
+            "src/gui/scene/sceneitemresizemanager.h",
             "src/gui/scene/worldcalculator.cpp",
             "src/gui/scene/worldcalculator.h",
             "src/gui/scenetree/scenetreedock.cpp",

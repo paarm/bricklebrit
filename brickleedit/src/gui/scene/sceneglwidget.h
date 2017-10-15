@@ -16,6 +16,7 @@
 #include <QOpenGLTexture>
 #include <QMouseEvent>
 #include "sceneitemmovemanager.h"
+#include "sceneitemresizemanager.h"
 
 
 struct TVertex {
@@ -66,6 +67,7 @@ protected:
 	Camera mCamera;
 	ViewportMoveInfo mViewportMoveInfo;
 	SceneItemMoveManager	mSceneItemMoveManager;
+	SceneItemResizeManager	mSceneItemResizeManager;
 	SceneMouseInfo	mSceneMouseInfo;
     //QOpenGLTexture *texture;
 	//BTexturePng bTexture;
