@@ -48,6 +48,8 @@ Project {
             "src/gui/resources/resource.qrc",
             "src/gui/scene/sceneglwidget.cpp",
             "src/gui/scene/sceneglwidget.h",
+            "src/gui/scene/sceneitemmovemanager.cpp",
+            "src/gui/scene/sceneitemmovemanager.h",
             "src/gui/scene/worldcalculator.cpp",
             "src/gui/scene/worldcalculator.h",
             "src/gui/scenetree/scenetreedock.cpp",

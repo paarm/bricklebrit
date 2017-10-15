@@ -175,22 +175,8 @@ NodeSprite* BrushDock::getNodeFromBrush(float worldX, float worldY) {
 		GuiContext::getInstance().getCurrentTool()==Tool::Brush &&
 		getSelectedBrushNode()) {
 
-		glm::mat4 parentMatrix=glm::make_mat4(GuiContext::getInstance().getCurrentPaintCanvas()->getCurrentModelMatrix().getPointer());
-		glm::mat4 reverseMatrix=glm::inverse(parentMatrix);
-		glm::vec4 v4(worldX, worldY, 0.0, 1.0);
-		v4=reverseMatrix*v4;
-		PointInt pp(static_cast<int>(v4.x), static_cast<int>(v4.y));
+		PointInt pp=WorldCalculator::getLocalPosFromWorldPos(GuiContext::getInstance().getCurrentPaintCanvas(), PointFloat(worldX, worldY), true);
 
-		if (GuiContext::getInstance().isGridActive()) {
-			PointInt gridSize;
-			PointInt gridOffset;
-			if (ProjectContext::getInstance().getNodeProject()) {
-				gridSize=ProjectContext::getInstance().getNodeProject()->getGridSize();
-				gridOffset=ProjectContext::getInstance().getNodeProject()->getGridOffset();
-			}
-			pp.x=WorldCalculator::calcGridPos(pp.x, gridSize.x, gridOffset.x);
-			pp.y=WorldCalculator::calcGridPos(pp.y, gridSize.y, gridOffset.y);
-        }
 		mNodeFromBrush.setPosition(pp);
 		mNodeFromBrush.setSize(GuiContext::getInstance().getMainWindow().getBrushDock().getBrushSize());
 		mNodeFromBrush.setScale(GuiContext::getInstance().getMainWindow().getBrushDock().getBrushScale());

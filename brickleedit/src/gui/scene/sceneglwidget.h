@@ -15,6 +15,7 @@
 #include <QPainter>
 #include <QOpenGLTexture>
 #include <QMouseEvent>
+#include "sceneitemmovemanager.h"
 
 
 struct TVertex {
@@ -29,14 +30,6 @@ struct ViewportMoveInfo {
 	bool isOnMove=false;
 	int startX=0;
 	int startY=0;
-};
-
-struct SceneItemMoveInfo {
-	bool isOnMove=false;
-	int startX=0;
-	int startY=0;
-	float worldPosStartX;
-	float worldPosStartY;
 };
 
 struct SceneMouseInfo {
@@ -67,12 +60,12 @@ public:
 	GLMVector3 unprojectedScreenCoord(int mx, int my);
 	Camera& getCamera();
 protected:
-	void hoverMove(QHoverEvent *event);
+	//void hoverMove(QHoverEvent *event);
 	bool event(QEvent *e) override;
 	QImage *mImage;
 	Camera mCamera;
 	ViewportMoveInfo mViewportMoveInfo;
-	SceneItemMoveInfo mSceneItemMoveInfo;
+	SceneItemMoveManager	mSceneItemMoveManager;
 	SceneMouseInfo	mSceneMouseInfo;
     //QOpenGLTexture *texture;
 	//BTexturePng bTexture;

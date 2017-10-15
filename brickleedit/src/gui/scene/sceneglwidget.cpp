@@ -102,11 +102,7 @@ void SceneGlWidget::mouseReleaseEvent(QMouseEvent * event ) {
 		mViewportMoveInfo.startX=0;
 		mViewportMoveInfo.startY=0;
 	} else 	if (event->button()==Qt::LeftButton) {
-		mSceneItemMoveInfo.isOnMove=false;
-		mSceneItemMoveInfo.startX=0;
-		mSceneItemMoveInfo.startY=0;
-		mSceneItemMoveInfo.worldPosStartX=0;
-		mSceneItemMoveInfo.worldPosStartY=0;
+		mSceneItemMoveManager.stopMove();
 	}
 }
 
@@ -128,43 +124,8 @@ void SceneGlWidget::mouseMoveEvent(QMouseEvent * event ) {
 			this->update();
 		}
 	} else if (GuiContext::getInstance().getCurrentTool()==Tool::Selection) {
-		if (mSceneItemMoveInfo.isOnMove) {
-			GLMVector3 worldPosCurrent=mCamera.unproject(event->pos().x(), event->pos().y());
-			float distanceX=mSceneItemMoveInfo.worldPosStartX-worldPosCurrent.getX();
-			float distanceY=mSceneItemMoveInfo.worldPosStartY-worldPosCurrent.getY();
-			//int distanceMouseX=mSceneItemMoveInfo.startX-event->pos().x();
-			//int distanceMouseY=mSceneItemMoveInfo.startY-event->pos().y();
-			//mSceneItemMoveInfo.worldPosStartX=worldPosCurrent.getX();
-			//mSceneItemMoveInfo.worldPosStartY=worldPosCurrent.getY();
-			//mSceneItemMoveInfo.startX=mSceneItemMoveInfo.startX-event->pos().x();
-			//mSceneItemMoveInfo.startY=mSceneItemMoveInfo.startY-event->pos().y();
-			vector<Node*> v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
-			for (Node *n : v) {
-				if (n->getNodeType()==NodeType::Sprite) {
-					NodeSprite* rNodeSprite=static_cast<NodeSprite*>(n);
-					PointFloat pos=GuiContext::getInstance().getSelectionManager().getStartWorldPositionOfNode(rNodeSprite);
-					if (n->getParent() && (n->getParent()->getNodeType()==NodeType::Sprite || n->getParent()->getNodeType()==NodeType::Scene)) {
-						Node2d* rNode2dParent=static_cast<Node2d*>(n->getParent());
-						glm::mat4 parentMatrix=glm::make_mat4(rNode2dParent->getCurrentModelMatrix().getPointer());
-						glm::mat4 reverseMatrix=glm::inverse(parentMatrix);
-
-						glm::vec4 v4(pos.x-distanceX, pos.y-distanceY, 0.0, 1.0);
-						v4=reverseMatrix*v4;
-						PointInt pp(static_cast<int>(v4.x), static_cast<int>(v4.y));
-						if (GuiContext::getInstance().isGridActive()) {
-							PointInt gridSize;
-							PointInt gridOffset;
-							if (ProjectContext::getInstance().getNodeProject()) {
-								gridSize=ProjectContext::getInstance().getNodeProject()->getGridSize();
-								gridOffset=ProjectContext::getInstance().getNodeProject()->getGridOffset();
-							}
-							pp.x=WorldCalculator::calcGridPos(pp.x, gridSize.x, gridOffset.x);
-							pp.y=WorldCalculator::calcGridPos(pp.y, gridSize.y, gridOffset.y);
-						}
-						rNodeSprite->setPosition(pp);
-					}
-				}
-			}
+		bool requireUpdate=mSceneItemMoveManager.updateMove(event->pos().x(), event->pos().y());
+		if (requireUpdate) {
 			this->update();
 		}
 	}
@@ -174,7 +135,7 @@ GLMVector3 SceneGlWidget::unprojectedScreenCoord(int mx, int my) {
 	GLMVector3 pos=mCamera.unproject(mx, my);
 	return pos;//GLMVector3(x,y,0.0);
 }
-
+#if 0
 void SceneGlWidget::hoverMove(QHoverEvent *event) {
 	if(GuiContext::getInstance().getSelectionManager().haveSelectedNodes()) {
 	   GLMVector3 worldCoord=unprojectedScreenCoord(event->pos().x(), event->pos().y());
@@ -189,7 +150,7 @@ void SceneGlWidget::hoverMove(QHoverEvent *event) {
 	   GuiContext::getInstance().getSelectionManager().setIsMouseOverSelection(isOverSelection);
 	}
 }
-
+#endif
 bool SceneGlWidget::event(QEvent *e) {
 	bool handled=false;
 	switch(e->type()) {
@@ -265,20 +226,7 @@ void SceneGlWidget::onLeftMouseClicked(QMouseEvent *event, int mx, int my) {
 			}
 		}
 		if (GuiContext::getInstance().getSelectionManager().haveSelectedNodes()) {
-			mSceneItemMoveInfo.isOnMove=true;
-			mSceneItemMoveInfo.startX=mx;
-			mSceneItemMoveInfo.startY=my;
-			GLMVector3 worldPosStart=mCamera.unproject(mx, my);
-			mSceneItemMoveInfo.worldPosStartX=worldPosStart.getX();
-			mSceneItemMoveInfo.worldPosStartY=worldPosStart.getY();
-
-			const vector<Node*> v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
-			for (Node* n : v) {
-				if (n->getNodeType()==NodeType::Sprite) {
-					NodeSprite* rNodeSprite=static_cast<NodeSprite*>(n);
-					GuiContext::getInstance().getSelectionManager().setStartWorldPositionOfNode(rNodeSprite, rNodeSprite->getCurrentCenter());
-				}
-			}
+			mSceneItemMoveManager.startMove(&mCamera, mx,my);
 		}
 		update();
 	} else if ( GuiContext::getInstance().getCurrentTool()==Tool::Brush &&

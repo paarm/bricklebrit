@@ -2,6 +2,7 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "../guicontext.h"
 
 
 void WorldCalculator::updateNodeMatrix(GLMMatrix4 parentMatrix, Node* rNode) {
@@ -92,4 +93,29 @@ int WorldCalculator::calcGridPos(int worldPos, int gridSize, int gridOffset) {
 		}
 	}
 	return rv;
+}
+
+PointInt WorldCalculator::getLocalPosFromWorldPos(Node2d *rNode2dParent, PointFloat rWorldPos, bool rUseSnapToGridSetting) {
+	PointInt pp;
+
+	if (rNode2dParent) {
+		glm::mat4 parentMatrix=glm::make_mat4(rNode2dParent->getCurrentModelMatrix().getPointer());
+		glm::mat4 reverseMatrix=glm::inverse(parentMatrix);
+
+		glm::vec4 v4(rWorldPos.x, rWorldPos.y, 0.0, 1.0);
+		v4=reverseMatrix*v4;
+		pp.x=static_cast<int>(v4.x);
+		pp.y=static_cast<int>(v4.y);
+		if (rUseSnapToGridSetting && GuiContext::getInstance().isGridActive()) {
+			PointInt gridSize;
+			PointInt gridOffset;
+			if (ProjectContext::getInstance().getNodeProject()) {
+				gridSize=ProjectContext::getInstance().getNodeProject()->getGridSize();
+				gridOffset=ProjectContext::getInstance().getNodeProject()->getGridOffset();
+			}
+			pp.x=WorldCalculator::calcGridPos(pp.x, gridSize.x, gridOffset.x);
+			pp.y=WorldCalculator::calcGridPos(pp.y, gridSize.y, gridOffset.y);
+		}
+	}
+	return pp;
 }

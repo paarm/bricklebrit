@@ -59,11 +59,3 @@ const vector<Node*> SelectionManager::getSelectedNodes() {
 	return mSelectedSceneNodes;
 }
 
-void SelectionManager::setIsMouseOverSelection(bool isMouseOverSelection) {
-	mMouseOverSelection=isMouseOverSelection;
-}
-
-bool SelectionManager::isMouseOverSelection() {
-	return mMouseOverSelection;
-}
-
