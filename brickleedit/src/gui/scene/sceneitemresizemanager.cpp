@@ -16,8 +16,13 @@ void SceneItemResizeManager::startResize(Camera *rCamera, Node2d* rNode2d, int r
 		mStartMouseX=rStartMouseX;
 		mStartMouseY=rStartMouseY;
 		GLMVector3 worldPosStart=mCamera->unproject(mStartMouseX, mStartMouseY);
-		//PointFloat rCurrentWorldLocationBox[4]=rNode2d->getCurrentWorldLocationBox();
-		mStartWorldX=worldPosStart.getX();
+        PointFloat rResizeHandleBottomRight[4]=rNode2d->getResizeHandleBottomRight();
+        mStartWorldOffsetX=worldPosStart.getX()-rResizeHandleBottomRight[0].x;
+        mStartWorldOffsetY=worldPosStart.getY()-rResizeHandleBottomRight[0].y;
+
+
+
+        mStartWorldX=worldPosStart.getX();
 		mStartWorldY=worldPosStart.getY();
 		mNode2d=rNode2d;
 		mNode2d_parent=static_cast<Node2d*>(rNode2d->getParent());
@@ -32,6 +37,8 @@ void SceneItemResizeManager::stopResize() {
 	mStartMouseY=0;
 	mStartWorldX=0;
 	mStartWorldY=0;
+    mStartWorldOffsetX=0;
+    mStartWorldOffsetY=0;
 	mNode2d=nullptr;
 	mStartScale.x=0.0;
 	mStartScale.y=0.0;
@@ -43,15 +50,21 @@ bool SceneItemResizeManager::updateResize(int rMouseX, int rMouseY) {
 	bool rv=false;
 	if (mIsOnResize) {
 		GLMVector3 worldPosCurrent=mCamera->unproject(rMouseX, rMouseY);
-		float distanceX=worldPosCurrent.getX()-mStartWorldX;
-		float distanceY=worldPosCurrent.getY()-mStartWorldY;
+        cout <<"World Pos X: "<<worldPosCurrent.getX() <<" Y:" <<worldPosCurrent.getY() <<endl;
+        PointFloat wp(worldPosCurrent.getX()-mStartWorldOffsetX, worldPosCurrent.getY()-mStartWorldOffsetY);
+        PointInt localPos=WorldCalculator::getLocalPosFromWorldPos(mNode2d, wp, false);
+        cout <<"Local Pos X: "<<localPos.x <<" Y:" <<localPos.y <<endl;
+
+        //float distanceX=worldPosCurrent.getX()-mStartWorldX;
+        //float distanceY=worldPosCurrent.getY()-mStartWorldY;
 		//cout <<"World distance X: "<<distanceX <<" Y:" <<distanceY <<endl;
-		PointInt distanceLocal=WorldCalculator::getLocalPosFromWorldPos(mNode2d_parent, PointFloat(distanceX, distanceY), false);
+        //PointInt distanceLocal=WorldCalculator::getLocalPosFromWorldPos(mNode2d_parent, PointFloat(distanceX, distanceY), false);
 		//cout <<distanceLocal.x << "y: " << distanceLocal.y <<endl;
 
 
+
 		//PointInt pp=WorldCalculator::getLocalPosFromWorldPos(mNode2d_parent, PointFloat(worldPosCurrent.getX(), worldPosCurrent.getY()), false);
-		mNode2d->setSize(PointInt(mStartSize.x+distanceLocal.x*2.0, mStartSize.y+distanceLocal.y*2.0));
+        mNode2d->setSize(PointInt(localPos.x*2, localPos.y*2));
 		rv=true;
 	}
 	return rv;

@@ -12,8 +12,10 @@ private:
 	Node2d	*mNode2d_parent=nullptr;
 	int		mStartMouseX=0;
 	int		mStartMouseY=0;
-	float	mStartWorldX;
-	float	mStartWorldY;
+    float	mStartWorldX=0;
+    float	mStartWorldY=0;
+    float   mStartWorldOffsetX=0;
+    float   mStartWorldOffsetY=0;
 	PointFloat	mStartScale;
 	PointInt	mStartSize;
 public:
