@@ -179,6 +179,7 @@ private:
 	PointFloat mCurrentWorldLocationCenter;
 	PointFloat mCurrentWorldLocationBox[4];
 
+	float	   mResizeHandleSizeLocal;
 	PointFloat mResizeHandleBR[4];
 	PointFloat mResizeHandleLocalBR[4];
 	//PointFloat mResizeHandleR[4];
@@ -205,6 +206,8 @@ public:
 
 	void setCurrentModelMatrix(GLMMatrix4 &m);
 	GLMMatrix4 getCurrentModelMatrix();
+
+	void setResizeHandleSizeLocal(float rResizeHandleSizeLocalX, float rResizeHandleSizeLocalY);
 
 	PointFloat (& getResizeHandleBottomRight())[4] {
 		return mResizeHandleBR;

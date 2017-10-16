@@ -126,7 +126,8 @@ void SceneGlWidget::mouseMoveEvent(QMouseEvent * event ) {
 		}
 	} else if (GuiContext::getInstance().getCurrentTool()==Tool::Selection) {
 		if (mSceneItemResizeManager.isOnResize()) {
-			bool requireUpdate=mSceneItemResizeManager.updateResize(event->pos().x(), event->pos().y());
+			bool syncXY=!event->modifiers().testFlag(Qt::ControlModifier);
+			bool requireUpdate=mSceneItemResizeManager.updateResize(syncXY, event->pos().x(), event->pos().y());
 			if (requireUpdate) {
 				this->update();
 			}
@@ -377,14 +378,24 @@ void SceneGlWidget::paintGL()
 
 			glColor3f(1.0, 0.5, 0.0);
 
-			PointFloat resizeHandle[4]=rNodeSprite->getResizeHandleLocalBottomRight();
+
+			//glm::vec4 screenBottomRight=viewMatrix*glm::vec4(w2, h2, 0.0, 1.0);
+			//GLMVector3 a=mCamera.unproject(screenBottomRight.x, screenBottomRight.y);
+			//screenBottomRight.x+=10;
+			//screenBottomRight.y+=10;
+			//GLMVector3 b=mCamera.unproject(screenBottomRight.x, screenBottomRight.y);
+			//float diffX=b.getX()-a.getX();
+			//float diffY=b.getY()-a.getY();
+
+			//rNodeSprite->setResizeHandleSizeLocal(diffX, diffY);
+			PointFloat rResizeHandleLocalBottomRight[4]=rNodeSprite->getResizeHandleLocalBottomRight();
 
 			glBegin(GL_LINE_STRIP);
-				glVertex3d(resizeHandle[0].x,resizeHandle[0].y,0);
-				glVertex3d(resizeHandle[1].x,resizeHandle[1].y,0);
-				glVertex3d(resizeHandle[2].x,resizeHandle[2].y,0);
-				glVertex3d(resizeHandle[3].x,resizeHandle[3].y,0);
-				glVertex3d(resizeHandle[0].x,resizeHandle[0].y,0);
+				glVertex3d(rResizeHandleLocalBottomRight[0].x, rResizeHandleLocalBottomRight[0].y,0);
+				glVertex3d(rResizeHandleLocalBottomRight[1].x, rResizeHandleLocalBottomRight[1].y,0);
+				glVertex3d(rResizeHandleLocalBottomRight[2].x, rResizeHandleLocalBottomRight[2].y,0);
+				glVertex3d(rResizeHandleLocalBottomRight[3].x, rResizeHandleLocalBottomRight[3].y,0);
+				glVertex3d(rResizeHandleLocalBottomRight[0].x, rResizeHandleLocalBottomRight[0].y,0);
 			glEnd();
 		}
 	}

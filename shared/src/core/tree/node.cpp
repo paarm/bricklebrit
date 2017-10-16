@@ -643,9 +643,48 @@ GLMMatrix4 Node2d::getCurrentModelMatrix() {
 	return mCurrentModelMatrix;
 }
 
+void Node2d::setResizeHandleSizeLocal(float rResizeHandleSizeLocalX, float rResizeHandleSizeLocalY) {
+	glm::mat4 matrix=glm::make_mat4x4(mCurrentModelMatrix.getPointer());
+
+	int w=getSize().x;
+	float w2=w/2.0;
+	int h=getSize().y;
+	float h2=h/2.0;
+
+	// top left
+	glm::vec4 vh=matrix*glm::vec4{w2,h2,0.0,1.0};
+	mResizeHandleBR[0].x=vh.x;
+	mResizeHandleBR[0].y=vh.y;
+
+	mResizeHandleLocalBR[0].x=w2;
+	mResizeHandleLocalBR[0].y=h2;
+	// top right
+	vh=matrix*glm::vec4{w2+rResizeHandleSizeLocalX,h2,0.0,1.0};
+	mResizeHandleBR[1].x=vh.x;
+	mResizeHandleBR[1].y=vh.y;
+
+	mResizeHandleLocalBR[1].x=w2+rResizeHandleSizeLocalX;
+	mResizeHandleLocalBR[1].y=h2;
+	// bottom right
+	vh=matrix*glm::vec4{w2+rResizeHandleSizeLocalX,h2+rResizeHandleSizeLocalY,0.0,1.0};
+	mResizeHandleBR[2].x=vh.x;
+	mResizeHandleBR[2].y=vh.y;
+
+	mResizeHandleLocalBR[2].x=w2+rResizeHandleSizeLocalX;
+	mResizeHandleLocalBR[2].y=h2+rResizeHandleSizeLocalY;
+	// bottom left
+	vh=matrix*glm::vec4{w2,h2+rResizeHandleSizeLocalY,0.0,1.0};
+	mResizeHandleBR[3].x=vh.x;
+	mResizeHandleBR[3].y=vh.y;
+
+	mResizeHandleLocalBR[3].x=w2;
+	mResizeHandleLocalBR[3].y=h2+rResizeHandleSizeLocalY;
+}
+
 void Node2d::setCurrentModelMatrix(GLMMatrix4 &m) {
 	mCurrentModelMatrix.setFromPointer(m.getPointer());
 	glm::mat4 matrix=glm::make_mat4x4(m.getPointer());
+	//glm::mat4 matrixRev=glm::inverse(matrix);
 
 	int w=getSize().x;
 	float w2=w/2.0;
@@ -673,36 +712,7 @@ void Node2d::setCurrentModelMatrix(GLMMatrix4 &m) {
 	mCurrentWorldLocationBox[3].x=rW.x;
 	mCurrentWorldLocationBox[3].y=rW.y;
 
-	// Resize handle box
-	float a=5.0;
-	// top left
-	glm::vec4 vh=matrix*glm::vec4{w2,h2,0.0,1.0};
-	mResizeHandleBR[0].x=vh.x;
-	mResizeHandleBR[0].y=vh.y;
-
-	mResizeHandleLocalBR[0].x=w2;
-	mResizeHandleLocalBR[0].y=h2;
-	// top right
-	vh=matrix*glm::vec4{w2+a,h2,0.0,1.0};
-	mResizeHandleBR[1].x=vh.x;
-	mResizeHandleBR[1].y=vh.y;
-
-	mResizeHandleLocalBR[1].x=w2+a;
-	mResizeHandleLocalBR[1].y=h2;
-	// bottom right
-	vh=matrix*glm::vec4{w2+a,h2+a,0.0,1.0};
-	mResizeHandleBR[2].x=vh.x;
-	mResizeHandleBR[2].y=vh.y;
-
-	mResizeHandleLocalBR[2].x=w2+a;
-	mResizeHandleLocalBR[2].y=h2+a;
-	// bottom left
-	vh=matrix*glm::vec4{w2,h2+a,0.0,1.0};
-	mResizeHandleBR[3].x=vh.x;
-	mResizeHandleBR[3].y=vh.y;
-
-	mResizeHandleLocalBR[3].x=w2;
-	mResizeHandleLocalBR[3].y=h2+a;
+	setResizeHandleSizeLocal(10, 10);
 }
 
 

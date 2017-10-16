@@ -21,7 +21,7 @@ private:
 public:
 	SceneItemResizeManager();
 	void startResize(Camera *rCamera, Node2d* rNode2d, int rStartMouseX, int rStartMouseY);
-	bool updateResize(int rMouseX, int rMouseY);
+	bool updateResize(bool rSyncXY, int rMouseX, int rMouseY);
 	void stopResize();
 	bool isOnResize();
 };

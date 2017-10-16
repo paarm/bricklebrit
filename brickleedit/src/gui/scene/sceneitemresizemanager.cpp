@@ -16,7 +16,7 @@ void SceneItemResizeManager::startResize(Camera *rCamera, Node2d* rNode2d, int r
 		mStartMouseX=rStartMouseX;
 		mStartMouseY=rStartMouseY;
 		GLMVector3 worldPosStart=mCamera->unproject(mStartMouseX, mStartMouseY);
-        PointFloat rResizeHandleBottomRight[4]=rNode2d->getResizeHandleBottomRight();
+		PointFloat rResizeHandleBottomRight[4]=rNode2d->getResizeHandleBottomRight();
         mStartWorldOffsetX=worldPosStart.getX()-rResizeHandleBottomRight[0].x;
         mStartWorldOffsetY=worldPosStart.getY()-rResizeHandleBottomRight[0].y;
 
@@ -46,14 +46,14 @@ void SceneItemResizeManager::stopResize() {
 	mStartSize.y=0.0;
 }
 
-bool SceneItemResizeManager::updateResize(int rMouseX, int rMouseY) {
+bool SceneItemResizeManager::updateResize(bool rSyncXY, int rMouseX, int rMouseY) {
 	bool rv=false;
 	if (mIsOnResize) {
 		GLMVector3 worldPosCurrent=mCamera->unproject(rMouseX, rMouseY);
-        cout <<"World Pos X: "<<worldPosCurrent.getX() <<" Y:" <<worldPosCurrent.getY() <<endl;
+		//cout <<"World Pos X: "<<worldPosCurrent.getX() <<" Y:" <<worldPosCurrent.getY() <<endl;
         PointFloat wp(worldPosCurrent.getX()-mStartWorldOffsetX, worldPosCurrent.getY()-mStartWorldOffsetY);
         PointInt localPos=WorldCalculator::getLocalPosFromWorldPos(mNode2d, wp, false);
-        cout <<"Local Pos X: "<<localPos.x <<" Y:" <<localPos.y <<endl;
+		//cout <<"Local Pos X: "<<localPos.x <<" Y:" <<localPos.y <<endl;
 
         //float distanceX=worldPosCurrent.getX()-mStartWorldX;
         //float distanceY=worldPosCurrent.getY()-mStartWorldY;
@@ -64,7 +64,15 @@ bool SceneItemResizeManager::updateResize(int rMouseX, int rMouseY) {
 
 
 		//PointInt pp=WorldCalculator::getLocalPosFromWorldPos(mNode2d_parent, PointFloat(worldPosCurrent.getX(), worldPosCurrent.getY()), false);
-        mNode2d->setSize(PointInt(localPos.x*2, localPos.y*2));
+		int diffX=mStartSize.x-localPos.x*2;
+		int diffY=mStartSize.y-localPos.y*2;
+		//mNode2d->setSize(PointInt(localPos.x*2, localPos.y*2));
+		if (rSyncXY) {
+			//int maxDiff=max(diffX,diffY);
+			mNode2d->setSize(PointInt(mStartSize.x-diffY, mStartSize.y-diffY));
+		} else {
+			mNode2d->setSize(PointInt(mStartSize.x-diffX, mStartSize.y-diffY));
+		}
 		rv=true;
 	}
 	return rv;

@@ -19,7 +19,7 @@
   <property name="minimumSize">
    <size>
     <width>447</width>
-    <height>0</height>
+    <height>179</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -130,6 +130,9 @@
             <height>16777215</height>
            </size>
           </property>
+          <property name="minimum">
+           <number>-9999</number>
+          </property>
           <property name="maximum">
            <number>9999</number>
           </property>
@@ -148,6 +151,9 @@
             <width>90</width>
             <height>16777215</height>
            </size>
+          </property>
+          <property name="minimum">
+           <number>-9999</number>
           </property>
           <property name="maximum">
            <number>9999</number>
