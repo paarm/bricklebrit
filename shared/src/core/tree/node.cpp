@@ -651,34 +651,53 @@ void Node2d::setResizeHandleSizeLocal(float rResizeHandleSizeLocalX, float rResi
 	int h=getSize().y;
 	float h2=h/2.0;
 
-	// top left
-	glm::vec4 vh=matrix*glm::vec4{w2,h2,0.0,1.0};
-	mResizeHandleBR[0].x=vh.x;
-	mResizeHandleBR[0].y=vh.y;
+	for (int cnt=0;cnt<3;cnt++) {
+		float startX=w2;
+		float startY=h2;
+		if (cnt==1) {
+			startX=w2;//+rResizeHandleSizeLocalX;
+			startY=0-rResizeHandleSizeLocalY/2.0;
+		} else if (cnt==2) {
+			startX=0-rResizeHandleSizeLocalX/2.0;
+			startY=h2;//+rResizeHandleSizeLocalY;
+		}
 
-	mResizeHandleLocalBR[0].x=w2;
-	mResizeHandleLocalBR[0].y=h2;
-	// top right
-	vh=matrix*glm::vec4{w2+rResizeHandleSizeLocalX,h2,0.0,1.0};
-	mResizeHandleBR[1].x=vh.x;
-	mResizeHandleBR[1].y=vh.y;
-
-	mResizeHandleLocalBR[1].x=w2+rResizeHandleSizeLocalX;
-	mResizeHandleLocalBR[1].y=h2;
-	// bottom right
-	vh=matrix*glm::vec4{w2+rResizeHandleSizeLocalX,h2+rResizeHandleSizeLocalY,0.0,1.0};
-	mResizeHandleBR[2].x=vh.x;
-	mResizeHandleBR[2].y=vh.y;
-
-	mResizeHandleLocalBR[2].x=w2+rResizeHandleSizeLocalX;
-	mResizeHandleLocalBR[2].y=h2+rResizeHandleSizeLocalY;
-	// bottom left
-	vh=matrix*glm::vec4{w2,h2+rResizeHandleSizeLocalY,0.0,1.0};
-	mResizeHandleBR[3].x=vh.x;
-	mResizeHandleBR[3].y=vh.y;
-
-	mResizeHandleLocalBR[3].x=w2;
-	mResizeHandleLocalBR[3].y=h2+rResizeHandleSizeLocalY;
+		for (int i=0;i<4;i++) {
+			int x=startX;
+			int y=startY;
+			switch(i) {
+			case 0:
+				break;
+			case 1:
+				x+=rResizeHandleSizeLocalX;
+				break;
+			case 2:
+				x+=rResizeHandleSizeLocalX;
+				y+=rResizeHandleSizeLocalY;
+				break;
+			case 3:
+				y+=rResizeHandleSizeLocalY;
+				break;
+			}
+			glm::vec4 vh=matrix*glm::vec4{x,y,0.0,1.0};
+			if (cnt==0) {
+				mResizeHandleBR[i].x=vh.x;
+				mResizeHandleBR[i].y=vh.y;
+				mResizeHandleLocalBR[i].x=x;
+				mResizeHandleLocalBR[i].y=y;
+			} else if (cnt==1) {
+				mResizeHandleRight[i].x=vh.x;
+				mResizeHandleRight[i].y=vh.y;
+				mResizeHandleLocalRight[i].x=x;
+				mResizeHandleLocalRight[i].y=y;
+			} else if (cnt==2) {
+				mResizeHandleBottom[i].x=vh.x;
+				mResizeHandleBottom[i].y=vh.y;
+				mResizeHandleLocalBottom[i].x=x;
+				mResizeHandleLocalBottom[i].y=y;
+			}
+		}
+	}
 }
 
 void Node2d::setCurrentModelMatrix(GLMMatrix4 &m) {
@@ -711,8 +730,6 @@ void Node2d::setCurrentModelMatrix(GLMMatrix4 &m) {
 	rW=matrix*glm::vec4{-w2,h2,0.0,1.0};
 	mCurrentWorldLocationBox[3].x=rW.x;
 	mCurrentWorldLocationBox[3].y=rW.y;
-
-	setResizeHandleSizeLocal(10, 10);
 }
 
 

@@ -38,7 +38,7 @@ void WorldCalculator::updateNodeMatrix(GLMMatrix4 parentMatrix, Node* rNode) {
 	}
 }
 
-bool WorldCalculator::isBoxIntersecting(PointFloat (&rCurrentWorldLocationBox)[4], float worldX, float worldY) {
+bool WorldCalculator::isBoxIntersecting(PointFloat *rCurrentWorldLocationBox, float worldX, float worldY) {
 	bool rv=false;
 	vector<PointFloat> v1;
 	vector<PointFloat> v2;

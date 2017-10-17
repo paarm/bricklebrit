@@ -182,6 +182,11 @@ private:
 	float	   mResizeHandleSizeLocal;
 	PointFloat mResizeHandleBR[4];
 	PointFloat mResizeHandleLocalBR[4];
+	PointFloat mResizeHandleRight[4];
+	PointFloat mResizeHandleLocalRight[4];
+	PointFloat mResizeHandleBottom[4];
+	PointFloat mResizeHandleLocalBottom[4];
+
 	//PointFloat mResizeHandleR[4];
 	//PointFloat mResizeHandleB[4];
 	GLMMatrix4 mCurrentModelMatrix;
@@ -209,17 +214,30 @@ public:
 
 	void setResizeHandleSizeLocal(float rResizeHandleSizeLocalX, float rResizeHandleSizeLocalY);
 
-	PointFloat (& getResizeHandleBottomRight())[4] {
+	PointFloat* getResizeHandleBottomRight() {
 		return mResizeHandleBR;
 	}
-	PointFloat (& getResizeHandleLocalBottomRight())[4] {
+	PointFloat* getResizeHandleRight() {
+		return mResizeHandleRight;
+	}
+	PointFloat* getResizeHandleBottom() {
+		return mResizeHandleBottom;
+	}
+	PointFloat* getResizeHandleLocalBottomRight() {
 		return mResizeHandleLocalBR;
+	}
+	PointFloat* getResizeHandleLocalRight() {
+		return mResizeHandleLocalRight;
+	}
+
+	PointFloat *getResizeHandleLocalBottom() {
+		return mResizeHandleLocalBottom;
 	}
 
 	PointFloat &getCurrentWorldLocationCenter() {
 		return mCurrentWorldLocationCenter;
 	}
-	PointFloat (& getCurrentWorldLocationBox())[4] {
+	PointFloat *getCurrentWorldLocationBox() {
 		return mCurrentWorldLocationBox;
 	}
 

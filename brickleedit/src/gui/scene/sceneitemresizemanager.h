@@ -18,12 +18,15 @@ private:
     float   mStartWorldOffsetY=0;
 	PointFloat	mStartScale;
 	PointInt	mStartSize;
+	bool	mXonly=false;
+	bool	mYonly=false;
 public:
 	SceneItemResizeManager();
-	void startResize(Camera *rCamera, Node2d* rNode2d, int rStartMouseX, int rStartMouseY);
+	void startResize(PointFloat* rResizeHandle, bool rXonly, bool rYonly, Camera *rCamera, Node2d* rNode2d, int rStartMouseX, int rStartMouseY);
 	bool updateResize(bool rSyncXY, int rMouseX, int rMouseY);
 	void stopResize();
 	bool isOnResize();
+	Node2d* getNodeForResize();
 };
 
 #endif // SCENEITEMRESIZEMANAGER_H

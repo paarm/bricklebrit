@@ -102,8 +102,18 @@ void SceneGlWidget::mouseReleaseEvent(QMouseEvent * event ) {
 		mViewportMoveInfo.startX=0;
 		mViewportMoveInfo.startY=0;
 	} else 	if (event->button()==Qt::LeftButton) {
+		if (mSceneItemMoveManager.isOnMove()) {
+			vector<Node*> v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
+			if (!v.empty()) {
+				Node *latestSelected=v.back();
+				GuiContext::getInstance().setSceneNodeInTreeAsSelected(latestSelected);
+			}
+		}
 		mSceneItemMoveManager.stopMove();
-		mSceneItemResizeManager.stopResize();
+		if (mSceneItemResizeManager.isOnResize()) {
+			GuiContext::getInstance().setSceneNodeInTreeAsSelected(mSceneItemResizeManager.getNodeForResize());
+			mSceneItemResizeManager.stopResize();
+		}
 	}
 }
 
@@ -200,8 +210,32 @@ void SceneGlWidget::onLeftMouseClicked(QMouseEvent *event, int mx, int my) {
 			for (Node* n : v) {
 				if (n->getNodeType()==NodeType::Sprite) {
 					NodeSprite* rNodeSprite=static_cast<NodeSprite*>(n);
-					if (WorldCalculator::isBoxIntersecting(rNodeSprite->getResizeHandleBottomRight(), pos.getX(), pos.getY())) {
-						mSceneItemResizeManager.startResize(&mCamera, rNodeSprite, mx, my);
+					bool intersecting=false;
+					for (int i=0;i<3;i++) {
+						PointFloat *rResizeHandle=nullptr;
+						bool rXonly=false;
+						bool rYonly=false;
+						if (i==0) {
+							//Bottom Right
+							rResizeHandle=rNodeSprite->getResizeHandleBottomRight();
+						} else if (i==1) {
+							// Right, resize to X only
+							rResizeHandle=rNodeSprite->getResizeHandleRight();
+							rXonly=true;
+						} else if (i==2) {
+							// Bottom, resize to Y only
+							rResizeHandle=rNodeSprite->getResizeHandleBottom();
+							rYonly=true;
+						}
+						if (rResizeHandle) {
+							if (WorldCalculator::isBoxIntersecting(rResizeHandle, pos.getX(), pos.getY())) {
+								mSceneItemResizeManager.startResize(rResizeHandle, rXonly, rYonly, &mCamera, rNodeSprite, mx, my);
+								intersecting=true;
+								break;
+							}
+						}
+					}
+					if (intersecting) {
 						break;
 					}
 				}
@@ -352,6 +386,10 @@ void SceneGlWidget::paintGL()
 	for (Node *n : v) {
 		if (n->getNodeType()==NodeType::Sprite) {
 			NodeSprite* rNodeSprite=static_cast<NodeSprite*>(n);
+
+			rNodeSprite->setResizeHandleSizeLocal(10, 10);
+
+
 			glm::mat4 viewMatrix=glm::make_mat4(mCamera.getViewMatrix().getPointer());
 			glm::mat4 modelMatrix=glm::make_mat4(rNodeSprite->getCurrentModelMatrix().getPointer());
 			viewMatrix*=modelMatrix;
@@ -388,15 +426,24 @@ void SceneGlWidget::paintGL()
 			//float diffY=b.getY()-a.getY();
 
 			//rNodeSprite->setResizeHandleSizeLocal(diffX, diffY);
-			PointFloat rResizeHandleLocalBottomRight[4]=rNodeSprite->getResizeHandleLocalBottomRight();
 
-			glBegin(GL_LINE_STRIP);
-				glVertex3d(rResizeHandleLocalBottomRight[0].x, rResizeHandleLocalBottomRight[0].y,0);
-				glVertex3d(rResizeHandleLocalBottomRight[1].x, rResizeHandleLocalBottomRight[1].y,0);
-				glVertex3d(rResizeHandleLocalBottomRight[2].x, rResizeHandleLocalBottomRight[2].y,0);
-				glVertex3d(rResizeHandleLocalBottomRight[3].x, rResizeHandleLocalBottomRight[3].y,0);
-				glVertex3d(rResizeHandleLocalBottomRight[0].x, rResizeHandleLocalBottomRight[0].y,0);
-			glEnd();
+			for (int i=0;i<3;i++) {
+				PointFloat *rResizeHandleLocal;
+				if (i==0) {
+					rResizeHandleLocal=rNodeSprite->getResizeHandleLocalBottomRight();
+				} else if (i==1) {
+					rResizeHandleLocal=rNodeSprite->getResizeHandleLocalRight();
+				} else if (i==2) {
+					rResizeHandleLocal=rNodeSprite->getResizeHandleLocalBottom();
+				}
+				glBegin(GL_LINE_STRIP);
+					glVertex3d(rResizeHandleLocal[0].x, rResizeHandleLocal[0].y,0);
+					glVertex3d(rResizeHandleLocal[1].x, rResizeHandleLocal[1].y,0);
+					glVertex3d(rResizeHandleLocal[2].x, rResizeHandleLocal[2].y,0);
+					glVertex3d(rResizeHandleLocal[3].x, rResizeHandleLocal[3].y,0);
+					glVertex3d(rResizeHandleLocal[0].x, rResizeHandleLocal[0].y,0);
+				glEnd();
+			}
 		}
 	}
 	glDisable(GL_TEXTURE_2D);
