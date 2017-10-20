@@ -131,6 +131,7 @@ public:
 
 	QTreeWidgetItem* addNode(QTreeWidgetItem *parent, Node* rNode, bool expandTree) {
 		QTreeWidgetItem* r=nullptr;
+		bool			addChilds=true;
 		if (rNode) {
 			if (parent) {
 				r=new QTreeWidgetItem(parent);
@@ -147,11 +148,11 @@ public:
 			if (parent) {
 				parent->addChild(r);
 				if (expandTree) {
-					parent->setExpanded(true);
+					//parent->setExpanded(true);
 				}
 			} else {
 				mTreeWidget->addTopLevelItem(r);
-				r->setExpanded(true);
+				//r->setExpanded(true);
 			}
 			if (rNode->getNodeType()==NodeType::Texture) {
 				QPushButton *rButton=new QPushButton("T",mTreeWidget);
@@ -162,6 +163,7 @@ public:
 					rTextureFrameEditor->show();
 				});
 				mTreeWidget->setItemWidget(r, 2, rButton);
+				addChilds=false;
 			} else if (rNode->getNodeType()==NodeType::Animation) {
 				QPushButton *rButton=new QPushButton("A",mTreeWidget);
 				rButton->setToolTip(QObject::tr("Edit Animation Frames..."));
@@ -171,6 +173,7 @@ public:
 					rAnimationFrameEditor->show();
 				});
 				mTreeWidget->setItemWidget(r, 2, rButton);
+				addChilds=false;
 			} else if (rNode->getNodeType()==NodeType::Sprite) {
 				QPushButton *rButton=new QPushButton("S",mTreeWidget);
 				rButton->setToolTip(QObject::tr("Edit Sprite..."));
@@ -182,8 +185,7 @@ public:
 				mTreeWidget->setItemWidget(r, 2, rButton);
 			}
 
-
-			if (rNode->getChildCount()>0) {
+			if (addChilds && rNode->getChildCount()>0) {
 				unsigned long count=rNode->getChildCount();
 				for (unsigned long i=0;i<count;i++) {
 					Node *rNodeChild=rNode->getNodeFromIndex(i);

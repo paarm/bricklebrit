@@ -66,11 +66,11 @@ void AnimationFrameEditor::addContentForFrameItem(QTreeWidgetItem* r, AnimationF
                     rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeF);
                 }
             }
-			QPixmap rPixmap=PreviewImageUtil::getPreviewImage(rNodeTexture, rNodeTextureFrame, 30, 30);
-			QLabel *rPreviewImage=new QLabel(QString::fromStdString(to_string(iEntryIndex)));
-			rPreviewImage->setPixmap(rPixmap);
-			ui->treeWidgetAnimation->setItemWidget(r,0, rPreviewImage);
-            //r->setText(0, QString::fromStdString(to_string(i)));
+			//QLabel *rPreviewImage=new QLabel(QString::fromStdString(to_string(iEntryIndex)));
+			//rPreviewImage->setPixmap(rPixmap);
+			//ui->treeWidgetAnimation->setItemWidget(r,0, rPreviewImage);
+			r->setIcon(0,QIcon(PreviewImageUtil::getPreviewImage(rNodeTexture, rNodeTextureFrame, 30, 30)));
+			//r->setText(0, QString::fromStdString(to_string(i)));
             // Texture Name
             r->setText(1, QString::fromStdString(rNodeTexture->getName()));
             // Texture Frame Name

@@ -3,6 +3,19 @@
 #include "../guicontext.h"
 #include <QFileDialog>
 
+#if 0
+class FullSizeIconDelegate : public QStyledItemDelegate{
+	Q_OBJECT
+	Q_DISABLE_COPY(FullSizeIconDelegate)
+public:
+	explicit FullSizeIconDelegate(QObject* parent=Q_NULLPTR)
+		:QStyledItemDelegate(parent)
+	{}
+	virtual void QStyledItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE{
+		painter->drawPixmap(option.rect,index.data(Qt::DecorationRole).value<QPixmap>());
+	}
+}
+#endif
 TextureFrameEditor::TextureFrameEditor(Node *rNode, QWidget *parent) :
 	QDialog(parent),
 	ui(new Ui::TextureFrameEditor)
@@ -179,12 +192,12 @@ void TextureFrameEditor::createFrame(const string&rName, int x, int y, int w, in
 }
 
 void TextureFrameEditor::addContentForFrameItem(QTreeWidgetItem *r, TextureFrameEntry& rTextureFrameEntry) {
-	QLabel *rPreviewImage=new QLabel(QString::fromStdString(rTextureFrameEntry.name));
-	QPixmap imgFrame=mImage.copy(rTextureFrameEntry.x, rTextureFrameEntry.y, rTextureFrameEntry.w, rTextureFrameEntry.h);
-	imgFrame=imgFrame.scaled(QSize(30,30), Qt::KeepAspectRatio);
-	//QPixmap rQPixmap = QPixmap::fromImage(imgFrame); // Create pixmap from image
-	rPreviewImage->setPixmap(imgFrame);
-	ui->treeWidget->setItemWidget(r,0, rPreviewImage);
+	//QLabel *rPreviewImage=new QLabel(QString::fromStdString(rTextureFrameEntry.name));
+	//QPixmap imgFrame=mImage.copy(rTextureFrameEntry.x, rTextureFrameEntry.y, rTextureFrameEntry.w, rTextureFrameEntry.h);
+	//imgFrame=imgFrame.scaled(QSize(30,30), Qt::KeepAspectRatio);
+	//rPreviewImage->setPixmap(imgFrame);
+	r->setIcon(0, QIcon(mImage.copy(rTextureFrameEntry.x, rTextureFrameEntry.y, rTextureFrameEntry.w, rTextureFrameEntry.h)));
+	//ui->treeWidget->setItemWidget(r,0, rPreviewImage);
 
 	//r->setText(0, QString::fromStdString(rTextureFrameEntry.name));
 	r->setText(1, QString::number(rTextureFrameEntry.x));

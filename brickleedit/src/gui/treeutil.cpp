@@ -48,11 +48,6 @@ void TreeUtil::setNodeToTreeItem(QTreeWidgetItem* r, Node* rNode) {
 	}
 }
 
-void TreeUtil::setPixmapToTreeItem(QTreeWidget *rQTreeWidget, QTreeWidgetItem *r, QPixmap &rPixmap) {
-	QLabel *rPreviewImage=new QLabel("");
-	rPreviewImage->setPixmap(rPixmap);
-	rQTreeWidget->setItemWidget(r,1, rPreviewImage);
-}
 
 QTreeWidgetItem *TreeUtil::getTreeWidgetItemFromNode_Parent(QTreeWidget *rQTreeWidget, QTreeWidgetItem* rParent, Node *rNode) {
 	QTreeWidgetItem *rv=nullptr;
@@ -101,9 +96,7 @@ void TreeUtil::fillTreeWidgetWithTexturesFromResource(QTreeWidget *rQTreeWidget,
 				r->setText(0,QString::fromStdString(TreeUtil::getNodeNameWithId(rNode)));
 				TreeUtil::setNodeDataToTreeItem(r,rNode);
 				r->setIcon(0, rTextureIcon);
-
-				QPixmap rPixmap=PreviewImageUtil::getPreviewImage(rNodeTexture, nullptr, 60, 60);
-				TreeUtil::setPixmapToTreeItem(rQTreeWidget, r, rPixmap);
+				r->setIcon(1, QIcon(PreviewImageUtil::getPreviewImage(rNodeTexture, nullptr, 60, 60)));
 				rQTreeWidget->addTopLevelItem(r);
 				//r->setExpanded(true);
 
@@ -116,8 +109,7 @@ void TreeUtil::fillTreeWidgetWithTexturesFromResource(QTreeWidget *rQTreeWidget,
 							QTreeWidgetItem *rc=new QTreeWidgetItem(r);
 							rc->setText(0,QString::fromStdString("Frame: "+TreeUtil::getNodeNameWithId(rNodeChild)));
 							TreeUtil::setNodeDataToTreeItem(rc,rNodeChild);
-							QPixmap rPixmapC=PreviewImageUtil::getPreviewImage(rNodeTexture, rNodeTextureFrame, 30, 30);
-							TreeUtil::setPixmapToTreeItem(rQTreeWidget, rc, rPixmapC);
+							rc->setIcon(1, QIcon(PreviewImageUtil::getPreviewImage(rNodeTexture, rNodeTextureFrame, 30, 30)));
 							r->addChild(rc);
 						}
 					}
@@ -147,14 +139,14 @@ void TreeUtil::fillTreeWidgetWithTexturesFromResource(QTreeWidget *rQTreeWidget,
 
 									QTreeWidgetItem *rc=new QTreeWidgetItem(r);
 									QPixmap rPixmap=PreviewImageUtil::getPreviewImage(rNodeTexture, rNodeTextureFrame, 30, 30);
-									TreeUtil::setPixmapToTreeItem(rQTreeWidget, rc, rPixmap);
+									rc->setIcon(1, rPixmap);
 									rc->setText(0,QString::fromStdString("Frame: "+TreeUtil::getNodeNameWithId(rNodeAnimationFrame)));
 									TreeUtil::setNodeDataToTreeItem(rc,rNodeAnimationFrame);
 
 									r->addChild(rc);
 									if (isFirst) {
 										isFirst=false;
-										TreeUtil::setPixmapToTreeItem(rQTreeWidget, r, rPixmap);
+										r->setIcon(1, rPixmap);
 									}
 								}
 							}

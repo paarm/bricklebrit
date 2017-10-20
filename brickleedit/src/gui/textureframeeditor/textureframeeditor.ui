@@ -482,6 +482,24 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>xFrames</tabstop>
+  <tabstop>yFrames</tabstop>
+  <tabstop>addFrames</tabstop>
+  <tabstop>xFrame</tabstop>
+  <tabstop>yFrame</tabstop>
+  <tabstop>widhtFrame</tabstop>
+  <tabstop>heightFrame</tabstop>
+  <tabstop>addSingleFrame</tabstop>
+  <tabstop>okButton</tabstop>
+  <tabstop>cancelButton</tabstop>
+  <tabstop>textureName</tabstop>
+  <tabstop>imageWidth</tabstop>
+  <tabstop>treeWidget</tabstop>
+  <tabstop>removeFrame</tabstop>
+  <tabstop>pushButton</tabstop>
+  <tabstop>imageHeight</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
