@@ -35,6 +35,8 @@ Node * getInstanceFromNodeType(NodeType rNodeType, bool rCreateNewId) {
 			return getXInstanceFromNodeType<NodeAnimationFrame>(rCreateNewId);
 		case NodeType::Scene:
 			return getXInstanceFromNodeType<NodeScene>(rCreateNewId);
+		case NodeType::Layer:
+			return getXInstanceFromNodeType<NodeLayer>(rCreateNewId);
 		case NodeType::SceneInfo:
 			return getXInstanceFromNodeType<NodeSceneInfo>(rCreateNewId);
 		case NodeType::SceneRef:
@@ -64,6 +66,7 @@ static NodeLookupTable gNodeLookupTable[]={
 	{NodeType::AnimationFrame				,"AnimationFrame"},
 	{NodeType::Project						,"Project"},
 	{NodeType::Scene						,"Scene"},
+	{NodeType::Layer						,"Layer"},
 	{NodeType::SceneInfo					,"SceneInfo"},
 	{NodeType::SceneRef						,"SceneRef"},
 

@@ -13,9 +13,8 @@ class TreeUtil {
 public:
 	static Node* getNodeFromTreeItem(QTreeWidgetItem* r);
 	static void setNodeDataToTreeItem(QTreeWidgetItem* r, Node *rNode);
-	static void setTypeNameToTreeItem(QTreeWidgetItem* r, Node *rNode);
-	static void setNodeNameToTreeItem(QTreeWidgetItem* r, Node *rNode);
-	static void setNodeToTreeItem(QTreeWidgetItem* r, Node *rNode);
+	static void setTypeNameToTreeItem(int columnIndex, QTreeWidgetItem* r, Node *rNode);
+	static void setNodeNameToTreeItem(int columnIndex, QTreeWidgetItem* r, Node *rNode);
 	static string getNodeNameWithId(Node *rNode);
 	static void fillTreeWidgetWithTexturesFromResource(QTreeWidget *rQTreeWidget, const string &rResourceName, bool addTextures, bool addAnimations);
 	static QTreeWidgetItem* getTreeWidgetItemFromNode(QTreeWidget *rQTreeWidget, Node *rNode);

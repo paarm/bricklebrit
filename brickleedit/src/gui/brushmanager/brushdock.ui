@@ -18,7 +18,7 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>447</width>
+    <width>293</width>
     <height>179</height>
    </size>
   </property>
@@ -50,14 +50,14 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>80</width>
-            <height>80</height>
+            <width>50</width>
+            <height>50</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>80</width>
-            <height>80</height>
+            <width>50</width>
+            <height>50</height>
            </size>
           </property>
           <property name="focusPolicy">

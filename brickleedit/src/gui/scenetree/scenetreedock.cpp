@@ -53,8 +53,10 @@ void SceneTreeDock::clearResourceOpm() {
 }
 
 void SceneTreeDock::setSceneEditable(bool isEditable) {
-	ui->newSprite->setEnabled(isEditable);
-    ui->setAsCanvas->setEnabled(isEditable);
+	ui->addLayer->setEnabled(isEditable);
+	ui->deleteLayer->setEnabled(isEditable);
+	ui->layerUp->setEnabled(isEditable);
+	ui->layerDown->setEnabled(isEditable);
 }
 
 void SceneTreeDock::setResourceEditable(bool isEditable) {
@@ -282,15 +284,5 @@ void SceneTreeDock::on_newSprite_clicked()
 {
 	SpriteEditor *rSpriteEditor=new SpriteEditor(nullptr, this);
 	rSpriteEditor->show();
-}
-
-void SceneTreeDock::on_setAsCanvas_clicked()
-{
-	Node *rNode=mTabInfoScene.getSelectedNode();
-	if (rNode &&
-			(rNode->getNodeType()==NodeType::Scene || rNode->getNodeType()==NodeType::Sprite)
-			) {
-        GuiContext::getInstance().setCurrentPaintCanvas(static_cast<Node2d*>(rNode), true);
-	}
 }
 

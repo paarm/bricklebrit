@@ -26,6 +26,7 @@ enum class NodeType {
 	ResourceInfo,
 	SceneInfo,
 	Scene,
+	Layer,
 	SceneRef,
 
 
@@ -255,6 +256,18 @@ public:
 	}
 
 	NodeScene() : NodeScene(true) {
+	}
+};
+
+class NodeLayer : public Node2d {
+private:
+public:
+
+	NodeLayer(bool rCreateNewId) : Node2d(rCreateNewId) {
+		mNodeType=NodeType::Layer;
+	}
+
+	NodeLayer() : NodeLayer(true) {
 	}
 };
 

@@ -16,5 +16,6 @@
         <file>icons/grid.png</file>
         <file>icons/pickAsBrush.png</file>
         <file>icons/erase.png</file>
+        <file>icons/deselect.png</file>
     </qresource>
 </RCC>

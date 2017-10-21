@@ -20,11 +20,11 @@ void TreeUtil::setNodeDataToTreeItem(QTreeWidgetItem* r, Node *rNode) {
 	}
 }
 
-void TreeUtil::setTypeNameToTreeItem(QTreeWidgetItem* r, Node *rNode) {
+void TreeUtil::setTypeNameToTreeItem(int columnIndex, QTreeWidgetItem* r, Node *rNode) {
 	if (r && rNode) {
 		string rType=getNodeTypeAsString(rNode->getNodeType());
 		rType+="("+std::to_string(rNode->getId())+")";
-		r->setText(0, QString::fromStdString(rType));
+		r->setText(columnIndex, QString::fromStdString(rType));
 	}
 }
 
@@ -34,17 +34,9 @@ string TreeUtil::getNodeNameWithId(Node *rNode) {
 	return rv;
 }
 
-void TreeUtil::setNodeNameToTreeItem(QTreeWidgetItem* r, Node* rNode) {
+void TreeUtil::setNodeNameToTreeItem(int columnIndex, QTreeWidgetItem* r, Node* rNode) {
 	if (r && rNode) {
-		r->setText(1,QString::fromStdString(rNode->getName()));
-	}
-}
-
-void TreeUtil::setNodeToTreeItem(QTreeWidgetItem* r, Node* rNode) {
-	if (r && rNode) {
-		TreeUtil::setTypeNameToTreeItem(r,rNode);
-		TreeUtil::setNodeNameToTreeItem(r,rNode);
-		TreeUtil::setNodeDataToTreeItem(r,rNode);
+		r->setText(columnIndex, QString::fromStdString(rNode->getName()));
 	}
 }
 

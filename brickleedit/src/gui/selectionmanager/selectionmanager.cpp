@@ -1,12 +1,15 @@
 #include "selectionmanager.h"
 #include <algorithm>
+#include "../guicontext.h"
 
 SelectionManager::SelectionManager()
 {
 }
 
 void SelectionManager::deselectAllNodes() {
+	GuiContext::getInstance().getMainWindow().getSelectionDock().removeAllNodes();
 	mSelectedSceneNodes.clear();
+	mLatestSelected=nullptr;
 }
 
 void SelectionManager::deselectNode(Node *rDeselectedNode) {
@@ -17,7 +20,12 @@ void SelectionManager::deselectNode(Node *rDeselectedNode) {
 		);
 		if (it!=mSelectedSceneNodes.end()) {
 			mSelectedSceneNodes.erase(it);
+			mSelectedSceneNodes.shrink_to_fit();
 		}
+		if (mLatestSelected!=nullptr && mLatestSelected==rDeselectedNode) {
+			setAsLatestSelected(nullptr);
+		}
+		GuiContext::getInstance().getMainWindow().getSelectionDock().removeNode(rDeselectedNode);
 	}
 }
 
@@ -43,8 +51,28 @@ void SelectionManager::setNodeAsSelected(Node* rSelectedNode) {
 	if (!isNodeSelected(rSelectedNode)) {
 		if (rSelectedNode!=nullptr) {
 			mSelectedSceneNodes.push_back(rSelectedNode);
+			setAsLatestSelected(nullptr);
+			GuiContext::getInstance().getMainWindow().getSelectionDock().addNode(rSelectedNode);
 		}
 	}
+}
+
+void SelectionManager::setAsLatestSelected(Node* rNode) {
+	const auto &it=std::find_if(mSelectedSceneNodes.begin(), mSelectedSceneNodes.end(), [rNode] (Node* entry) {
+		return rNode==entry;
+	});
+	if (rNode && it!=mSelectedSceneNodes.end()) {
+		mLatestSelected=*it;
+	} else if (!mSelectedSceneNodes.empty()) {
+		mLatestSelected=mSelectedSceneNodes.back();
+	} else {
+		mLatestSelected=nullptr;
+	}
+	GuiContext::getInstance().updateNodeName(mLatestSelected);
+}
+
+Node* SelectionManager::getLatestSelected() {
+	return mLatestSelected;
 }
 
 bool SelectionManager::haveSelectedNodes() {

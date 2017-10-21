@@ -6,6 +6,7 @@ class SelectionManager
 {
 private:
 	vector<Node*>			mSelectedSceneNodes;
+	Node*					mLatestSelected=nullptr;
 public:
 	SelectionManager();
 	void deselectAllNodes();
@@ -15,6 +16,9 @@ public:
 	void setNodeAsSelected(Node* rSelectedNode);
 	bool haveSelectedNodes();
 	const vector<Node*> getSelectedNodes();
+	Node* getLatestSelected();
+	void setAsLatestSelected(Node* rNode);
+
 };
 
 #endif // SELECTIONMANAGER_H

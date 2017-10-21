@@ -399,8 +399,11 @@ void SceneGlWidget::paintGL()
 				//if (GuiContext::getInstance().getSelectionManager().isMouseOverSelection()) {
 				//	glColor3f(0.1, 0.3, 0.0);
 				//} else {
-			glColor3f(0.3, 0.5, 0.0);
-				//}
+			if (GuiContext::getInstance().getSelectionManager().getLatestSelected()==n) {
+				glColor3f(0.3, 0.5, 1.0);
+			} else {
+				glColor3f(0.3, 0.5, 0.0);
+			}
 			glPolygonMode(GL_FRONT, GL_LINE);
 			glPolygonMode(GL_BACK, GL_LINE);
 			glLineWidth(0.5);

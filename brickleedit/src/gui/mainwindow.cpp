@@ -86,10 +86,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	this->addToolBar(mToolBar);
 	// Tree Dock
 	mSceneTreeDock=new SceneTreeDock(this);
-	this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, mSceneTreeDock);
+	this->addDockWidget(Qt::DockWidgetArea::LeftDockWidgetArea, mSceneTreeDock);
 	// Brush Dock
 	mBrushDock=new BrushDock(this);
-	this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, mBrushDock);
+	this->addDockWidget(Qt::DockWidgetArea::LeftDockWidgetArea, mBrushDock);
+	// SelectionDock
+	mSelectionDock=new SelectionDock(this);
+	this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, mSelectionDock);
 	// Scene Properties Dock
 	mScenePropertyTreeDock=new PropertyTreeDock(this);
 	this->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, mScenePropertyTreeDock);
@@ -223,6 +226,10 @@ void MainWindow::setProjectRequireSave(bool rRequireSave) {
 
 SceneTreeDock& MainWindow::getSceneTreeDock() {
 	return *mSceneTreeDock;
+}
+
+SelectionDock& MainWindow::getSelectionDock() {
+	return *mSelectionDock;
 }
 
 PropertyTreeDock& MainWindow::getPropertyTreeDock() {

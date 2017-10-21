@@ -65,7 +65,7 @@ void BrushDock::setAsBrush(SelectedItem rSelectedItem, SelectedItemPref *rSelect
     ui->rotate->setValue(0.0);
 
 	if (rSelectedItem.rNodeTexture) {
-		QPixmap pixmap=PreviewImageUtil::getPreviewImage(rSelectedItem.rNodeTexture, rSelectedItem.rNodeTextureFrame, 100, 100);
+		QPixmap pixmap=PreviewImageUtil::getPreviewImage(rSelectedItem.rNodeTexture, rSelectedItem.rNodeTextureFrame, 50, 50);
 		ui->selectBrush->setIcon(pixmap);
 		//ui->previewImage->setPixmap(pixmap);
 		mSelectedItem=rSelectedItem;

@@ -204,6 +204,7 @@ bool GuiContext::createNewScene(const string& rSceneName, bool asDefault) {
 
 void GuiContext::setCurrentScene(const string& rName) {
 	if (getCurrentScene()==nullptr || getCurrentScene()->getName()!=rName) {
+		mSelectionManager.deselectAllNodes();
 		if (rName.size()>0) {
 			NodeScene *rNodeScene=ProjectContext::getInstance().getOrLoadSceneByName(rName);
 			mCurrentScene=rNodeScene;

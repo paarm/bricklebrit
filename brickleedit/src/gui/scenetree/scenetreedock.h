@@ -139,11 +139,11 @@ public:
 				r=new QTreeWidgetItem(mTreeWidget);
 			}
 			// Type + ID
-			TreeUtil::setTypeNameToTreeItem(r,rNode);
+			TreeUtil::setTypeNameToTreeItem(0, r,rNode);
 			// Name
-			TreeUtil::setNodeNameToTreeItem(r, rNode);
+			TreeUtil::setNodeNameToTreeItem(1, r, rNode);
 			//r->setText(1,QString::fromStdString(rNode->getName()));
-			TreeUtil::setNodeToTreeItem(r,rNode);
+			TreeUtil::setNodeDataToTreeItem(r,rNode);
 			//r->setIcon(0, QIcon(":/icons/new.png"));
 			if (parent) {
 				parent->addChild(r);
@@ -321,8 +321,6 @@ private slots:
 	void on_sceneNameOpm_activated(const QString &arg1);
 
 	void on_resourceNameOpm_activated(const QString &arg1);
-
-    void on_setAsCanvas_clicked();
 
 private:
 	TabInfo		mTabInfoScene;

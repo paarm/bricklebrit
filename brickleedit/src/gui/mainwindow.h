@@ -8,6 +8,7 @@
 #include "scenetree/scenetreedock.h"
 #include "propertygrid/propertytreedock.h"
 #include "brushmanager/brushdock.h"
+#include "selectionmanager/selectiondock.h"
 
 class MainWindow : public QMainWindow
 {
@@ -16,6 +17,7 @@ private:
 	MenuBar			*mMenuBar=nullptr;
 	ToolBar			*mToolBar=nullptr;
 	SceneTreeDock	*mSceneTreeDock=nullptr;
+	SelectionDock	*mSelectionDock=nullptr;
 	PropertyTreeDock*mScenePropertyTreeDock=nullptr;
 	BrushDock		*mBrushDock=nullptr;
 	NewProjectDialog *mNewProjectDialog=nullptr;
@@ -65,6 +67,7 @@ public:
     QAction*	getActionEraseSelected();
 
 	SceneTreeDock& getSceneTreeDock();
+	SelectionDock& getSelectionDock();
 	PropertyTreeDock& getPropertyTreeDock();
 	BrushDock& getBrushDock();
 	SceneGlWidget& getSceneGlWidget();
