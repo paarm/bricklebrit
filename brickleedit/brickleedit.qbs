@@ -54,6 +54,8 @@ Project {
             "src/gui/scene/sceneitemresizemanager.h",
             "src/gui/scene/worldcalculator.cpp",
             "src/gui/scene/worldcalculator.h",
+            "src/gui/scenetree/layermanager.cpp",
+            "src/gui/scenetree/layermanager.h",
             "src/gui/scenetree/scenetreedock.cpp",
             "src/gui/scenetree/scenetreedock.h",
             "src/gui/scenetree/scenetreedock.ui",

@@ -22,8 +22,6 @@ public:
 	void setBrushEnabled(bool enabled);
 	SelectedItem &getSelectedBrush();
 	Node* getSelectedBrushNode();
-	void setCurrentPaintCanvas(Node2d *rNode2d);
-    Node2d* getCurrentPaintCanvas();
     int getBrushWidth();
 	int getBrushHeight();
     bool getBrushFlipX();

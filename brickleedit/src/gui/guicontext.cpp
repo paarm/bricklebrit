@@ -127,7 +127,8 @@ bool GuiContext::createNewProject(const string& rProjectPathAbs, const string& r
 		ProjectContext::getInstance().getNodeProject()->setStartScene("StartupScene.brscn");
         ProjectContext::getInstance().getNodeProject()->setResourcesSubPath("resources");
         ProjectContext::getInstance().getNodeProject()->setProjectResource("ProjectResource.brres");
-
+		ProjectContext::getInstance().getNodeProject()->setGridSize(PointInt(32,32));
+		ProjectContext::getInstance().getNodeProject()->setGridActive(true);
 
 		setWindowTitle();
 		projectSwitched();
@@ -191,6 +192,13 @@ bool GuiContext::createNewScene(const string& rSceneName, bool asDefault) {
 				QDir tmp(QString::fromStdString(DirUtil::trimFileName(DirUtil::concatPath(ProjectContext::getInstance().getProjectPathAbs(), rSceneName))));
 				tmp.mkpath(".");
 			}
+			NodeLayer* rNodeLayer=static_cast<NodeLayer*>(getInstanceFromNodeType(NodeType::Layer, true));
+			rNodeLayer->setName("Layer 1");
+			NodeScene *rNodeScene=ProjectContext::getInstance().getOrLoadSceneByName(rSceneName);
+			if (rNodeScene) {
+				rNodeScene->addChildNode(rNodeLayer);
+			}
+
 			setCurrentScene(rSceneName);
 			getMainWindow().getSceneTreeDock().updateSceneDropdownWithCurrent();
 
@@ -211,10 +219,13 @@ void GuiContext::setCurrentScene(const string& rName) {
 		} else {
 			mCurrentScene=nullptr;
 		}
+		mLayerManager.currentSceneChanged();
+
 		getMainWindow().setSceneAvailable(getCurrentScene());
-		getMainWindow().getSceneTreeDock().switchToScene(getCurrentScene());
+		//getMainWindow().getSceneTreeDock().switchToScene(getCurrentScene());
 		getMainWindow().getBrushDock().setBrushEnabled(getCurrentScene()?true:false);
-        setCurrentPaintCanvas(getCurrentScene(), false);
+
+		//setCurrentPaintCanvas(getCurrentScene(), false);
 		setWindowTitle();
 		updateGlWidget();
 	}
@@ -306,7 +317,8 @@ void GuiContext::insertNewSceneNode(Node *rNode) {
 		Node *rParentNode=getCurrentPaintCanvas();
 		if (rParentNode) {
 			rParentNode->addChildNode(rNode);
-			getMainWindow().getSceneTreeDock().addSceneNodeToParent(rNode, rParentNode);
+			//getMainWindow().getSceneTreeDock().addSceneNodeToParent(rNode, rParentNode);
+			updateNodeName(rNode);
 			updateGlWidget();
 		}
 	}
@@ -317,7 +329,7 @@ void GuiContext::eraseSceneNodeWithId(int rNodeId) {
     if (rNodeScene) {
         Node *rNodeToDelete=rNodeScene->getChildNodeWithNodeIdRecursive(rNodeId);
         if (rNodeToDelete && rNodeToDelete->getParent()) {
-            getMainWindow().getSceneTreeDock().eraseSceneNode(rNodeToDelete);
+			//getMainWindow().getSceneTreeDock().eraseSceneNode(rNodeToDelete);
 
             if (getCurrentPaintCanvas()) {
                 if (rNodeToDelete==getCurrentPaintCanvas() || rNodeToDelete->getChildNodeWithNodeIdRecursive(getCurrentPaintCanvas()->getId())) {
@@ -369,6 +381,19 @@ void GuiContext::currentPropertyValueChanged(Node* rNode) {
 	updateGlWidget();
 }
 
+bool GuiContext::isNodeVisibleOn(Node *rNode) {
+	bool rv=false;
+	if (rNode) {
+		if (rNode->getNodeType()==NodeType::Layer) {
+			NodeLayer* rNodeLayer=static_cast<NodeLayer*>(rNode);
+			rv=rNodeLayer->getVisible();
+		} else {
+			rv=true;
+		}
+	}
+	return rv;
+}
+
 void GuiContext::updateGlWidget() {
 	getMainWindow().getSceneGlWidget().update();
 }
@@ -379,6 +404,10 @@ void GuiContext::setSceneNodeInTreeAsSelected(Node *rNode) {
 
 SelectionManager& GuiContext::getSelectionManager() {
 	return mSelectionManager;
+}
+
+LayerManager& GuiContext::getLayerManager() {
+	return mLayerManager;
 }
 
 void GuiContext::onZoomLevelChanged(int rZoomLevel) {
@@ -436,7 +465,6 @@ Tool GuiContext::getCurrentTool() {
 
 void GuiContext::setCurrentPaintCanvas(Node2d *rNode, bool switchToBrushTool) {
 	mCurrentPaintCanvas=rNode;
-	getMainWindow().getBrushDock().setCurrentPaintCanvas(rNode);
     if (rNode && switchToBrushTool && getCurrentTool()!=Tool::Brush) {
         setCurrentTool(Tool::Brush);
         GuiContext::getInstance().getMainWindow().getActionToolBrush()->setChecked(true);
@@ -444,23 +472,20 @@ void GuiContext::setCurrentPaintCanvas(Node2d *rNode, bool switchToBrushTool) {
 }
 
 void GuiContext::onPickAsBrush() {
-	const vector<Node*> v=mSelectionManager.getSelectedNodes();
-	if (!v.empty()) {
-		Node *rNode=v.at(0);//mTabInfoScene.getSelectedNode();
-		if (rNode && rNode->getNodeType()==NodeType::Sprite) {
-			NodeSprite * rNodeSprite=static_cast<NodeSprite*>(rNode);
-			Node * rNodeTextureOrAnimation=getFrameReferenceNodeForSprite(rNodeSprite);
-			if (rNodeTextureOrAnimation) {
-				SelectedItem rSelectedItem=prepareSelectedNodeFromTextureOrAnimationNode(rNodeTextureOrAnimation, rNodeSprite->getFrameRef().resourcefile);
-				SelectedItemPref rSelectedItemPref;
-				rSelectedItemPref.sizeWH=rNodeSprite->getSize();
-				rSelectedItemPref.scale=rNodeSprite->getScale();
-				rSelectedItemPref.rotation=rNodeSprite->getRotation();
-				rSelectedItemPref.flipX=rNodeSprite->getFlipX();
-				rSelectedItemPref.flipY=rNodeSprite->getFlipY();
+	Node *rNode=mSelectionManager.getLatestSelected();
+	if (rNode && rNode->getNodeType()==NodeType::Sprite) {
+		NodeSprite * rNodeSprite=static_cast<NodeSprite*>(rNode);
+		Node * rNodeTextureOrAnimation=getFrameReferenceNodeForSprite(rNodeSprite);
+		if (rNodeTextureOrAnimation) {
+			SelectedItem rSelectedItem=prepareSelectedNodeFromTextureOrAnimationNode(rNodeTextureOrAnimation, rNodeSprite->getFrameRef().resourcefile);
+			SelectedItemPref rSelectedItemPref;
+			rSelectedItemPref.sizeWH=rNodeSprite->getSize();
+			rSelectedItemPref.scale=rNodeSprite->getScale();
+			rSelectedItemPref.rotation=rNodeSprite->getRotation();
+			rSelectedItemPref.flipX=rNodeSprite->getFlipX();
+			rSelectedItemPref.flipY=rNodeSprite->getFlipY();
 
-				setCurrentBrush(rSelectedItem, &rSelectedItemPref);
-			}
+			setCurrentBrush(rSelectedItem, &rSelectedItemPref);
 		}
 	}
 }

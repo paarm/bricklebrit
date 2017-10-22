@@ -108,19 +108,6 @@ Node* BrushDock::getSelectedBrushNode() {
 	}
 }
 
-void BrushDock::setCurrentPaintCanvas(Node2d *rNode2d) {
-	if (rNode2d) {
-		ui->canvasNodeName->setText(QString::fromStdString(rNode2d->getName()));
-	} else {
-		ui->canvasNodeName->setText("");
-	}
-	mCurrentPaintCanvas=rNode2d;
-}
-
-Node2d* BrushDock::getCurrentPaintCanvas() {
-    return mCurrentPaintCanvas;
-}
-
 int BrushDock::getBrushWidth() {
 	return ui->sizeX->value();
 }

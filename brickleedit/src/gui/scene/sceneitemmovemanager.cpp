@@ -48,7 +48,7 @@ bool SceneItemMoveManager::updateMove(int rMouseX, int rMouseY) {
 			if (n->getNodeType()==NodeType::Sprite) {
 				NodeSprite* rNodeSprite=static_cast<NodeSprite*>(n);
 				if (rNodeSprite->getParent() && (
-							rNodeSprite->getParent()->getNodeType()==NodeType::Sprite || rNodeSprite->getParent()->getNodeType()==NodeType::Scene )) {
+							rNodeSprite->getParent()->getNodeType()==NodeType::Layer || rNodeSprite->getParent()->getNodeType()==NodeType::Sprite || rNodeSprite->getParent()->getNodeType()==NodeType::Scene )) {
 					Node2d* rNode2dParent=static_cast<Node2d*>(rNodeSprite->getParent());
 					PointFloat pos=getStartWorldPositionOfNode(rNodeSprite);
 					pos.x-=distanceX;

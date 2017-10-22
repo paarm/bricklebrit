@@ -9,24 +9,24 @@ void WorldCalculator::updateNodeMatrix(GLMMatrix4 parentMatrix, Node* rNode) {
 	glm::mat4 pM=glm::make_mat4x4(parentMatrix.getPointer());
 	glm::mat4 m(1.0);
 	GLMMatrix4 pMM;
-	if (rNode->getNodeType()==NodeType::Sprite) {
-		NodeSprite *rNodeSprite=static_cast<NodeSprite*>(rNode);
-		float angle=rNodeSprite->getRotation();
-		float scaleX=rNodeSprite->getScale().x;
-		float scaleY=rNodeSprite->getScale().y;
+	if (rNode->getNodeType()==NodeType::Layer || rNode->getNodeType()==NodeType::Sprite) {
+		Node2d *rNode2d=static_cast<Node2d*>(rNode);
+		float angle=rNode2d->getRotation();
+		float scaleX=rNode2d->getScale().x;
+		float scaleY=rNode2d->getScale().y;
 		if (angle>360.0) {
 			angle=angle/360.0;
 		} else if (angle<0.0) {
 			angle=360.0+angle;
 		}
-		m=glm::translate(m, glm::vec3(rNodeSprite->getPosition().x,rNodeSprite->getPosition().y,0.0));
+		m=glm::translate(m, glm::vec3(rNode2d->getPosition().x,rNode2d->getPosition().y,0.0));
 		m=glm::rotate(m, glm::radians(angle), glm::vec3(0.0,0.0,1.0));
 		//if (scaleX!=1.0 || scaleY!=1.0) {
 		m=glm::scale(m, glm::vec3(scaleX, scaleY, 1.0));
 		//}
 		pM*=m;
 		pMM.setFromPointer(glm::value_ptr(pM));
-		rNodeSprite->setCurrentModelMatrix(pMM);
+		rNode2d->setCurrentModelMatrix(pMM);
 	} else if (rNode->getNodeType()==NodeType::Scene) {
 		NodeScene * rNodeScene=static_cast<NodeScene*>(rNode);
 		rNodeScene->setCurrentModelMatrix(pMM);
@@ -59,16 +59,18 @@ bool WorldCalculator::isBoxIntersecting(PointFloat *rCurrentWorldLocationBox, fl
 
 void WorldCalculator::intersectTestForNode(vector<Node*> &rv, Node* rNode, float worldX, float worldY) {
 	if (rNode) {
-		if (rNode->getNodeType()==NodeType::Sprite) {
-			NodeSprite *rNodeSprite=static_cast<NodeSprite*>(rNode);
-			if (isBoxIntersecting(rNodeSprite->getCurrentWorldLocationBox(), worldX, worldY)) {
-				rv.push_back(rNode);
+		if (GuiContext::getInstance().isNodeVisibleOn(rNode)) {
+			if (rNode->getNodeType()==NodeType::Sprite) {
+				NodeSprite *rNodeSprite=static_cast<NodeSprite*>(rNode);
+				if (isBoxIntersecting(rNodeSprite->getCurrentWorldLocationBox(), worldX, worldY)) {
+					rv.push_back(rNode);
+				}
 			}
-		}
-		int childCount=rNode->getChildCount();
-		for (int i=0;i<childCount;i++) {
-			Node *rNodeChild=rNode->getNodeFromIndex(i);
-			WorldCalculator::intersectTestForNode(rv, rNodeChild, worldX, worldY);
+			int childCount=rNode->getChildCount();
+			for (int i=0;i<childCount;i++) {
+				Node *rNodeChild=rNode->getNodeFromIndex(i);
+				WorldCalculator::intersectTestForNode(rv, rNodeChild, worldX, worldY);
+			}
 		}
 	}
 }

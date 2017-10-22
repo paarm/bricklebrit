@@ -10,7 +10,7 @@ SceneItemResizeManager::SceneItemResizeManager() {
 
 void SceneItemResizeManager::startResize(PointFloat* rResizeHandle, bool rXonly, bool rYonly, Camera *rCamera, Node2d* rNode2d, int rStartMouseX, int rStartMouseY) {
 	mIsOnResize=false;
-	if (rCamera && rNode2d && rNode2d->getParent() && (rNode2d->getParent()->getNodeType()==NodeType::Sprite ||rNode2d->getParent()->getNodeType()==NodeType::Scene)) {
+	if (rCamera && rNode2d && rNode2d->getParent() && (rNode2d->getParent()->getNodeType()==NodeType::Layer || rNode2d->getParent()->getNodeType()==NodeType::Sprite || rNode2d->getParent()->getNodeType()==NodeType::Scene)) {
 		mIsOnResize=true;
 		mCamera=rCamera;
 		mStartMouseX=rStartMouseX;

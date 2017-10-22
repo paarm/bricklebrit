@@ -271,13 +271,20 @@ class SceneTreeDock : public QDockWidget
 public:
 	explicit SceneTreeDock(QWidget *parent = 0);
 	~SceneTreeDock();
+
+	void removeAllLayer();
+	void addLayerNode(NodeLayer *rNode);
+	void setCurrentLayerAsSelected();
+	void updateLayerName(NodeLayer *rNode);
+
+
 	Node* getSelectedSceneNode();
 	Node* getSelectedResourceNode();
 	Node* getRootSceneNode();
 	Node* getRootResourceNode();
 	void updateChildNodes(Node* rNode);
 	void updateNodeName(Node* rUpdateNode);
-	void switchToScene(Node *rNode);
+	//void switchToScene(Node *rNode);
 	void switchToResource(Node *rNode);
 	void addSceneNodeToSelectedItem(Node *rNode);
 	void addSceneNodeToParent(Node *rNode, Node *rNodeParent);
@@ -316,11 +323,17 @@ private slots:
 
 	void on_newAnimation_clicked();
 
-	void on_newSprite_clicked();
-
 	void on_sceneNameOpm_activated(const QString &arg1);
 
 	void on_resourceNameOpm_activated(const QString &arg1);
+
+	void on_addLayer_clicked();
+
+	void on_layerUp_clicked();
+
+	void on_layerDown_clicked();
+
+	void on_deleteLayer_clicked();
 
 private:
 	TabInfo		mTabInfoScene;

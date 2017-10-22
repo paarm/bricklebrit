@@ -285,11 +285,13 @@ void SceneGlWidget::onLeftMouseClicked(QMouseEvent *event, int mx, int my) {
 	} else if ( GuiContext::getInstance().getCurrentTool()==Tool::Brush &&
 				GuiContext::getInstance().getCurrentPaintCanvas() &&
 				GuiContext::getInstance().getMainWindow().getBrushDock().getSelectedBrushNode()) {
-		GLMVector3 pos=mCamera.unproject(mx, my);
-		NodeSprite* rNodeSprite=GuiContext::getInstance().getMainWindow().getBrushDock().getNewNodeFromBrush(pos.getX(), pos.getY());
-		if (rNodeSprite) {
-			GuiContext::getInstance().insertNewSceneNode(rNodeSprite);
-			update();
+		if (GuiContext::getInstance().isNodeVisibleOn(GuiContext::getInstance().getCurrentPaintCanvas())) {
+			GLMVector3 pos=mCamera.unproject(mx, my);
+			NodeSprite* rNodeSprite=GuiContext::getInstance().getMainWindow().getBrushDock().getNewNodeFromBrush(pos.getX(), pos.getY());
+			if (rNodeSprite) {
+				GuiContext::getInstance().insertNewSceneNode(rNodeSprite);
+				update();
+			}
 		}
 	}
 }
@@ -454,135 +456,144 @@ void SceneGlWidget::paintGL()
 }
 
 void SceneGlWidget::paintNode(Node* rNode, bool isBrushCanvas) {
-	glPushMatrix();
-	if (rNode->getNodeType()==NodeType::Sprite) {
-		NodeSprite *paintNode=(NodeSprite*)rNode;
-		int x=paintNode->getPosition().x;
-		int y=paintNode->getPosition().y;
-		int w=paintNode->getSize().x;
-		float scaleX=paintNode->getScale().x;
-		float scaleY=paintNode->getScale().y;
-		float w2=w/2.0;
-		int h=paintNode->getSize().y;
-		float h2=h/2.0;
-		int angle=paintNode->getRotation();
-		if (angle>360.0) {
-			angle=angle/360.0;
-		} else if (angle<0.0) {
-			angle=360.0+angle;
-		}
+	bool visible=true;
+	if (rNode->getNodeType()==NodeType::Layer) {
+		NodeLayer* rNodeLayer=static_cast<NodeLayer*>(rNode);
+		visible=rNodeLayer->getVisible();
+	}
+	if (visible) {
+		glPushMatrix();
+		if (rNode->getNodeType()==NodeType::Layer || rNode->getNodeType()==NodeType::Sprite) {
+			Node2d *paintNode2d=(Node2d*)rNode;
+			int x=paintNode2d->getPosition().x;
+			int y=paintNode2d->getPosition().y;
+			int w=paintNode2d->getSize().x;
+			float scaleX=paintNode2d->getScale().x;
+			float scaleY=paintNode2d->getScale().y;
+			float w2=w/2.0;
+			int h=paintNode2d->getSize().y;
+			float h2=h/2.0;
+			int angle=paintNode2d->getRotation();
+			if (angle>360.0) {
+				angle=angle/360.0;
+			} else if (angle<0.0) {
+				angle=360.0+angle;
+			}
 
-		//glTranslatef(0, 0, 0);
-		glTranslatef(x, y, 0.0);
-		glRotatef(angle, 0.0, 0.0, 1.0);
-		if (scaleX!=1.0 || scaleY!=1.0) {
-			glScalef(scaleX, scaleY, 1.0);
-		}
-		//GLfloat matrix[16];
-		//glGetFloatv (GL_MODELVIEW_MATRIX, matrix);
-		//setCurrentWordCoordinateToNode(paintNode, matrix);
+			//glTranslatef(0, 0, 0);
+			glTranslatef(x, y, 0.0);
+			glRotatef(angle, 0.0, 0.0, 1.0);
+			if (scaleX!=1.0 || scaleY!=1.0) {
+				glScalef(scaleX, scaleY, 1.0);
+			}
+			//GLfloat matrix[16];
+			//glGetFloatv (GL_MODELVIEW_MATRIX, matrix);
+			//setCurrentWordCoordinateToNode(paintNode2d, matrix);
 
+			if (rNode->getNodeType()==NodeType::Sprite) {
+				NodeSprite *paintNode=static_cast<NodeSprite*>(rNode);
+				NodeResource* rNodeResource=ProjectContext::getInstance().getOrLoadResourceByName(paintNode->getFrameRef().resourcefile);
+				if (!rNodeResource) {
+					rNodeResource=ProjectContext::getInstance().getDefaultResource();
+				}
+				if (rNodeResource) {
+					NodeTexture *rNodeTexture=nullptr;
+					NodeTextureFrame *rNodeTextureFrame=nullptr;
 
-		NodeResource* rNodeResource=ProjectContext::getInstance().getOrLoadResourceByName(paintNode->getFrameRef().resourcefile);
-		if (!rNodeResource) {
-			rNodeResource=ProjectContext::getInstance().getDefaultResource();
-		}
-		if (rNodeResource) {
-			NodeTexture *rNodeTexture=nullptr;
-			NodeTextureFrame *rNodeTextureFrame=nullptr;
-
-			Node *rNodeRef=rNodeResource->getNodeWithNodeId(paintNode->getFrameRef().textureid);
-			if (rNodeRef) {
-				if (rNodeRef->getNodeType()==NodeType::Texture) {
-					rNodeTexture=static_cast<NodeTexture*>(rNodeRef);
-					if (!paintNode->getFrameRef().frame.empty()) {
-						rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeTexture->getChildNodeWithName(paintNode->getFrameRef().frame));
-					}
-				} else if (rNodeRef->getNodeType()==NodeType::Animation) {
-					NodeAnimation* rNodeAnimation=static_cast<NodeAnimation*>(rNodeRef);
-					if (!paintNode->getFrameRef().frame.empty()) {
-						NodeAnimationFrame* rNodeAnimationFrame=static_cast<NodeAnimationFrame*>(rNodeAnimation->getChildNodeWithNameAndNodeType(paintNode->getFrameRef().frame, NodeType::AnimationFrame));
-						if (rNodeAnimationFrame) {
-							NodeResource* rNodeResourceAnimationFrame=ProjectContext::getInstance().getOrLoadResourceByName(rNodeAnimationFrame->getFrameRef().resourcefile);
-							if (rNodeResourceAnimationFrame) {
-								rNodeTexture=static_cast<NodeTexture*>(rNodeResourceAnimationFrame->getNodeWithNodeId(rNodeAnimationFrame->getFrameRef().textureid));
-								if (rNodeTexture && !rNodeAnimationFrame->getFrameRef().frame.empty()) {
-									rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeTexture->getChildNodeWithName(rNodeAnimationFrame->getFrameRef().frame));
+					Node *rNodeRef=rNodeResource->getNodeWithNodeId(paintNode->getFrameRef().textureid);
+					if (rNodeRef) {
+						if (rNodeRef->getNodeType()==NodeType::Texture) {
+							rNodeTexture=static_cast<NodeTexture*>(rNodeRef);
+							if (!paintNode->getFrameRef().frame.empty()) {
+								rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeTexture->getChildNodeWithName(paintNode->getFrameRef().frame));
+							}
+						} else if (rNodeRef->getNodeType()==NodeType::Animation) {
+							NodeAnimation* rNodeAnimation=static_cast<NodeAnimation*>(rNodeRef);
+							if (!paintNode->getFrameRef().frame.empty()) {
+								NodeAnimationFrame* rNodeAnimationFrame=static_cast<NodeAnimationFrame*>(rNodeAnimation->getChildNodeWithNameAndNodeType(paintNode->getFrameRef().frame, NodeType::AnimationFrame));
+								if (rNodeAnimationFrame) {
+									NodeResource* rNodeResourceAnimationFrame=ProjectContext::getInstance().getOrLoadResourceByName(rNodeAnimationFrame->getFrameRef().resourcefile);
+									if (rNodeResourceAnimationFrame) {
+										rNodeTexture=static_cast<NodeTexture*>(rNodeResourceAnimationFrame->getNodeWithNodeId(rNodeAnimationFrame->getFrameRef().textureid));
+										if (rNodeTexture && !rNodeAnimationFrame->getFrameRef().frame.empty()) {
+											rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeTexture->getChildNodeWithName(rNodeAnimationFrame->getFrameRef().frame));
+										}
+									}
 								}
 							}
 						}
 					}
-				}
-			}
-			if (rNodeTexture) {
-				BTexturePng *bTexture=ProjectContext::getInstance().getTexture(rNodeTexture->getPath());
-				if (bTexture) {
-					float tx=0.0;
-					float ty=0.0;
-					float tw=1.0;
-					float th=1.0;
+					if (rNodeTexture) {
+						BTexturePng *bTexture=ProjectContext::getInstance().getTexture(rNodeTexture->getPath());
+						if (bTexture) {
+							float tx=0.0;
+							float ty=0.0;
+							float tw=1.0;
+							float th=1.0;
 
-					if (rNodeTextureFrame) {
-						if (rNodeTextureFrame->getFrame().width>0 && rNodeTextureFrame->getFrame().height>0) {
-							if (rNodeTextureFrame->getFrame().x>0) {
-								tx=((float)rNodeTextureFrame->getFrame().x)/((float)bTexture->width);
+							if (rNodeTextureFrame) {
+								if (rNodeTextureFrame->getFrame().width>0 && rNodeTextureFrame->getFrame().height>0) {
+									if (rNodeTextureFrame->getFrame().x>0) {
+										tx=((float)rNodeTextureFrame->getFrame().x)/((float)bTexture->width);
+									}
+									if (rNodeTextureFrame->getFrame().y>0) {
+										ty=((float)rNodeTextureFrame->getFrame().y)/((float)bTexture->height);
+									}
+									tw=(((float)rNodeTextureFrame->getFrame().x)+((float)rNodeTextureFrame->getFrame().width))/((float)bTexture->width);
+									th=(((float)rNodeTextureFrame->getFrame().y)+((float)rNodeTextureFrame->getFrame().height))/((float)bTexture->height);
+								}
 							}
-							if (rNodeTextureFrame->getFrame().y>0) {
-								ty=((float)rNodeTextureFrame->getFrame().y)/((float)bTexture->height);
+							if (paintNode->getFlipX()) {
+								float tmp=tx;
+								tx=tw;
+								tw=tmp;
 							}
-							tw=(((float)rNodeTextureFrame->getFrame().x)+((float)rNodeTextureFrame->getFrame().width))/((float)bTexture->width);
-							th=(((float)rNodeTextureFrame->getFrame().y)+((float)rNodeTextureFrame->getFrame().height))/((float)bTexture->height);
+							if (paintNode->getFlipY()) {
+								float tmp=ty;
+								ty=th;
+								th=tmp;
+							}
+
+							glEnable(GL_TEXTURE_2D);
+							glPolygonMode(GL_FRONT, GL_FILL);
+							glPolygonMode(GL_BACK, GL_FILL);
+							glColor3f(1.0,1.0, 1.0);
+							bTexture->bind();
+
+							glBegin(GL_QUADS);
+								//glTexCoord2f(0, 0); glVertex3f(-w2, -h2, 0);
+								//glTexCoord2f(0, 1); glVertex3f(-w2,  h2, 0);
+								//glTexCoord2f(1, 1); glVertex3f( w2,  h2, 0);
+								//glTexCoord2f(1, 0); glVertex3f( w2, -h2, 0);
+								glTexCoord2f(tx, ty); glVertex3f(-w2, -h2, 0);
+								glTexCoord2f(tx, th); glVertex3f(-w2,  h2, 0);
+								glTexCoord2f(tw, th); glVertex3f( w2,  h2, 0);
+								glTexCoord2f(tw, ty); glVertex3f( w2, -h2, 0);
+							glEnd();
 						}
 					}
-					if (paintNode->getFlipX()) {
-						float tmp=tx;
-						tx=tw;
-						tw=tmp;
-					}
-					if (paintNode->getFlipY()) {
-						float tmp=ty;
-						ty=th;
-						th=tmp;
-					}
-
-					glEnable(GL_TEXTURE_2D);
-					glPolygonMode(GL_FRONT, GL_FILL);
-					glPolygonMode(GL_BACK, GL_FILL);
-					glColor3f(1.0,1.0, 1.0);
-					bTexture->bind();
-
-					glBegin(GL_QUADS);
-						//glTexCoord2f(0, 0); glVertex3f(-w2, -h2, 0);
-						//glTexCoord2f(0, 1); glVertex3f(-w2,  h2, 0);
-						//glTexCoord2f(1, 1); glVertex3f( w2,  h2, 0);
-						//glTexCoord2f(1, 0); glVertex3f( w2, -h2, 0);
-						glTexCoord2f(tx, ty); glVertex3f(-w2, -h2, 0);
-						glTexCoord2f(tx, th); glVertex3f(-w2,  h2, 0);
-						glTexCoord2f(tw, th); glVertex3f( w2,  h2, 0);
-						glTexCoord2f(tw, ty); glVertex3f( w2, -h2, 0);
-					glEnd();
 				}
 			}
 		}
-	}
-	unsigned long count=rNode->getChildCount();
-	unsigned long i;
-	for (i=0;i<count;i++) {
-		Node *child=rNode->getNodeFromIndex(i);
-		paintNode(child, isBrushCanvas);
-	}
-	if ((rNode->getNodeType()==NodeType::Sprite || rNode->getNodeType()==NodeType::Scene) &&
-		mSceneMouseInfo.isInside &&
-		rNode==GuiContext::getInstance().getCurrentPaintCanvas() &&
-		GuiContext::getInstance().getCurrentTool()==Tool::Brush &&
-		GuiContext::getInstance().getMainWindow().getBrushDock().getSelectedBrushNode()) {
-
-
-		GLMVector3 v=mCamera.unproject(mSceneMouseInfo.x, mSceneMouseInfo.y);
-		NodeSprite *rNodeBrush=GuiContext::getInstance().getMainWindow().getBrushDock().getNodeFromBrush(v.getX(), v.getY());
-		if (rNodeBrush) {
-			paintNode(rNodeBrush, true);
+		unsigned long count=rNode->getChildCount();
+		unsigned long i;
+		for (i=0;i<count;i++) {
+			Node *child=rNode->getNodeFromIndex(i);
+			paintNode(child, isBrushCanvas);
 		}
+		if (
+			mSceneMouseInfo.isInside &&
+			rNode==GuiContext::getInstance().getCurrentPaintCanvas() &&
+			GuiContext::getInstance().getCurrentTool()==Tool::Brush &&
+			GuiContext::getInstance().getMainWindow().getBrushDock().getSelectedBrushNode()) {
+
+
+			GLMVector3 v=mCamera.unproject(mSceneMouseInfo.x, mSceneMouseInfo.y);
+			NodeSprite *rNodeBrush=GuiContext::getInstance().getMainWindow().getBrushDock().getNodeFromBrush(v.getX(), v.getY());
+			if (rNodeBrush) {
+				paintNode(rNodeBrush, true);
+			}
+		}
+		glPopMatrix();
 	}
-	glPopMatrix();
 }

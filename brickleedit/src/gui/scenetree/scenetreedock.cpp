@@ -13,7 +13,7 @@ SceneTreeDock::SceneTreeDock(QWidget *parent) :
 	ui->setupUi(this);
 
 	ui->treeWidget->setColumnWidth(0,170);
-	ui->treeWidget->setColumnWidth(2,50);
+	ui->treeWidget->setColumnWidth(1,50);
 
 	ui->treeWidgetResources->setColumnWidth(0,170);
 	ui->treeWidgetResources->setColumnWidth(2,50);
@@ -52,12 +52,6 @@ void SceneTreeDock::clearResourceOpm() {
 	ui->resourceNameOpm->clear();
 }
 
-void SceneTreeDock::setSceneEditable(bool isEditable) {
-	ui->addLayer->setEnabled(isEditable);
-	ui->deleteLayer->setEnabled(isEditable);
-	ui->layerUp->setEnabled(isEditable);
-	ui->layerDown->setEnabled(isEditable);
-}
 
 void SceneTreeDock::setResourceEditable(bool isEditable) {
 	ui->newTexture->setEnabled(isEditable);
@@ -77,6 +71,116 @@ void SceneTreeDock::setProjectAvailable(bool isActive) {
 int SceneTreeDock::getActiveTreeTabIndex() {
 	return ui->tabWidget->currentIndex();
 }
+
+void SceneTreeDock::addLayerNode(NodeLayer *rNode) {
+	QTreeWidgetItem* r=nullptr;
+	if (rNode) {
+		r=new QTreeWidgetItem(ui->treeWidget);
+		// Name
+		TreeUtil::setNodeNameToTreeItem(0, r, rNode);
+		TreeUtil::setNodeDataToTreeItem(r,rNode);
+		//r->setIcon(0, QIcon(":/icons/new.png"));
+		ui->treeWidget->addTopLevelItem(r);
+
+		QIcon my_icon;
+		my_icon.addFile(":/icons/eyeOpen.png", QSize(), QIcon::Normal, QIcon::On);
+		my_icon.addFile(":/icons/delete.png", QSize(), QIcon::Normal, QIcon::Off);
+		QPushButton *rButtonVisible=new QPushButton(my_icon, "",ui->treeWidget);
+		rButtonVisible->setFocusPolicy(Qt::NoFocus);
+		//rButtonVisible->setToolTip(QObject::tr("Visible"));
+		//rButtonVisible->setIcon(QIcon(":/icons/eyeOpen.png"));
+		//rButtonVisible->setFixedWidth(rButtonVisible->fontMetrics().width(" ... "));
+		rButtonVisible->setCheckable(true);
+		connect(rButtonVisible, &QPushButton::toggled, this, [rButtonVisible, rNode, this]() {
+			GuiContext::getInstance().getLayerManager().setLayerVisible(rNode, rButtonVisible->isChecked());
+			GuiContext::getInstance().updateNodeName(rNode);
+			if (!rButtonVisible->isChecked()) {
+				GuiContext::getInstance().getSelectionManager().deselectAllNodes();
+			}
+			GuiContext::getInstance().updateGlWidget();
+		});
+		rButtonVisible->setChecked(rNode->getVisible());
+		ui->treeWidget->setItemWidget(r, 1, rButtonVisible);
+		setCurrentLayerAsSelected();
+	}
+}
+
+void SceneTreeDock::updateLayerName(NodeLayer *rNode) {
+	QTreeWidgetItem* r=TreeUtil::getTreeWidgetItemFromNode(ui->treeWidget, rNode);
+	if (r) {
+		TreeUtil::setNodeNameToTreeItem(0, r, rNode);
+	}
+}
+
+void SceneTreeDock::on_deleteLayer_clicked()
+{
+	if (GuiContext::getInstance().getLayerManager().getCurrentLayer()) {
+		QTreeWidgetItem* r=TreeUtil::getTreeWidgetItemFromNode(ui->treeWidget, GuiContext::getInstance().getLayerManager().getCurrentLayer());
+		if (r) {
+			delete r;
+		}
+		GuiContext::getInstance().getLayerManager().deleteCurrentLayer();
+		setCurrentLayerAsSelected();
+		GuiContext::getInstance().updateGlWidget();
+	}
+}
+
+void SceneTreeDock::on_layerUp_clicked()
+{
+
+}
+
+void SceneTreeDock::on_layerDown_clicked()
+{
+
+}
+
+
+
+void SceneTreeDock::setCurrentLayerAsSelected() {
+	NodeLayer* rCurrentNodeLayer=GuiContext::getInstance().getLayerManager().getCurrentLayer();
+	if (rCurrentNodeLayer) {
+		QTreeWidgetItem *r=TreeUtil::getTreeWidgetItemFromNode(ui->treeWidget, rCurrentNodeLayer);
+		if (r && !r->isSelected()) {
+			ui->treeWidget->clearSelection();
+			r->setSelected(true);
+			ui->treeWidget->scrollToItem(r);
+		}
+	}
+	GuiContext::getInstance().updateNodeName(rCurrentNodeLayer);
+}
+
+void SceneTreeDock::removeAllLayer() {
+	ui->treeWidget->clear();
+}
+
+void SceneTreeDock::on_addLayer_clicked()
+{
+	GuiContext::getInstance().getLayerManager().addNewLayer();
+}
+
+void SceneTreeDock::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)
+{
+	if (column>=0) {
+		Node* rNode=TreeUtil::getNodeFromTreeItem(item);
+		if (rNode && rNode->getNodeType()==NodeType::Layer) {
+			NodeLayer* rNodeLayer=static_cast<NodeLayer*>(rNode);
+			GuiContext::getInstance().getLayerManager().setCurrentLayer(rNodeLayer);
+			GuiContext::getInstance().updateNodeName(rNodeLayer);
+			GuiContext::getInstance().updateGlWidget();
+		}
+	}
+}
+
+
+void SceneTreeDock::setSceneEditable(bool isEditable) {
+	ui->addLayer->setEnabled(isEditable);
+	ui->deleteLayer->setEnabled(isEditable);
+	ui->layerUp->setEnabled(isEditable);
+	ui->layerDown->setEnabled(isEditable);
+}
+
+
 
 QTreeWidgetItem* SceneTreeDock::getSelectedSceneItem() {
 	return mTabInfoScene.getSelectedItem();
@@ -107,8 +211,11 @@ QTreeWidgetItem* SceneTreeDock::getRootResourceItem() {
 }
 
 void SceneTreeDock::updateNodeName(Node* rUpdateNode) {
-	mTabInfoScene.updateNodeName(rUpdateNode);
-	mTabInfoResource.updateNodeName(rUpdateNode);
+	if (rUpdateNode->getNodeType()==NodeType::Layer) {
+		updateLayerName(static_cast<NodeLayer*>(rUpdateNode));
+	} else {
+		mTabInfoResource.updateNodeName(rUpdateNode);
+	}
 }
 
 void SceneTreeDock::updateChildNodes(Node* rNode) {
@@ -183,14 +290,14 @@ void SceneTreeDock::updateResourceDropdownWithCurrent() {
 	}
 }
 
-void SceneTreeDock::switchToScene(Node *rNode) {
-	clearScene();
-	if (rNode) {
-		setSceneEditable(true);
-		mTabInfoScene.addNode(nullptr, rNode, false);
-	}
-	GuiContext::getInstance().getMainWindow().getPropertyTreeDock().setPropertiesForNode(nullptr);
-}
+//void SceneTreeDock::switchToScene(Node *rNode) {
+//	clearScene();
+//	if (rNode) {
+//		setSceneEditable(true);
+//		mTabInfoScene.addNode(nullptr, rNode, false);
+//	}
+//	GuiContext::getInstance().getMainWindow().getPropertyTreeDock().setPropertiesForNode(nullptr);
+//}
 void SceneTreeDock::switchToResource(Node *rNode) {
 	clearResource();
 	if (rNode) {
@@ -200,15 +307,6 @@ void SceneTreeDock::switchToResource(Node *rNode) {
 	GuiContext::getInstance().getMainWindow().getPropertyTreeDock().setPropertiesForNode(nullptr);
 }
 
-void SceneTreeDock::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)
-{
-	if (column>=0) {
-		Node* rNode=TreeUtil::getNodeFromTreeItem(item);
-		GuiContext::getInstance().getMainWindow().getPropertyTreeDock().setPropertiesForNode(rNode);
-		GuiContext::getInstance().getSelectionManager().replaceAllSelectedWithNode(rNode);
-		GuiContext::getInstance().updateGlWidget();
-	}
-}
 
 void SceneTreeDock::setSceneNodeAsSelected(Node *rNode) {
 	if (rNode) {
@@ -227,6 +325,7 @@ void SceneTreeDock::on_treeWidgetResources_itemClicked(QTreeWidgetItem *item, in
 
 void SceneTreeDock::on_tabWidget_currentChanged(int index)
 {
+#if 0
 	Node* rNode=nullptr;
 	if (index==0) {
 		rNode=getSelectedSceneNode();
@@ -237,6 +336,7 @@ void SceneTreeDock::on_tabWidget_currentChanged(int index)
 		// do not switch if in the current tab nothing is selected/available -> do not remove the current property if anyone is currently outlined
 		GuiContext::getInstance().getMainWindow().getPropertyTreeDock().setPropertiesForNode(rNode);
 	}
+#endif
 }
 
 void SceneTreeDock::on_sceneNameOpm_currentIndexChanged(const QString &arg1)
@@ -280,9 +380,6 @@ void SceneTreeDock::on_newAnimation_clicked()
 	rAnimationFrameEditor->show();
 }
 
-void SceneTreeDock::on_newSprite_clicked()
-{
-	SpriteEditor *rSpriteEditor=new SpriteEditor(nullptr, this);
-	rSpriteEditor->show();
-}
+
+
 

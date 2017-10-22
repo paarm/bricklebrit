@@ -262,9 +262,11 @@ public:
 class NodeLayer : public Node2d {
 private:
 public:
+	PROPERTY_BOOL_GETSET(Visible)
 
 	NodeLayer(bool rCreateNewId) : Node2d(rCreateNewId) {
 		mNodeType=NodeType::Layer;
+		setVisible(true);
 	}
 
 	NodeLayer() : NodeLayer(true) {

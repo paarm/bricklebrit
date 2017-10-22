@@ -2,6 +2,7 @@
 #include "mainwindow.h"
 #include "../project/projectcontext.h"
 #include "selectionmanager/selectionmanager.h"
+#include "scenetree/layermanager.h"
 #include <QObject>
 
 enum class Tool {
@@ -17,6 +18,7 @@ private:
 	NodeResource*		mCurrentResource=nullptr;
 	NodeScene*			mCurrentScene=nullptr;
 	SelectionManager	mSelectionManager;
+	LayerManager		mLayerManager;
 	Tool				mCurrentTool;
 	Node2d*				mCurrentPaintCanvas=nullptr;
 
@@ -61,6 +63,7 @@ public:
 	void setSceneNodeInTreeAsSelected(Node *rNode);
 
 	SelectionManager& getSelectionManager();
+	LayerManager& getLayerManager();
 	void onZoomLevelChanged(int rZoomLevel);
 
 	Tool getCurrentTool();
@@ -76,6 +79,7 @@ public:
 
 	void updateGridSettings(int gridX, int gridY, int offsetX, int offsetY);
 	bool isGridActive();
+	bool isNodeVisibleOn(Node *rNode);
 
 public slots:
 	void onNewProjectClicked();
