@@ -211,7 +211,7 @@ QTreeWidgetItem* SceneTreeDock::getRootResourceItem() {
 }
 
 void SceneTreeDock::updateNodeName(Node* rUpdateNode) {
-	if (rUpdateNode->getNodeType()==NodeType::Layer) {
+    if (rUpdateNode && rUpdateNode->getNodeType()==NodeType::Layer) {
 		updateLayerName(static_cast<NodeLayer*>(rUpdateNode));
 	} else {
 		mTabInfoResource.updateNodeName(rUpdateNode);
