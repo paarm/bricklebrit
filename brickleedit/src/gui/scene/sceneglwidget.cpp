@@ -243,7 +243,7 @@ void SceneGlWidget::onLeftMouseClicked(QMouseEvent *event, int mx, int my) {
 		}
 		if (!mSceneItemResizeManager.isOnResize()) {
 			vector<Node*> v;
-			WorldCalculator::intersectTestForNode(v, GuiContext::getInstance().getCurrentScene(), pos.getX(), pos.getY());
+			WorldCalculator::intersectTestForScene(v, GuiContext::getInstance().getCurrentScene(), pos.getX(), pos.getY(), true);
 			bool startMoveOnExistingSelection=false;
 			if (!event->modifiers().testFlag(Qt::ControlModifier)) {
 				for (Node* n : v) {

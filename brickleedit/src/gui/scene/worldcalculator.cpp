@@ -57,19 +57,34 @@ bool WorldCalculator::isBoxIntersecting(PointFloat *rCurrentWorldLocationBox, fl
 
 
 
-void WorldCalculator::intersectTestForNode(vector<Node*> &rv, Node* rNode, float worldX, float worldY) {
-	if (rNode) {
-		if (GuiContext::getInstance().isNodeVisibleOn(rNode)) {
+void WorldCalculator::intersectTestForScene(vector<Node*> &rv, NodeScene* rNodeScene, float worldX, float worldY, bool selectOnlyFirst) {
+	if (rNodeScene) {
+		vector<Node*> v;
+		WorldCalculator::buildFlatNodeList(v, rNodeScene);
+		int cnt=v.size();
+		for (int i=cnt-1;i>=0;i--) {
+			Node *rNode=v.at(i);
 			if (rNode->getNodeType()==NodeType::Sprite) {
 				NodeSprite *rNodeSprite=static_cast<NodeSprite*>(rNode);
 				if (isBoxIntersecting(rNodeSprite->getCurrentWorldLocationBox(), worldX, worldY)) {
 					rv.push_back(rNode);
+					if (selectOnlyFirst) {
+						break;
+					}
 				}
 			}
-			int childCount=rNode->getChildCount();
-			for (int i=0;i<childCount;i++) {
-				Node *rNodeChild=rNode->getNodeFromIndex(i);
-				WorldCalculator::intersectTestForNode(rv, rNodeChild, worldX, worldY);
+		}
+	}
+}
+
+void WorldCalculator::buildFlatNodeList(vector<Node*> &rv, Node *rParentNode) {
+	if (rParentNode) {
+		int childCount=rParentNode->getChildCount();
+		for (int i=0;i<childCount;i++) {
+			Node *rNodeChild=rParentNode->getNodeFromIndex(i);
+			if (GuiContext::getInstance().isNodeVisibleOn(rNodeChild)) {
+				rv.push_back(rNodeChild);
+				WorldCalculator::buildFlatNodeList(rv, rNodeChild);
 			}
 		}
 	}
