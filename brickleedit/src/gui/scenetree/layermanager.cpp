@@ -49,10 +49,13 @@ void LayerManager::setLayerVisible(NodeLayer *rNodeLayer, bool rIsVisible) {
 	rNodeLayer->setVisible(rIsVisible);
 }
 
+void LayerManager::setLayerLocked(NodeLayer *rNodeLayer, bool rIsLocked) {
+	rNodeLayer->setLocked(rIsLocked);
+}
+
 void LayerManager::deleteCurrentLayer() {
 	if (mCurrentLayer) {
-		GuiContext::getInstance().getSelectionManager().deselectAllNodes();
-		GuiContext::getInstance().eraseSceneNodeWithId(mCurrentLayer->getId());
+		GuiContext::getInstance().eraseNodeFromSceneWithId(mCurrentLayer->getId());
 		bool haveLayer=false;
 
 		NodeScene* rNodeScene=GuiContext::getInstance().getCurrentScene();

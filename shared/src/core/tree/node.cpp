@@ -143,7 +143,7 @@ Node* Node::addChildNode(Node *rNode) {
 
 Node* Node::getNodeFromIndex(unsigned long rIndex) {
 	Node *rv=nullptr;
-	if (rIndex>=0 && rIndex<mNodes.size()) {
+	if (rIndex<mNodes.size()) {
 		rv=mNodes[rIndex];
 	}
 	return rv;
@@ -173,6 +173,19 @@ Node* Node::getChildNodeWithNodeIdRecursive(int rNodeId) {
     }
     return rv;
 }
+
+bool Node::isThisNodeOrParentOrGrandParentOf(Node *rNode) {
+	bool rv=false;
+	if (rNode) {
+		if (rNode==this) {
+			rv=true;
+		} else if (getParent()) {
+			rv=getParent()->isThisNodeOrParentOrGrandParentOf(rNode);
+		}
+	}
+	return rv;
+}
+
 
 Node* Node::getChildNodeWithName(const string &rName) {
 	Node *rv=nullptr;

@@ -82,7 +82,8 @@ void WorldCalculator::buildFlatNodeList(vector<Node*> &rv, Node *rParentNode) {
 		int childCount=rParentNode->getChildCount();
 		for (int i=0;i<childCount;i++) {
 			Node *rNodeChild=rParentNode->getNodeFromIndex(i);
-			if (GuiContext::getInstance().isNodeVisibleOn(rNodeChild)) {
+			if (GuiContext::getInstance().isNodeVisibleOn(rNodeChild) &&
+					!GuiContext::getInstance().isNodeLocked(rNodeChild)) {
 				rv.push_back(rNodeChild);
 				WorldCalculator::buildFlatNodeList(rv, rNodeChild);
 			}

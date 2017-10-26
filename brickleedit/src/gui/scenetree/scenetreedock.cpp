@@ -14,6 +14,7 @@ SceneTreeDock::SceneTreeDock(QWidget *parent) :
 
 	ui->treeWidget->setColumnWidth(0,170);
 	ui->treeWidget->setColumnWidth(1,50);
+	ui->treeWidget->setColumnWidth(2,50);
 
 	ui->treeWidgetResources->setColumnWidth(0,170);
 	ui->treeWidgetResources->setColumnWidth(2,50);
@@ -95,12 +96,32 @@ void SceneTreeDock::addLayerNode(NodeLayer *rNode) {
 			GuiContext::getInstance().getLayerManager().setLayerVisible(rNode, rButtonVisible->isChecked());
 			GuiContext::getInstance().updateNodeName(rNode);
 			if (!rButtonVisible->isChecked()) {
-				GuiContext::getInstance().getSelectionManager().deselectAllNodes();
+				GuiContext::getInstance().getSelectionManager().deselectAllIfChildOf(rNode);
 			}
 			GuiContext::getInstance().updateGlWidget();
 		});
 		rButtonVisible->setChecked(rNode->getVisible());
 		ui->treeWidget->setItemWidget(r, 1, rButtonVisible);
+
+
+		QIcon iconsLocked;
+		iconsLocked.addFile(":/icons/unlocked.png", QSize(), QIcon::Normal, QIcon::On);
+		iconsLocked.addFile(":/icons/locked.png", QSize(), QIcon::Normal, QIcon::Off);
+		QPushButton *rButtonLocked=new QPushButton(iconsLocked, "",ui->treeWidget);
+		rButtonLocked->setFocusPolicy(Qt::NoFocus);
+		rButtonLocked->setCheckable(true);
+		connect(rButtonLocked, &QPushButton::toggled, this, [rButtonLocked, rNode, this]() {
+			GuiContext::getInstance().getLayerManager().setLayerLocked(rNode, !rButtonLocked->isChecked());
+			GuiContext::getInstance().updateNodeName(rNode);
+			if (!rButtonLocked->isChecked()) {
+				GuiContext::getInstance().getSelectionManager().deselectAllIfChildOf(rNode);
+			}
+			GuiContext::getInstance().updateGlWidget();
+		});
+		rButtonLocked->setChecked(!rNode->getLocked());
+		ui->treeWidget->setItemWidget(r, 2, rButtonLocked);
+
+
 		setCurrentLayerAsSelected();
 	}
 }
@@ -325,6 +346,7 @@ void SceneTreeDock::on_treeWidgetResources_itemClicked(QTreeWidgetItem *item, in
 
 void SceneTreeDock::on_tabWidget_currentChanged(int index)
 {
+	ignoreparam(index);
 #if 0
 	Node* rNode=nullptr;
 	if (index==0) {

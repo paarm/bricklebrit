@@ -75,6 +75,7 @@ public:
     Node* getChildNodeWithName(const string &rName);
 	Node* getChildNodeWithNameAndNodeType(const string &rName, NodeType rNodeType);
 	vector<Node*> getChildNodesWithNodeType(NodeType rNodeType);
+	bool isThisNodeOrParentOrGrandParentOf(Node *rParent);
 
 	NodeType& getNodeType();
 	void setPropertyString(const string& rName);
@@ -263,10 +264,12 @@ class NodeLayer : public Node2d {
 private:
 public:
 	PROPERTY_BOOL_GETSET(Visible)
+	PROPERTY_BOOL_GETSET(Locked)
 
 	NodeLayer(bool rCreateNewId) : Node2d(rCreateNewId) {
 		mNodeType=NodeType::Layer;
 		setVisible(true);
+		setLocked(false);
 	}
 
 	NodeLayer() : NodeLayer(true) {

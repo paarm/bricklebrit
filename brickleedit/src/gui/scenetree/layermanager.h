@@ -16,6 +16,7 @@ public:
 	void moveLayerUp();
 	void moveLayerDown();
 	void setLayerVisible(NodeLayer *rNodeLayer, bool rIsVisible);
+	void setLayerLocked(NodeLayer *rNodeLayer, bool rIsLocked);
 };
 
 #endif // LAYERMANAGER_H

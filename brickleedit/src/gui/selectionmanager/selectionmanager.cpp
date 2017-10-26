@@ -12,6 +12,20 @@ void SelectionManager::deselectAllNodes() {
 	mLatestSelected=nullptr;
 }
 
+void SelectionManager::deselectAllIfChildOf(Node *rParent) {
+	if (rParent) {
+		vector<Node*> toDeselect;
+		for(auto rNode : mSelectedSceneNodes) {
+			if (rNode->isThisNodeOrParentOrGrandParentOf(rParent)) {
+				toDeselect.push_back(rNode);
+			}
+		}
+		for (Node*rNode : toDeselect) {
+			deselectNode(rNode);
+		}
+	}
+}
+
 void SelectionManager::deselectNode(Node *rDeselectedNode) {
 	if (rDeselectedNode!=nullptr) {
 		const auto &it=std::find_if(mSelectedSceneNodes.begin(), mSelectedSceneNodes.end(), [rDeselectedNode] (Node* entry) {

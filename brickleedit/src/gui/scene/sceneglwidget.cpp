@@ -285,7 +285,9 @@ void SceneGlWidget::onLeftMouseClicked(QMouseEvent *event, int mx, int my) {
 	} else if ( GuiContext::getInstance().getCurrentTool()==Tool::Brush &&
 				GuiContext::getInstance().getCurrentPaintCanvas() &&
 				GuiContext::getInstance().getMainWindow().getBrushDock().getSelectedBrushNode()) {
-		if (GuiContext::getInstance().isNodeVisibleOn(GuiContext::getInstance().getCurrentPaintCanvas())) {
+		if (GuiContext::getInstance().isNodeVisibleOn(GuiContext::getInstance().getCurrentPaintCanvas())
+			&& !GuiContext::getInstance().isNodeLocked(GuiContext::getInstance().getCurrentPaintCanvas())
+				) {
 			GLMVector3 pos=mCamera.unproject(mx, my);
 			NodeSprite* rNodeSprite=GuiContext::getInstance().getMainWindow().getBrushDock().getNewNodeFromBrush(pos.getX(), pos.getY());
 			if (rNodeSprite) {

@@ -54,7 +54,8 @@ void AnimationFrameEditor::setupNode() {
 }
 
 void AnimationFrameEditor::addContentForFrameItem(QTreeWidgetItem* r, AnimationFrameEntry &e, int iEntryIndex) {
-    NodeResource* rNodeResource=ProjectContext::getInstance().getOrLoadResourceByName(e.resourcefile);
+	ignoreparam(iEntryIndex);
+	NodeResource* rNodeResource=ProjectContext::getInstance().getOrLoadResourceByName(e.resourcefile);
     if (rNodeResource) {
         Node* rNodeT=rNodeResource->getNodeWithNodeId(e.textureid);
         if (rNodeT && rNodeT->getNodeType()==NodeType::Texture) {

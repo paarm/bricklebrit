@@ -10,6 +10,7 @@ private:
 public:
 	SelectionManager();
 	void deselectAllNodes();
+	void deselectAllIfChildOf(Node *rParent);
 	void deselectNode(Node *rDeselectedNode);
 	bool isNodeSelected(Node* rTestNode);
 	void replaceAllSelectedWithNode(Node *rSelectedNode);

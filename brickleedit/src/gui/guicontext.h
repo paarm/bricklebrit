@@ -57,7 +57,7 @@ public:
 	void updateChildNodes(Node *rNode_parent);
 	void updateNodeName(Node *rNode);
 	void insertNewSceneNode(Node *rNode);
-    void eraseSceneNodeWithId(int rNodeId);
+	void eraseNodeFromSceneWithId(int rNodeId);
     void insertNewResourceNode(Node *rNode);
 
 	void setSceneNodeInTreeAsSelected(Node *rNode);
@@ -80,6 +80,7 @@ public:
 	void updateGridSettings(int gridX, int gridY, int offsetX, int offsetY);
 	bool isGridActive();
 	bool isNodeVisibleOn(Node *rNode);
+	bool isNodeLocked(Node *rNode);
 
 public slots:
 	void onNewProjectClicked();

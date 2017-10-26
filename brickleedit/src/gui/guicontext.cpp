@@ -324,18 +324,17 @@ void GuiContext::insertNewSceneNode(Node *rNode) {
 	}
 }
 
-void GuiContext::eraseSceneNodeWithId(int rNodeId) {
+void GuiContext::eraseNodeFromSceneWithId(int rNodeId) {
     NodeScene *rNodeScene=getCurrentScene();
     if (rNodeScene) {
         Node *rNodeToDelete=rNodeScene->getChildNodeWithNodeIdRecursive(rNodeId);
         if (rNodeToDelete && rNodeToDelete->getParent()) {
 			//getMainWindow().getSceneTreeDock().eraseSceneNode(rNodeToDelete);
-
-            if (getCurrentPaintCanvas()) {
-                if (rNodeToDelete==getCurrentPaintCanvas() || rNodeToDelete->getChildNodeWithNodeIdRecursive(getCurrentPaintCanvas()->getId())) {
-                    setCurrentPaintCanvas(rNodeScene, false);
-                }
+			if (getCurrentPaintCanvas() && getCurrentPaintCanvas()->isThisNodeOrParentOrGrandParentOf(rNodeToDelete)) {
+				setCurrentPaintCanvas(rNodeScene, false);
             }
+			getSelectionManager().deselectAllIfChildOf(rNodeToDelete);
+
             rNodeToDelete->getParent()->deleteChildNode(rNodeToDelete);
         }
     }
@@ -389,6 +388,17 @@ bool GuiContext::isNodeVisibleOn(Node *rNode) {
 			rv=rNodeLayer->getVisible();
 		} else {
 			rv=true;
+		}
+	}
+	return rv;
+}
+
+bool GuiContext::isNodeLocked(Node *rNode) {
+	bool rv=false;
+	if (rNode) {
+		if (rNode->getNodeType()==NodeType::Layer) {
+			NodeLayer* rNodeLayer=static_cast<NodeLayer*>(rNode);
+			rv=rNodeLayer->getLocked();
 		}
 	}
 	return rv;
@@ -498,7 +508,7 @@ void GuiContext::onEraseSelected() {
             vId.push_back(n->getId());
         }
         for (int rNodeId : vId) {
-            eraseSceneNodeWithId(rNodeId);
+			eraseNodeFromSceneWithId(rNodeId);
         }
         mSelectionManager.deselectAllNodes();
         updateGlWidget();
