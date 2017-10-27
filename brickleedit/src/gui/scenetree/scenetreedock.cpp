@@ -77,53 +77,55 @@ void SceneTreeDock::addLayerNode(NodeLayer *rNode) {
 	QTreeWidgetItem* r=nullptr;
 	if (rNode) {
 		r=new QTreeWidgetItem(ui->treeWidget);
-		// Name
-		TreeUtil::setNodeNameToTreeItem(0, r, rNode);
-		TreeUtil::setNodeDataToTreeItem(r,rNode);
-		//r->setIcon(0, QIcon(":/icons/new.png"));
 		ui->treeWidget->addTopLevelItem(r);
-
-		QIcon my_icon;
-		my_icon.addFile(":/icons/eyeOpen.png", QSize(), QIcon::Normal, QIcon::On);
-		my_icon.addFile(":/icons/delete.png", QSize(), QIcon::Normal, QIcon::Off);
-		QPushButton *rButtonVisible=new QPushButton(my_icon, "",ui->treeWidget);
-		rButtonVisible->setFocusPolicy(Qt::NoFocus);
-		//rButtonVisible->setToolTip(QObject::tr("Visible"));
-		//rButtonVisible->setIcon(QIcon(":/icons/eyeOpen.png"));
-		//rButtonVisible->setFixedWidth(rButtonVisible->fontMetrics().width(" ... "));
-		rButtonVisible->setCheckable(true);
-		connect(rButtonVisible, &QPushButton::toggled, this, [rButtonVisible, rNode, this]() {
-			GuiContext::getInstance().getLayerManager().setLayerVisible(rNode, rButtonVisible->isChecked());
-			GuiContext::getInstance().updateNodeName(rNode);
-			if (!rButtonVisible->isChecked()) {
-				GuiContext::getInstance().getSelectionManager().deselectAllIfChildOf(rNode);
-			}
-			GuiContext::getInstance().updateGlWidget();
-		});
-		rButtonVisible->setChecked(rNode->getVisible());
-		ui->treeWidget->setItemWidget(r, 1, rButtonVisible);
-
-
-		QIcon iconsLocked;
-		iconsLocked.addFile(":/icons/unlocked.png", QSize(), QIcon::Normal, QIcon::On);
-		iconsLocked.addFile(":/icons/locked.png", QSize(), QIcon::Normal, QIcon::Off);
-		QPushButton *rButtonLocked=new QPushButton(iconsLocked, "",ui->treeWidget);
-		rButtonLocked->setFocusPolicy(Qt::NoFocus);
-		rButtonLocked->setCheckable(true);
-		connect(rButtonLocked, &QPushButton::toggled, this, [rButtonLocked, rNode, this]() {
-			GuiContext::getInstance().getLayerManager().setLayerLocked(rNode, !rButtonLocked->isChecked());
-			GuiContext::getInstance().updateNodeName(rNode);
-			if (!rButtonLocked->isChecked()) {
-				GuiContext::getInstance().getSelectionManager().deselectAllIfChildOf(rNode);
-			}
-			GuiContext::getInstance().updateGlWidget();
-		});
-		rButtonLocked->setChecked(!rNode->getLocked());
-		ui->treeWidget->setItemWidget(r, 2, rButtonLocked);
-
-
-		setCurrentLayerAsSelected();
+		addLayerNodeData(r, rNode);
 	}
+}
+
+void SceneTreeDock::addLayerNodeData(QTreeWidgetItem* r, NodeLayer *rNode) {
+	// Name
+	TreeUtil::setNodeNameToTreeItem(0, r, rNode);
+	TreeUtil::setNodeDataToTreeItem(r,rNode);
+	//r->setIcon(0, QIcon(":/icons/new.png"));
+
+	QIcon my_icon;
+	my_icon.addFile(":/icons/eyeOpen.png", QSize(), QIcon::Normal, QIcon::On);
+	my_icon.addFile(":/icons/delete.png", QSize(), QIcon::Normal, QIcon::Off);
+	QPushButton *rButtonVisible=new QPushButton(my_icon, "",ui->treeWidget);
+	rButtonVisible->setFocusPolicy(Qt::NoFocus);
+	//rButtonVisible->setToolTip(QObject::tr("Visible"));
+	//rButtonVisible->setIcon(QIcon(":/icons/eyeOpen.png"));
+	//rButtonVisible->setFixedWidth(rButtonVisible->fontMetrics().width(" ... "));
+	rButtonVisible->setCheckable(true);
+	connect(rButtonVisible, &QPushButton::toggled, this, [rButtonVisible, rNode, this]() {
+		GuiContext::getInstance().getLayerManager().setLayerVisible(rNode, rButtonVisible->isChecked());
+		GuiContext::getInstance().updateNodeName(rNode);
+		if (!rButtonVisible->isChecked()) {
+			GuiContext::getInstance().getSelectionManager().deselectAllIfChildOf(rNode);
+		}
+		GuiContext::getInstance().updateGlWidget();
+	});
+	rButtonVisible->setChecked(rNode->getVisible());
+	ui->treeWidget->setItemWidget(r, 1, rButtonVisible);
+
+
+	QIcon iconsLocked;
+	iconsLocked.addFile(":/icons/unlocked.png", QSize(), QIcon::Normal, QIcon::On);
+	iconsLocked.addFile(":/icons/locked.png", QSize(), QIcon::Normal, QIcon::Off);
+	QPushButton *rButtonLocked=new QPushButton(iconsLocked, "",ui->treeWidget);
+	rButtonLocked->setFocusPolicy(Qt::NoFocus);
+	rButtonLocked->setCheckable(true);
+	connect(rButtonLocked, &QPushButton::toggled, this, [rButtonLocked, rNode, this]() {
+		GuiContext::getInstance().getLayerManager().setLayerLocked(rNode, !rButtonLocked->isChecked());
+		GuiContext::getInstance().updateNodeName(rNode);
+		if (!rButtonLocked->isChecked()) {
+			GuiContext::getInstance().getSelectionManager().deselectAllIfChildOf(rNode);
+		}
+		GuiContext::getInstance().updateGlWidget();
+	});
+	rButtonLocked->setChecked(!rNode->getLocked());
+	ui->treeWidget->setItemWidget(r, 2, rButtonLocked);
+	setCurrentLayerAsSelected();
 }
 
 void SceneTreeDock::updateLayerName(NodeLayer *rNode) {
@@ -146,14 +148,47 @@ void SceneTreeDock::on_deleteLayer_clicked()
 	}
 }
 
+void SceneTreeDock::moveLayerUpOrDown(bool moveUp) {
+	NodeLayer* rCurrentNodeLayer=GuiContext::getInstance().getLayerManager().getCurrentLayer();
+	if (rCurrentNodeLayer) {
+		QTreeWidgetItem *r=TreeUtil::getTreeWidgetItemFromNode(ui->treeWidget, rCurrentNodeLayer);
+		if (r) {
+			if (GuiContext::getInstance().getLayerManager().moveCurrentLayerUpOrDown(moveUp)) {
+				int src=ui->treeWidget->indexOfTopLevelItem(r);
+				int dest=src;
+				if (moveUp) {
+					dest--;
+				} else {
+					dest++;
+				}
+				if (dest>=0 && dest<ui->treeWidget->topLevelItemCount()) {
+					NodeLayer *rNodeLayer=static_cast<NodeLayer*>(TreeUtil::getNodeFromTreeItem(r));
+					if (rNodeLayer) {
+						delete r;
+						QTreeWidgetItem *rr=new QTreeWidgetItem();
+						ui->treeWidget->insertTopLevelItem(dest, rr);
+						addLayerNodeData(rr, rNodeLayer);
+					}
+				}
+				//QT Bug: Widgets are not correct aligned
+				int colWidth=ui->treeWidget->columnWidth(1);
+				ui->treeWidget->setColumnWidth(1,colWidth+1);
+				ui->treeWidget->setColumnWidth(1,colWidth);
+
+				GuiContext::getInstance().updateGlWidget();
+			}
+		}
+	}
+}
+
 void SceneTreeDock::on_layerUp_clicked()
 {
-
+	moveLayerUpOrDown(true);
 }
 
 void SceneTreeDock::on_layerDown_clicked()
 {
-
+	moveLayerUpOrDown(false);
 }
 
 
@@ -161,6 +196,7 @@ void SceneTreeDock::on_layerDown_clicked()
 void SceneTreeDock::setCurrentLayerAsSelected() {
 	NodeLayer* rCurrentNodeLayer=GuiContext::getInstance().getLayerManager().getCurrentLayer();
 	if (rCurrentNodeLayer) {
+		cout << "Current Layer is "<< rCurrentNodeLayer->getName() << endl;
 		QTreeWidgetItem *r=TreeUtil::getTreeWidgetItemFromNode(ui->treeWidget, rCurrentNodeLayer);
 		if (r && !r->isSelected()) {
 			ui->treeWidget->clearSelection();

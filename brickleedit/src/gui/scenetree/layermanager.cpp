@@ -23,6 +23,7 @@ void LayerManager::currentSceneChanged() {
 		GuiContext::getInstance().getMainWindow().getSceneTreeDock().setSceneEditable(false);
 	}
 }
+
 void LayerManager::addNewLayer() {
 	NodeScene* rNodeScene=GuiContext::getInstance().getCurrentScene();
 	if (rNodeScene) {
@@ -73,3 +74,35 @@ void LayerManager::deleteCurrentLayer() {
 	}
 }
 
+int LayerManager::getCurrentLayerIndex(size_t *rOutLayerCount) {
+	int rv=-1;
+	if (mCurrentLayer) {
+		NodeScene* rNodeScene=GuiContext::getInstance().getCurrentScene();
+		if (rNodeScene) {
+			vector<Node*> v=rNodeScene->getChildNodesWithNodeType(NodeType::Layer);
+			size_t cnt=v.size();
+			if (rOutLayerCount) {
+				(*rOutLayerCount)=cnt;
+			}
+			if (cnt>0) {
+				for (size_t i=0;i<cnt;i++) {
+					if (mCurrentLayer==v.at(i)) {
+						rv=int(i);
+					}
+				}
+			}
+		}
+	}
+	return rv;
+}
+
+bool LayerManager::moveCurrentLayerUpOrDown(bool rMoveUp) {
+	bool moved=false;
+	if (mCurrentLayer) {
+		NodeScene* rNodeScene=GuiContext::getInstance().getCurrentScene();
+		if (rNodeScene) {
+			moved=rNodeScene->moveChildNodeUpOrDown(mCurrentLayer, rMoveUp);
+		}
+	}
+	return moved;
+}

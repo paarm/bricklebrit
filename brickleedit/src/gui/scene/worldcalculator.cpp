@@ -38,12 +38,15 @@ void WorldCalculator::updateNodeMatrix(GLMMatrix4 parentMatrix, Node* rNode) {
 	}
 }
 
-bool WorldCalculator::isBoxIntersecting(PointFloat *rCurrentWorldLocationBox, float worldX, float worldY) {
+bool WorldCalculator::isBoxIntersecting(PointFloat *rCurrentWorldLocationBox, float worldX, float worldY, float worldDX, float worldDY) {
 	bool rv=false;
 	vector<PointFloat> v1;
 	vector<PointFloat> v2;
 	v2.emplace_back(worldX, worldY);
-	v2.emplace_back(worldX+1.0, worldY+1.0);
+	v2.emplace_back(worldX+worldDX, worldY);
+	v2.emplace_back(worldX+worldDX, worldY+worldDY);
+	v2.emplace_back(worldX, worldY+worldDY);
+	v2.emplace_back(worldX, worldY);
 	v1.emplace_back(rCurrentWorldLocationBox[0]);
 	v1.emplace_back(rCurrentWorldLocationBox[1]);
 	v1.emplace_back(rCurrentWorldLocationBox[2]);
@@ -57,7 +60,7 @@ bool WorldCalculator::isBoxIntersecting(PointFloat *rCurrentWorldLocationBox, fl
 
 
 
-void WorldCalculator::intersectTestForScene(vector<Node*> &rv, NodeScene* rNodeScene, float worldX, float worldY, bool selectOnlyFirst) {
+void WorldCalculator::intersectTestForScene(vector<Node*> &rv, NodeScene* rNodeScene, float worldX, float worldY, float worldDX, float worldDY, bool selectOnlyFirst) {
 	if (rNodeScene) {
 		vector<Node*> v;
 		WorldCalculator::buildFlatNodeList(v, rNodeScene);
@@ -66,7 +69,7 @@ void WorldCalculator::intersectTestForScene(vector<Node*> &rv, NodeScene* rNodeS
 			Node *rNode=v.at(i);
 			if (rNode->getNodeType()==NodeType::Sprite) {
 				NodeSprite *rNodeSprite=static_cast<NodeSprite*>(rNode);
-				if (isBoxIntersecting(rNodeSprite->getCurrentWorldLocationBox(), worldX, worldY)) {
+				if (isBoxIntersecting(rNodeSprite->getCurrentWorldLocationBox(), worldX, worldY, worldDX, worldDY)) {
 					rv.push_back(rNode);
 					if (selectOnlyFirst) {
 						break;

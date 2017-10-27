@@ -71,6 +71,26 @@ void SelectionManager::setNodeAsSelected(Node* rSelectedNode) {
 	}
 }
 
+void SelectionManager::startBulkSelection() {
+	deselectAllNodes();
+	setAsLatestSelected(nullptr);
+}
+
+void SelectionManager::setNodeAsSelectedInBulk(Node *rSelectedNode) {
+	if (!isNodeSelected(rSelectedNode)) {
+		if (rSelectedNode!=nullptr) {
+			mSelectedSceneNodes.push_back(rSelectedNode);
+		}
+	}
+}
+
+void SelectionManager::finishBulkSelection() {
+	setAsLatestSelected(nullptr);
+	for(Node* rNode: mSelectedSceneNodes) {
+		GuiContext::getInstance().getMainWindow().getSelectionDock().addNode(rNode);
+	}
+}
+
 void SelectionManager::setAsLatestSelected(Node* rNode) {
 	const auto &it=std::find_if(mSelectedSceneNodes.begin(), mSelectedSceneNodes.end(), [rNode] (Node* entry) {
 		return rNode==entry;

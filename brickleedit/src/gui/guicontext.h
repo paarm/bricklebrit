@@ -72,7 +72,7 @@ public:
     void setCurrentPaintCanvas(Node2d *rNode, bool switchToBrushTool);
 
 	Node2d* getCurrentPaintCanvas();
-    void setCurrentBrush(SelectedItem rSelectedItem, SelectedItemPref *rSelectedItemPref);
+	void onSelectedItemAsBrush(SelectedItem rSelectedItem);
 
     Node * getFrameReferenceNodeForSprite(NodeSprite *rNodeSprite);
     SelectedItem prepareSelectedNodeFromTextureOrAnimationNode(Node* rNode, const string& rResourceTextureOrAnimation);

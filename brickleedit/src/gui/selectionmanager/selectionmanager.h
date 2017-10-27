@@ -19,6 +19,10 @@ public:
 	const vector<Node*> getSelectedNodes();
 	Node* getLatestSelected();
 	void setAsLatestSelected(Node* rNode);
+	void startBulkSelection();
+	void setNodeAsSelectedInBulk(Node *rSelectedNode);
+	void finishBulkSelection();
+
 
 };
 

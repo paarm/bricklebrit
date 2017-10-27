@@ -336,6 +336,11 @@ private slots:
 	void on_deleteLayer_clicked();
 
 private:
+	void addLayerNodeData(QTreeWidgetItem* r, NodeLayer* rNodeLayer);
+	void moveLayerUpOrDown(bool moveUp);
+
+
+
 	TabInfo		mTabInfoScene;
 	TabInfo		mTabInfoResource;
 

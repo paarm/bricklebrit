@@ -220,6 +220,31 @@ vector<Node*> Node::getChildNodesWithNodeType(NodeType rNodeType) {
 }
 
 
+bool Node::moveChildNodeUpOrDown(Node *rNode, bool moveUp) {
+	bool moved=false;
+	if (rNode) {
+		size_t cnt=mNodes.size();
+		size_t foundAt=0;
+		bool found=false;
+		for (size_t i=0; i<cnt;i++) {
+			if (mNodes.at(i)==rNode) {
+				found=true;
+				foundAt=i;
+			}
+		}
+		if (!moveUp && found && foundAt+1<cnt) {
+			std::swap(mNodes.at(foundAt+1), mNodes.at(foundAt));
+			moved=true;
+		} else if (moveUp && found && foundAt>0) {
+			std::swap(mNodes.at(foundAt-1), mNodes.at(foundAt));
+			moved=true;
+		}
+	}
+	return moved;
+}
+
+void moveChildNodeUp(Node *rNode);
+
 
 void Node::moveChildNode(Node* rNodeToMove) {
 	if (rNodeToMove!=this) {

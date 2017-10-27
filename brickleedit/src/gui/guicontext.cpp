@@ -84,7 +84,7 @@ void GuiContext::onOpenProjectClicked() {
 
 void GuiContext::onCloseProjectClicked() {
 	if (ProjectContext::getInstance().getNodeProject()) {
-		ProjectContext::getInstance().closeProject(true);
+		ProjectContext::getInstance().closeProject(false);
 		mCurrentScene=nullptr;
 		mCurrentResource=nullptr;
 		setCurrentScene("");
@@ -482,21 +482,18 @@ void GuiContext::setCurrentPaintCanvas(Node2d *rNode, bool switchToBrushTool) {
 }
 
 void GuiContext::onPickAsBrush() {
-	Node *rNode=mSelectionManager.getLatestSelected();
-	if (rNode && rNode->getNodeType()==NodeType::Sprite) {
-		NodeSprite * rNodeSprite=static_cast<NodeSprite*>(rNode);
-		Node * rNodeTextureOrAnimation=getFrameReferenceNodeForSprite(rNodeSprite);
-		if (rNodeTextureOrAnimation) {
-			SelectedItem rSelectedItem=prepareSelectedNodeFromTextureOrAnimationNode(rNodeTextureOrAnimation, rNodeSprite->getFrameRef().resourcefile);
-			SelectedItemPref rSelectedItemPref;
-			rSelectedItemPref.sizeWH=rNodeSprite->getSize();
-			rSelectedItemPref.scale=rNodeSprite->getScale();
-			rSelectedItemPref.rotation=rNodeSprite->getRotation();
-			rSelectedItemPref.flipX=rNodeSprite->getFlipX();
-			rSelectedItemPref.flipY=rNodeSprite->getFlipY();
+	this->getMainWindow().getBrushDock().setCurrentSelectionAsBrush();
+	if (getCurrentTool()!=Tool::Brush) {
+		setCurrentTool(Tool::Brush);
+		GuiContext::getInstance().getMainWindow().getActionToolBrush()->setChecked(true);
+	}
+}
 
-			setCurrentBrush(rSelectedItem, &rSelectedItemPref);
-		}
+void GuiContext::onSelectedItemAsBrush(SelectedItem rSelectedItem) {
+	getMainWindow().getBrushDock().setSelectedItemAsBrush(rSelectedItem);
+	if (getCurrentTool()!=Tool::Brush) {
+		setCurrentTool(Tool::Brush);
+		GuiContext::getInstance().getMainWindow().getActionToolBrush()->setChecked(true);
 	}
 }
 
@@ -515,13 +512,6 @@ void GuiContext::onEraseSelected() {
     }
 }
 
-void GuiContext::setCurrentBrush(SelectedItem rSelectedItem, SelectedItemPref *rSelectedItemPref) {
-    getMainWindow().getBrushDock().setAsBrush(rSelectedItem, rSelectedItemPref);
-    if (getCurrentTool()!=Tool::Brush) {
-        setCurrentTool(Tool::Brush);
-        GuiContext::getInstance().getMainWindow().getActionToolBrush()->setChecked(true);
-    }
-}
 
 Node2d* GuiContext::getCurrentPaintCanvas() {
 	return mCurrentPaintCanvas;

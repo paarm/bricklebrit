@@ -76,6 +76,7 @@ public:
 	Node* getChildNodeWithNameAndNodeType(const string &rName, NodeType rNodeType);
 	vector<Node*> getChildNodesWithNodeType(NodeType rNodeType);
 	bool isThisNodeOrParentOrGrandParentOf(Node *rParent);
+	bool moveChildNodeUpOrDown(Node *rNode, bool moveUp);
 
 	NodeType& getNodeType();
 	void setPropertyString(const string& rName);

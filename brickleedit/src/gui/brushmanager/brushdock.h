@@ -17,30 +17,29 @@ class BrushDock : public QDockWidget
 public:
 	explicit BrushDock(QWidget *parent = 0);	
 	~BrushDock();
-    void setAsBrush(SelectedItem rSelectedItem, SelectedItemPref *rSelectedItemPref);
+	void setCurrentSelectionAsBrush();
+	void setNodesAsBrush(vector<Node*> v);
+	void setSelectedItemAsBrush(SelectedItem rSelectedItem);
+
+
 	void clearBrush();
 	void setBrushEnabled(bool enabled);
-	SelectedItem &getSelectedBrush();
 	Node* getSelectedBrushNode();
-    int getBrushWidth();
-	int getBrushHeight();
-    bool getBrushFlipX();
-    bool getBrushFlipY();
-    PointFloat getBrushScale();
-	PointInt getBrushSize();
-	float getRotation();
-	NodeSprite* getNodeFromBrush(float worldX, float worldY);
-	NodeSprite* getNewNodeFromBrush(float worldX, float worldY);
+	vector<NodeSprite*>& getNodesFromBrush(float worldX, float worldY);
+	vector<NodeSprite*> getNewNodesFromBrush(float worldX, float worldY);
 private slots:
 	void on_selectBrush_clicked();
 
 private:
 	Ui::BrushDock *ui;
-	SelectedItem mSelectedItem;
 	Node2d		*mCurrentPaintCanvas=nullptr;
-	NodeSprite	mNodeFromBrush;
+	vector<NodeSprite*>	mNodeFromBrushList;
+	vector<NodeSprite*>	mNodeFromBrushListCache;
 
-
+	vector<BrushInfoItem> mBrushInfoItemList;
+	size_t				  mBrushInfoCenterIndex=0;
+	void setCenterBrushUIInfo(BrushInfoItem& rBrushInfoItem);
+	bool				mBrushIsInvalid=true;
 };
 
 #endif // BRUSHDOCK_H

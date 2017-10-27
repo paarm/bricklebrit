@@ -2,6 +2,7 @@
 #define SELECTEDITEM_H
 #include <bricklelib.h>
 
+
 struct SelectedItem {
 	string resourceName;
 	NodeTexture			*rNodeTexture=nullptr;
@@ -18,11 +19,18 @@ struct SelectedItem {
 };
 
 struct SelectedItemPref {
-    PointInt    sizeWH;
+	int			offsetX;
+	int			offsetY;
+	PointInt    sizeWH;
     PointFloat  scale;
     float       rotation;
     bool        flipX;
     bool        flipY;
+};
+
+struct BrushInfoItem {
+	SelectedItem		rSelectedItem;
+	SelectedItemPref	rSelectedItemPref;
 };
 
 #endif // SELECTEDITEM_H

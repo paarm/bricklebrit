@@ -114,6 +114,11 @@ void SceneGlWidget::mouseReleaseEvent(QMouseEvent * event ) {
 			GuiContext::getInstance().setSceneNodeInTreeAsSelected(mSceneItemResizeManager.getNodeForResize());
 			mSceneItemResizeManager.stopResize();
 		}
+		if (mSceneBulkSelectManager.isOnSelect()) {
+			mSceneBulkSelectManager.stopSelect();
+			GuiContext::getInstance().getSelectionManager().finishBulkSelection();
+			update();
+		}
 	}
 }
 
@@ -144,6 +149,22 @@ void SceneGlWidget::mouseMoveEvent(QMouseEvent * event ) {
 		} else if (mSceneItemMoveManager.isOnMove()) {
 			bool requireUpdate=mSceneItemMoveManager.updateMove(event->pos().x(), event->pos().y());
 			if (requireUpdate) {
+				this->update();
+			}
+		} else if (mSceneBulkSelectManager.isOnSelect()) {
+			bool requireUpdate=mSceneBulkSelectManager.updateSelect(event->pos().x(), event->pos().y());
+			if (requireUpdate) {
+				vector<Node*> v;
+				WorldCalculator::intersectTestForScene(v, GuiContext::getInstance().getCurrentScene(),
+													   mSceneBulkSelectManager.getStartWorldX(),
+													   mSceneBulkSelectManager.getStartWorldY(),
+													   mSceneBulkSelectManager.getCurrentWorldX()-mSceneBulkSelectManager.getStartWorldX(),
+													   mSceneBulkSelectManager.getCurrentWorldY()-mSceneBulkSelectManager.getStartWorldY(),
+													   false);
+				GuiContext::getInstance().getSelectionManager().deselectAllNodes();
+				for (Node* n: v) {
+					GuiContext::getInstance().getSelectionManager().setNodeAsSelectedInBulk(n);
+				}
 				this->update();
 			}
 		}
@@ -192,6 +213,8 @@ bool SceneGlWidget::event(QEvent *e) {
 }
 
 void SceneGlWidget::onLeftMouseClicked(QMouseEvent *event, int mx, int my) {
+	//mSceneBulkSelectManager.stopSelect();
+
 	if (GuiContext::getInstance().getCurrentTool()==Tool::Selection) {
 		float x=(float)mx;
 		float y=(float)my;
@@ -228,7 +251,7 @@ void SceneGlWidget::onLeftMouseClicked(QMouseEvent *event, int mx, int my) {
 							rYonly=true;
 						}
 						if (rResizeHandle) {
-							if (WorldCalculator::isBoxIntersecting(rResizeHandle, pos.getX(), pos.getY())) {
+							if (WorldCalculator::isBoxIntersecting(rResizeHandle, pos.getX(), pos.getY(), 1.0, 1.0)) {
 								mSceneItemResizeManager.startResize(rResizeHandle, rXonly, rYonly, &mCamera, rNodeSprite, mx, my);
 								intersecting=true;
 								break;
@@ -243,7 +266,7 @@ void SceneGlWidget::onLeftMouseClicked(QMouseEvent *event, int mx, int my) {
 		}
 		if (!mSceneItemResizeManager.isOnResize()) {
 			vector<Node*> v;
-			WorldCalculator::intersectTestForScene(v, GuiContext::getInstance().getCurrentScene(), pos.getX(), pos.getY(), true);
+			WorldCalculator::intersectTestForScene(v, GuiContext::getInstance().getCurrentScene(), pos.getX(), pos.getY(), 1.0, 1.0, true);
 			bool startMoveOnExistingSelection=false;
 			if (!event->modifiers().testFlag(Qt::ControlModifier)) {
 				for (Node* n : v) {
@@ -278,7 +301,10 @@ void SceneGlWidget::onLeftMouseClicked(QMouseEvent *event, int mx, int my) {
 				}
 			}
 			if (GuiContext::getInstance().getSelectionManager().haveSelectedNodes()) {
-				mSceneItemMoveManager.startMove(&mCamera, mx,my);
+				mSceneItemMoveManager.startMove(&mCamera, mx, my);
+			} else {
+				mSceneBulkSelectManager.startSelect(&mCamera, mx, my);
+				GuiContext::getInstance().getSelectionManager().startBulkSelection();
 			}
 		}
 		update();
@@ -289,9 +315,11 @@ void SceneGlWidget::onLeftMouseClicked(QMouseEvent *event, int mx, int my) {
 			&& !GuiContext::getInstance().isNodeLocked(GuiContext::getInstance().getCurrentPaintCanvas())
 				) {
 			GLMVector3 pos=mCamera.unproject(mx, my);
-			NodeSprite* rNodeSprite=GuiContext::getInstance().getMainWindow().getBrushDock().getNewNodeFromBrush(pos.getX(), pos.getY());
-			if (rNodeSprite) {
-				GuiContext::getInstance().insertNewSceneNode(rNodeSprite);
+			vector<NodeSprite*> v=GuiContext::getInstance().getMainWindow().getBrushDock().getNewNodesFromBrush(pos.getX(), pos.getY());
+			if (!v.empty()) {
+				for (NodeSprite *rNodeSprite : v) {
+					GuiContext::getInstance().insertNewSceneNode(rNodeSprite);
+				}
 				update();
 			}
 		}
@@ -453,8 +481,19 @@ void SceneGlWidget::paintGL()
 			}
 		}
 	}
-	glDisable(GL_TEXTURE_2D);
+	if (mSceneBulkSelectManager.isOnSelect()) {
+		glLoadMatrixf (mCamera.getViewMatrix().getPointer());
 
+		glColor3f(0.3, 0.5, 1.0);
+		glBegin(GL_LINE_STRIP);
+			glVertex3d(mSceneBulkSelectManager.getStartWorldX(), mSceneBulkSelectManager.getStartWorldY(),0);
+			glVertex3d(mSceneBulkSelectManager.getCurrentWorldX(), mSceneBulkSelectManager.getStartWorldY(),0);
+			glVertex3d(mSceneBulkSelectManager.getCurrentWorldX(), mSceneBulkSelectManager.getCurrentWorldY(),0);
+			glVertex3d(mSceneBulkSelectManager.getStartWorldX(), mSceneBulkSelectManager.getCurrentWorldY(),0);
+			glVertex3d(mSceneBulkSelectManager.getStartWorldX(), mSceneBulkSelectManager.getStartWorldY(),0);
+		glEnd();
+	}
+	glDisable(GL_TEXTURE_2D);
 }
 
 void SceneGlWidget::paintNode(Node* rNode, bool isBrushCanvas) {
@@ -591,8 +630,8 @@ void SceneGlWidget::paintNode(Node* rNode, bool isBrushCanvas) {
 
 
 			GLMVector3 v=mCamera.unproject(mSceneMouseInfo.x, mSceneMouseInfo.y);
-			NodeSprite *rNodeBrush=GuiContext::getInstance().getMainWindow().getBrushDock().getNodeFromBrush(v.getX(), v.getY());
-			if (rNodeBrush) {
+			vector<NodeSprite*> &vv=GuiContext::getInstance().getMainWindow().getBrushDock().getNodesFromBrush(v.getX(), v.getY());
+			for (NodeSprite* rNodeBrush : vv) {
 				paintNode(rNodeBrush, true);
 			}
 		}

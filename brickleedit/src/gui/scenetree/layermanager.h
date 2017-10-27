@@ -10,11 +10,11 @@ public:
 	LayerManager();
 	void currentSceneChanged();
 	void setCurrentLayer(NodeLayer *rNodeLayer);
+	int getCurrentLayerIndex(size_t *rOutLayerCount);
 	NodeLayer* getCurrentLayer();
 	void addNewLayer();
 	void deleteCurrentLayer();
-	void moveLayerUp();
-	void moveLayerDown();
+	bool moveCurrentLayerUpOrDown(bool rMoveUp);
 	void setLayerVisible(NodeLayer *rNodeLayer, bool rIsVisible);
 	void setLayerLocked(NodeLayer *rNodeLayer, bool rIsLocked);
 };

@@ -46,6 +46,8 @@ Project {
             "src/gui/propertygrid/propertytreedock.h",
             "src/gui/propertygrid/propertytreedock.ui",
             "src/gui/resources/resource.qrc",
+            "src/gui/scene/scenebulkselectmanager.cpp",
+            "src/gui/scene/scenebulkselectmanager.h",
             "src/gui/scene/sceneglwidget.cpp",
             "src/gui/scene/sceneglwidget.h",
             "src/gui/scene/sceneitemmovemanager.cpp",

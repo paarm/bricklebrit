@@ -49,11 +49,11 @@ void SelectionDock::addNode(Node *rNode) {
 		//r->setText(1,QString::fromStdString(rNode->getName()));
 		TreeUtil::setNodeDataToTreeItem(r,rNode);
 		//r->setIcon(0, QIcon(":/icons/new.png"));
-		ui->treeWidget->addTopLevelItem(r);
+		//ui->treeWidget->addTopLevelItem(r);
 
 		QPushButton *rButtonDeselect=new QPushButton("X",ui->treeWidget);
 		rButtonDeselect->setToolTip(QObject::tr("Deselect"));
-		rButtonDeselect->setFixedWidth(rButtonDeselect->fontMetrics().width(" ... "));
+		//rButtonDeselect->setFixedWidth(rButtonDeselect->fontMetrics().width(" ... "));
 		connect(rButtonDeselect, &QPushButton::clicked, this, [rButtonDeselect, rNode, this]() {
 			GuiContext::getInstance().getSelectionManager().deselectNode(rNode);
 			GuiContext::getInstance().updateGlWidget();
@@ -63,7 +63,7 @@ void SelectionDock::addNode(Node *rNode) {
 		if (rNode->getNodeType()==NodeType::Sprite) {
 			QPushButton *rButton=new QPushButton("S",ui->treeWidget);
 			rButton->setToolTip(QObject::tr("Edit Sprite..."));
-			rButton->setFixedWidth(rButton->fontMetrics().width(" ... "));
+			//rButton->setFixedWidth(rButton->fontMetrics().width(" ... "));
 			connect(rButton, &QPushButton::clicked, this, [rButton, rNode, this]() {
 				SpriteEditor *rSpriteEditor=new SpriteEditor(rNode, ui->treeWidget);
 				rSpriteEditor->show();

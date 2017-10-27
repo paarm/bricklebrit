@@ -17,7 +17,7 @@
 #include <QMouseEvent>
 #include "sceneitemmovemanager.h"
 #include "sceneitemresizemanager.h"
-
+#include "scenebulkselectmanager.h"
 
 struct TVertex {
 	float u;
@@ -68,6 +68,7 @@ protected:
 	ViewportMoveInfo mViewportMoveInfo;
 	SceneItemMoveManager	mSceneItemMoveManager;
 	SceneItemResizeManager	mSceneItemResizeManager;
+	SceneBulkSelectManager	mSceneBulkSelectManager;
 	SceneMouseInfo	mSceneMouseInfo;
     //QOpenGLTexture *texture;
 	//BTexturePng bTexture;
