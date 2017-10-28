@@ -19,7 +19,7 @@
      <widget class="QTreeWidget" name="treeWidget">
       <column>
        <property name="text">
-        <string>Deselect</string>
+        <string>Action</string>
        </property>
       </column>
       <column>
@@ -30,11 +30,6 @@
       <column>
        <property name="text">
         <string>Name</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Action</string>
        </property>
       </column>
      </widget>

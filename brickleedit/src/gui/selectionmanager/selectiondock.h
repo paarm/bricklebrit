@@ -2,6 +2,7 @@
 #define SELECTIONDOCK_H
 
 #include <QDockWidget>
+#include <QPushButton>
 #include <QTreeWidgetItem>
 #include <bricklelib.h>
 
@@ -19,6 +20,7 @@ public:
 	void removeNode(Node *rNode);
 	void removeAllNodes();
 	void addNode(Node *rNode);
+    void addNodes(vector<Node*> &v);
 private slots:
 	void on_treeWidget_itemActivated(QTreeWidgetItem *item, int column);
 
@@ -31,6 +33,11 @@ private slots:
 private:
 	Ui::SelectionDock *ui;
 	void updateLatestSelected();
+    QTreeWidgetItem*  prepareNodeIntern(Node *rNode);
+    QPushButton* prepareDeselectButton(Node *rNode);
+    QPushButton* prepareEditSpriteButton(Node *rNode);
+
+
 };
 
 #endif // SELECTIONDOCK_H

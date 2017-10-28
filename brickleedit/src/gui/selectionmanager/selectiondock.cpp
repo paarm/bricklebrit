@@ -1,9 +1,9 @@
 #include "selectiondock.h"
 #include "ui_selectiondock.h"
 #include "../treeutil.h"
-#include <QPushButton>
 #include "../spriteeditor/spriteeditor.h"
 #include "../guicontext.h"
+#include <QList>
 
 SelectionDock::SelectionDock(QWidget *parent) :
 	QDockWidget(parent),
@@ -12,10 +12,10 @@ SelectionDock::SelectionDock(QWidget *parent) :
 	ui->setupUi(this);
 	ui->deselectOther->setEnabled(false);
 	ui->setAsCanvas->setEnabled(false);
-	ui->treeWidget->setColumnWidth(0, 50);
+    ui->treeWidget->setColumnWidth(0, 80);
 	ui->treeWidget->setColumnWidth(1, 100);
 	ui->treeWidget->setColumnWidth(2, 100);
-	ui->treeWidget->setColumnWidth(3, 50);
+    //ui->treeWidget->setColumnWidth(3, 50);
 }
 
 SelectionDock::~SelectionDock()
@@ -38,10 +38,95 @@ void SelectionDock::removeAllNodes() {
 	ui->deselectOther->setEnabled(false);
 }
 
+void SelectionDock::addNodes(vector<Node*> &v) {
+    if (!v.empty()) {
+        QList<QTreeWidgetItem*> vv;
+        for(Node* rNode : v) {
+            QTreeWidgetItem*r=prepareNodeIntern(rNode);
+            if (r) {
+                vv.append(r);
+            }
+        }
+        ui->treeWidget->addTopLevelItems(vv);
+        int i=0;
+        for(Node* rNode : v) {
+            QTreeWidgetItem*r=vv.at(i);
+            QPushButton* rDeselectButton=prepareDeselectButton(rNode);
+            QPushButton* rEditSpriteButton=prepareEditSpriteButton(rNode);
+
+            QWidget *dualPushButtons = new QWidget();
+            QHBoxLayout *hLayout = new QHBoxLayout();
+            hLayout->setContentsMargins(0,0,0,0);
+
+            if (rDeselectButton) {
+                hLayout->addWidget(rDeselectButton);
+            }
+            if (rEditSpriteButton) {
+                hLayout->addWidget(rEditSpriteButton);
+            }
+            dualPushButtons->setLayout(hLayout);
+            ui->treeWidget->setItemWidget(r, 0, dualPushButtons);
+
+            i++;
+        }
+        updateLatestSelected();
+    }
+}
+
 void SelectionDock::addNode(Node *rNode) {
+    QTreeWidgetItem*r=prepareNodeIntern(rNode);
+    if (r) {
+        ui->treeWidget->addTopLevelItem(r);
+        QPushButton* rDeselectButton=prepareDeselectButton(rNode);
+        QPushButton* rEditSpriteButton=prepareEditSpriteButton(rNode);
+
+        QWidget *dualPushButtons = new QWidget();
+        QHBoxLayout *hLayout = new QHBoxLayout();
+        hLayout->setContentsMargins(0,0,0,0);
+
+        if (rDeselectButton) {
+            hLayout->addWidget(rDeselectButton);
+        }
+        if (rEditSpriteButton) {
+            hLayout->addWidget(rEditSpriteButton);
+        }
+        dualPushButtons->setLayout(hLayout);
+        ui->treeWidget->setItemWidget(r, 0, dualPushButtons);
+
+        updateLatestSelected();
+    }
+}
+
+QPushButton* SelectionDock::prepareDeselectButton(Node *rNode) {
+    QPushButton *rButtonDeselect=new QPushButton("X",ui->treeWidget);
+    rButtonDeselect->setToolTip(QObject::tr("Deselect"));
+    rButtonDeselect->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
+
+    //rButtonDeselect->setSizePolicy(QSizePolicy::Maximum);
+    //rButtonDeselect->setFixedWidth(rButtonDeselect->fontMetrics().width(" ... "));
+    connect(rButtonDeselect, &QPushButton::clicked, this, [rButtonDeselect, rNode, this]() {
+        GuiContext::getInstance().getSelectionManager().deselectNode(rNode);
+        GuiContext::getInstance().updateGlWidget();
+    });
+    return rButtonDeselect;
+}
+
+QPushButton* SelectionDock::prepareEditSpriteButton(Node *rNode) {
+    QPushButton *rButton=new QPushButton("S",ui->treeWidget);
+    rButton->setToolTip(QObject::tr("Edit Sprite..."));
+    rButton->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
+    //rButton->setSizePolicy(QSizePolicy::Maximum);//rButton->setFixedWidth(rButton->fontMetrics().width(" ... "));
+    connect(rButton, &QPushButton::clicked, this, [rButton, rNode, this]() {
+        SpriteEditor *rSpriteEditor=new SpriteEditor(rNode, ui->treeWidget);
+        rSpriteEditor->show();
+    });
+    return rButton;
+}
+
+QTreeWidgetItem*  SelectionDock::prepareNodeIntern(Node *rNode) {
 	QTreeWidgetItem* r=nullptr;
 	if (rNode) {
-		r=new QTreeWidgetItem(ui->treeWidget);
+        r=new QTreeWidgetItem();
 		// Type + ID
 		TreeUtil::setTypeNameToTreeItem(1, r, rNode);
 		// Name
@@ -50,28 +135,8 @@ void SelectionDock::addNode(Node *rNode) {
 		TreeUtil::setNodeDataToTreeItem(r,rNode);
 		//r->setIcon(0, QIcon(":/icons/new.png"));
 		//ui->treeWidget->addTopLevelItem(r);
-
-		QPushButton *rButtonDeselect=new QPushButton("X",ui->treeWidget);
-		rButtonDeselect->setToolTip(QObject::tr("Deselect"));
-		//rButtonDeselect->setFixedWidth(rButtonDeselect->fontMetrics().width(" ... "));
-		connect(rButtonDeselect, &QPushButton::clicked, this, [rButtonDeselect, rNode, this]() {
-			GuiContext::getInstance().getSelectionManager().deselectNode(rNode);
-			GuiContext::getInstance().updateGlWidget();
-		});
-		ui->treeWidget->setItemWidget(r, 0, rButtonDeselect);
-
-		if (rNode->getNodeType()==NodeType::Sprite) {
-			QPushButton *rButton=new QPushButton("S",ui->treeWidget);
-			rButton->setToolTip(QObject::tr("Edit Sprite..."));
-			//rButton->setFixedWidth(rButton->fontMetrics().width(" ... "));
-			connect(rButton, &QPushButton::clicked, this, [rButton, rNode, this]() {
-				SpriteEditor *rSpriteEditor=new SpriteEditor(rNode, ui->treeWidget);
-				rSpriteEditor->show();
-			});
-			ui->treeWidget->setItemWidget(r, 3, rButton);
-		}
-		updateLatestSelected();
 	}
+    return r;
 }
 
 void SelectionDock::updateLatestSelected() {

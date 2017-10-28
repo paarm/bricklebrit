@@ -409,7 +409,7 @@ void SceneGlWidget::paintGL()
 	NodeScene *scene=GuiContext::getInstance().getCurrentScene();
 	if (scene) {
 		GLMMatrix4 m;
-		WorldCalculator::updateNodeMatrix(m, scene);
+        WorldCalculator::updateNodeMatrix(m, scene);
 		paintNode(scene, false);
 	}
 

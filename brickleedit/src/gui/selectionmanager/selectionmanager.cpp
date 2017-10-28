@@ -86,9 +86,7 @@ void SelectionManager::setNodeAsSelectedInBulk(Node *rSelectedNode) {
 
 void SelectionManager::finishBulkSelection() {
 	setAsLatestSelected(nullptr);
-	for(Node* rNode: mSelectedSceneNodes) {
-		GuiContext::getInstance().getMainWindow().getSelectionDock().addNode(rNode);
-	}
+    GuiContext::getInstance().getMainWindow().getSelectionDock().addNodes(mSelectedSceneNodes);
 }
 
 void SelectionManager::setAsLatestSelected(Node* rNode) {
