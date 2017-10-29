@@ -34,7 +34,6 @@ std::string GLMVector3::toString() {
 	return rv;
 }
 
-
 GLMMatrix4::GLMMatrix4() {
 	toIdentidy();
 }
@@ -60,6 +59,19 @@ void GLMMatrix4::setFromPointer(float* m4_src) {
 		toIdentidy();
 	}
 }
+
+bool GLMMatrix4::isEqual(GLMMatrix4 & other) {
+	bool rv=true;
+	for (int i=0;i<16;i++) {
+		if (m4[i]!=other.m4[i]) {
+			rv=false;
+			break;
+		}
+	}
+	return rv;
+}
+
+
 std::string GLMMatrix4::toString() {
 	std::string rv=std::to_string(m4[0])+","+std::to_string(m4[1])+","+std::to_string(m4[2])+","+std::to_string(m4[3])+"+\n"+
 			std::to_string(m4[4])+","+std::to_string(m4[5])+","+std::to_string(m4[6])+","+std::to_string(m4[7])+"+\n"+

@@ -134,6 +134,10 @@ Node* Node::getParent() {
 	return mParent;
 }
 
+vector<Node*> &Node::childs() {
+	return mNodes;
+}
+
 Node* Node::addChildNode(Node *rNode) {
 	mNodes.push_back(rNode);
 	Node *rv=mNodes.back();
@@ -680,9 +684,6 @@ void Node::deserializeSelf(JSONValue *rJSONValueParent) {
 	} while (0);
 }
 
-GLMMatrix4 Node2d::getCurrentModelMatrix() {
-	return mCurrentModelMatrix;
-}
 
 void Node2d::setResizeHandleSizeLocal(float rResizeHandleSizeLocalX, float rResizeHandleSizeLocalY) {
 	glm::mat4 matrix=glm::make_mat4x4(mCurrentModelMatrix.getPointer());
@@ -741,10 +742,26 @@ void Node2d::setResizeHandleSizeLocal(float rResizeHandleSizeLocalX, float rResi
 	}
 }
 
+void Node2d::setCurrentLocalModelMatrix(GLMMatrix4 &m) {
+	mCurrentLocalModelMatrix.setFromPointer(m.getPointer());
+	calculateCoords(mCurrentLocalModelMatrix, &mCurrentLocalLocationCenter, &mCurrentLocalLocationBox[0]);
+}
+
+GLMMatrix4 Node2d::getCurrentLocalModelMatrix() {
+	return mCurrentLocalModelMatrix;
+}
+
 void Node2d::setCurrentModelMatrix(GLMMatrix4 &m) {
 	mCurrentModelMatrix.setFromPointer(m.getPointer());
+	calculateCoords(mCurrentModelMatrix, &mCurrentWorldLocationCenter, &mCurrentWorldLocationBox[0]);
+}
+
+GLMMatrix4 Node2d::getCurrentModelMatrix() {
+	return mCurrentModelMatrix;
+}
+
+void Node2d::calculateCoords(GLMMatrix4 &m, PointFloat* current2LocationCenter, PointFloat* mCurrent4LocationBox) {
 	glm::mat4 matrix=glm::make_mat4x4(m.getPointer());
-	//glm::mat4 matrixRev=glm::inverse(matrix);
 
 	int w=getSize().x;
 	float w2=w/2.0;
@@ -752,25 +769,25 @@ void Node2d::setCurrentModelMatrix(GLMMatrix4 &m) {
 	float h2=h/2.0;
 
 	glm::vec4 rCenter=matrix*glm::vec4{0.0,0.0,0.0,1.0};
-	mCurrentWorldLocationCenter.x=rCenter.x;
-	mCurrentWorldLocationCenter.y=rCenter.y;
+	current2LocationCenter->x=rCenter.x;
+	current2LocationCenter->y=rCenter.y;
 
 	// top left
 	glm::vec4 rW=matrix*glm::vec4{-w2,-h2,0.0,1.0};
-	mCurrentWorldLocationBox[0].x=rW.x;
-	mCurrentWorldLocationBox[0].y=rW.y;
+	mCurrent4LocationBox[0].x=rW.x;
+	mCurrent4LocationBox[0].y=rW.y;
 	// top right
 	rW=matrix*glm::vec4{w2,-h2,0.0,1.0};
-	mCurrentWorldLocationBox[1].x=rW.x;
-	mCurrentWorldLocationBox[1].y=rW.y;
+	mCurrent4LocationBox[1].x=rW.x;
+	mCurrent4LocationBox[1].y=rW.y;
 	// bottom right
 	rW=matrix*glm::vec4{w2,h2,0.0,1.0};
-	mCurrentWorldLocationBox[2].x=rW.x;
-	mCurrentWorldLocationBox[2].y=rW.y;
+	mCurrent4LocationBox[2].x=rW.x;
+	mCurrent4LocationBox[2].y=rW.y;
 	// bottom left
 	rW=matrix*glm::vec4{-w2,h2,0.0,1.0};
-	mCurrentWorldLocationBox[3].x=rW.x;
-	mCurrentWorldLocationBox[3].y=rW.y;
+	mCurrent4LocationBox[3].x=rW.x;
+	mCurrent4LocationBox[3].y=rW.y;
 }
 
 

@@ -29,6 +29,7 @@ public:
 	float* getPointer();
 	void setFromPointer(float* m4_src);
 	std::string toString();
+	bool isEqual(GLMMatrix4 & other);
 };
 
 #endif // GLMVECTOR3_H

@@ -61,6 +61,7 @@ public:
 	//Node(NodeType rNodeType);
 	//Node(NodeType rNodeType, bool rCreateNewId);
 	~Node();
+	vector<Node*> &childs();
 	Node* addChildNode(Node*);
 	Node* getParent();
 	Node* getFirstChildNode();
@@ -182,6 +183,9 @@ private:
 	PointFloat mCurrentWorldLocationCenter;
 	PointFloat mCurrentWorldLocationBox[4];
 
+	PointFloat mCurrentLocalLocationCenter;
+	PointFloat mCurrentLocalLocationBox[4];
+
 	float	   mResizeHandleSizeLocal;
 	PointFloat mResizeHandleBR[4];
 	PointFloat mResizeHandleLocalBR[4];
@@ -193,6 +197,7 @@ private:
 	//PointFloat mResizeHandleR[4];
 	//PointFloat mResizeHandleB[4];
 	GLMMatrix4 mCurrentModelMatrix;
+	GLMMatrix4 mCurrentLocalModelMatrix;
 	float z;
 public:
 	PROPERTY_POINTINT_GETSET(Position)
@@ -215,7 +220,11 @@ public:
 	void setCurrentModelMatrix(GLMMatrix4 &m);
 	GLMMatrix4 getCurrentModelMatrix();
 
+	void setCurrentLocalModelMatrix(GLMMatrix4 &m);
+	GLMMatrix4 getCurrentLocalModelMatrix();
+
 	void setResizeHandleSizeLocal(float rResizeHandleSizeLocalX, float rResizeHandleSizeLocalY);
+	void calculateCoords(GLMMatrix4 &m, PointFloat* current2LocationCenter, PointFloat* mCurrent4LocationBox);
 
 	PointFloat* getResizeHandleBottomRight() {
 		return mResizeHandleBR;
@@ -242,6 +251,10 @@ public:
 	}
 	PointFloat *getCurrentWorldLocationBox() {
 		return mCurrentWorldLocationBox;
+	}
+
+	PointFloat *getCurrentLocalLocationBox() {
+		return mCurrentLocalLocationBox;
 	}
 
 	Node2d() : Node2d(true) {
@@ -286,8 +299,6 @@ public:
 	// else
 		PROPERTY_STRING_GETSET(DefaultAnimation)
 	// end if
-
-
 	NodeSprite(bool rCreateNewId) : Node2d(rCreateNewId) {
 		mNodeType=NodeType::Sprite;
 		setIsAnimated(false);
@@ -348,7 +359,6 @@ public:
 		mNodeType=NodeType::Texture;
 		setPath("");
 	}
-
 	NodeTexture() : NodeTexture(true) {
 	}
 };

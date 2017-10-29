@@ -9,6 +9,7 @@ void WorldCalculator::updateNodeMatrix(GLMMatrix4 parentMatrix, Node* rNode) {
 	glm::mat4 pM=glm::make_mat4x4(parentMatrix.getPointer());
 	glm::mat4 m(1.0);
 	GLMMatrix4 pMM;
+	GLMMatrix4 pMLocal;
 	if (rNode->getNodeType()==NodeType::Layer || rNode->getNodeType()==NodeType::Sprite) {
 		Node2d *rNode2d=static_cast<Node2d*>(rNode);
 		float angle=rNode2d->getRotation();
@@ -24,12 +25,16 @@ void WorldCalculator::updateNodeMatrix(GLMMatrix4 parentMatrix, Node* rNode) {
 		//if (scaleX!=1.0 || scaleY!=1.0) {
 		m=glm::scale(m, glm::vec3(scaleX, scaleY, 1.0));
 		//}
+		pMLocal.setFromPointer(glm::value_ptr(m));
+		rNode2d->setCurrentLocalModelMatrix(pMLocal);
+
 		pM*=m;
 		pMM.setFromPointer(glm::value_ptr(pM));
 		rNode2d->setCurrentModelMatrix(pMM);
 	} else if (rNode->getNodeType()==NodeType::Scene) {
 		NodeScene * rNodeScene=static_cast<NodeScene*>(rNode);
 		rNodeScene->setCurrentModelMatrix(pMM);
+		rNodeScene->setCurrentLocalModelMatrix(pMLocal);
 	}
 	int childCount=rNode->getChildCount();
 	for (int i=0;i<childCount;i++) {

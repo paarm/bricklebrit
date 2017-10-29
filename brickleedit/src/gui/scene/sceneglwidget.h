@@ -39,6 +39,30 @@ struct SceneMouseInfo {
 	int y=0;
 };
 
+struct DrawMember {
+	NodeSprite		*rNodeSprite=nullptr;
+	NodeTextureFrame *rNodeTextureFrame=nullptr;
+	DrawMember(NodeSprite *nodeSprite, NodeTextureFrame *nodeTextureFrame) : rNodeSprite(nodeSprite), rNodeTextureFrame(nodeTextureFrame) {
+
+	}
+};
+
+struct DrawTexture {
+	NodeTexture *rNodeTexture=nullptr;
+	BTexturePng *bTexture=nullptr;
+	vector<DrawMember> rDrawMemberList;
+	DrawTexture(NodeTexture *nodeTexture, BTexturePng *texture) : rNodeTexture(nodeTexture), bTexture(texture) {}
+};
+
+struct VertexEntry {
+	float s;
+	float t;
+	float x;
+	float y;
+	float z;
+};
+
+
 class SceneGlWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
 private:
@@ -74,6 +98,11 @@ protected:
 	//BTexturePng bTexture;
 	GLuint vbonum;
 	void paintNode(Node* rNode, bool isBrushCanvas);
+	void paintChilds(Node2d *rNodeParent);
+	void getTexture(NodeSprite *paintNode, NodeTexture **rOutNodeTexture, NodeTextureFrame **rOutNodeTextureFrame);
+	void getTextureCoords(NodeSprite* rNodeSprite, NodeTextureFrame *rNodeTextureFrame, BTexturePng *bTexture, float *outtx, float *outty, float *outtw, float* outth);
+
+
 	void paintGL();
 signals:
 	void zoomChanged(int rZoomLevel);
