@@ -10,7 +10,7 @@
 //#include <glm/gtc/matrix_transform.hpp>
 
 #include <QOpenGLWidget>
-#include <QOpenGLFunctions>
+//#include <QOpenGLFunctions>
 #include <QSizePolicy>
 #include <QPainter>
 #include <QOpenGLTexture>
@@ -19,6 +19,7 @@
 #include "sceneitemresizemanager.h"
 #include "scenebulkselectmanager.h"
 
+#if 0
 struct TVertex {
 	float u;
 	float v;
@@ -26,7 +27,7 @@ struct TVertex {
 	float y;
 	float z;
 };
-
+#endif
 struct ViewportMoveInfo {
 	bool isOnMove=false;
 	int startX=0;
@@ -39,6 +40,7 @@ struct SceneMouseInfo {
 	int y=0;
 };
 
+#if 0
 struct DrawMember {
 	NodeSprite		*rNodeSprite=nullptr;
 	NodeTextureFrame *rNodeTextureFrame=nullptr;
@@ -61,9 +63,9 @@ struct VertexEntry {
 	float y;
 	float z;
 };
+#endif
 
-
-class SceneGlWidget : public QOpenGLWidget, protected QOpenGLFunctions
+class SceneGlWidget : public QOpenGLWidget //, protected QOpenGLFunctions
 {
 private:
 	int mVirtualWidth=1280;
@@ -84,6 +86,7 @@ public:
 	void zoomInOut(int units);
 	GLMVector3 unprojectedScreenCoord(int mx, int my);
 	Camera& getCamera();
+	void resetScene();
 protected:
 	//void hoverMove(QHoverEvent *event);
 	bool event(QEvent *e) override;
@@ -94,13 +97,16 @@ protected:
 	SceneItemResizeManager	mSceneItemResizeManager;
 	SceneBulkSelectManager	mSceneBulkSelectManager;
 	SceneMouseInfo	mSceneMouseInfo;
+	//DrawNode		mDrawNodeScene;
     //QOpenGLTexture *texture;
 	//BTexturePng bTexture;
 	GLuint vbonum;
-	void paintNode(Node* rNode, bool isBrushCanvas);
-	void paintChilds(Node2d *rNodeParent);
-	void getTexture(NodeSprite *paintNode, NodeTexture **rOutNodeTexture, NodeTextureFrame **rOutNodeTextureFrame);
-	void getTextureCoords(NodeSprite* rNodeSprite, NodeTextureFrame *rNodeTextureFrame, BTexturePng *bTexture, float *outtx, float *outty, float *outtw, float* outth);
+	//void paintNode(Node* rNode, bool isBrushCanvas);
+	//void paintChilds(Node2d *rNodeParent);
+	//void getTexture(NodeSprite *paintNode, NodeTexture **rOutNodeTexture, NodeTextureFrame **rOutNodeTextureFrame);
+	//void getTextureCoords(NodeSprite* rNodeSprite, NodeTextureFrame *rNodeTextureFrame, BTexturePng *bTexture, float *outtx, float *outty, float *outtw, float* outth);
+	//void initializeDrawNode(Node2d *rNodeParent);
+
 
 
 	void paintGL();

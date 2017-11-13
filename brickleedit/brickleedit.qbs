@@ -82,10 +82,6 @@ Project {
             "src/main.cpp",
             "src/gui/mainwindow.cpp",
             "src/gui/mainwindow.h",
-            "src/project/nodemanager.cpp",
-            "src/project/nodemanager.h",
-            "src/project/projectcontext.cpp",
-            "src/project/projectcontext.h",
             "style.qrc",
         ]
         Depends {

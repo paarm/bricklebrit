@@ -6,7 +6,8 @@ Project {
         destinationDirectory: FileInfo.joinPaths(project.sourceDirectory,"bin")
         name: "bricklelib"
         cpp.cppFlags: "-std=c++11"
-        cpp.staticLibraries: "opengl32"
+        //cpp.staticLibraries: "opengl32"
+        cpp.staticLibraries: ["opengl32", "libglew32"]
         cpp.includePaths: ['src/core/thirdparty']
         files: [
             "src/bricklelib.h",
@@ -20,18 +21,28 @@ Project {
             "src/core/math/glmwrapper.h",
             "src/core/math/intersection.cpp",
             "src/core/math/intersection.h",
+            "src/core/project/nodemanager.cpp",
+            "src/core/project/nodemanager.h",
+            "src/core/project/projectcontext.cpp",
+            "src/core/project/projectcontext.h",
             "src/core/texture/btexturepng.cpp",
             "src/core/texture/btexturepng.h",
             "src/core/texture/texturemanager.cpp",
             "src/core/texture/texturemanager.h",
+            "src/core/texture/textureutil.cpp",
+            "src/core/texture/textureutil.h",
             "src/core/thirdparty/simplejson/JSON.cpp",
             "src/core/thirdparty/simplejson/JSON.h",
             "src/core/thirdparty/simplejson/JSONValue.cpp",
             "src/core/thirdparty/simplejson/JSONValue.h",
             "src/core/thirdparty/lodepng/lodepng.h",
             "src/core/thirdparty/lodepng/lodepng.cpp",
+            "src/core/tree/drawnode.cpp",
+            "src/core/tree/drawnode.h",
             "src/core/tree/node.h",
             "src/core/tree/node.cpp",
+            "src/core/tree/node2d.cpp",
+            "src/core/tree/node2d.h",
             "src/core/tree/nodeidgenerator.cpp",
             "src/core/tree/nodeidgenerator.h",
             "src/core/tree/property/property.h",

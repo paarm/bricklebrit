@@ -3,7 +3,10 @@
 #include <vector>
 #include <string>
 #include "../thirdparty/lodepng/lodepng.h"
-#include <GL/gl.h>
+#include <GL/glew.h>
+//#include <GL/glcorearb.h>
+//#include <GL/glext.h>
+//#include <GL/glext.h>
 #include <iostream>
 
 using namespace std;

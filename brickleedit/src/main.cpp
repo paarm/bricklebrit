@@ -1,6 +1,6 @@
 #include <QApplication>
 #include "gui/guicontext.h"
-
+#include <QTextStream>
 int main(int argc, char *argv[])
 {
 	std::setlocale(LC_ALL, "En_US");

@@ -4,7 +4,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "../guicontext.h"
 
-
+#if 0
 void WorldCalculator::updateNodeMatrix(GLMMatrix4 parentMatrix, Node* rNode) {
 	glm::mat4 pM=glm::make_mat4x4(parentMatrix.getPointer());
 	glm::mat4 m(1.0);
@@ -98,7 +98,6 @@ void WorldCalculator::buildFlatNodeList(vector<Node*> &rv, Node *rParentNode) {
 		}
 	}
 }
-
 int WorldCalculator::calcGridPos(int worldPos, int gridSize, int gridOffset) {
 	int rv=worldPos;
 	if (gridSize>0) {
@@ -118,6 +117,17 @@ int WorldCalculator::calcGridPos(int worldPos, int gridSize, int gridOffset) {
 		}
 	}
 	return rv;
+}
+
+void WorldCalculator::snapToGrid(glm::vec4 v) {
+	if (GuiContext::getInstance().isGridActive()) {
+		PointInt gridSize;
+		if (ProjectContext::getInstance().getNodeProject()) {
+			gridSize=ProjectContext::getInstance().getNodeProject()->getGridSize();
+		}
+		v.x=WorldCalculator::calcGridPos(v.x, gridSize.x, 0);
+		v.y=WorldCalculator::calcGridPos(v.y, gridSize.y, 0);
+	}
 }
 
 PointInt WorldCalculator::getLocalPosFromWorldPos(Node2d *rNode2dParent, PointFloat rWorldPos, bool rUseSnapToGridSetting) {
@@ -144,3 +154,4 @@ PointInt WorldCalculator::getLocalPosFromWorldPos(Node2d *rNode2dParent, PointFl
 	}
 	return pp;
 }
+#endif

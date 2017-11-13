@@ -1,6 +1,10 @@
 #include "newscenedialog.h"
 #include "ui_newscenedialog.h"
 #include "../guicontext.h"
+#include <QFileDialog>
+#include <QDir>
+#include <QFileInfo>
+#include <QMessageBox>
 
 NewSceneDialog::NewSceneDialog(bool rIsResource, QWidget *parent) :
 	QDialog(parent),

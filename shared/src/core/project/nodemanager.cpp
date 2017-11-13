@@ -1,5 +1,5 @@
 #include "nodemanager.h"
-#include <QFileInfo>
+
 NodeManager::NodeManager() {
 }
 
@@ -34,16 +34,16 @@ bool NodeManager::createNewResource(const string& rName) {
 
 Node* NodeManager::loadNode(const string&rPathWithFileAbs) {
 	Node *rv=nullptr;
-	QFileInfo fi(QString::fromStdString(rPathWithFileAbs));
-	if (fi.exists() && fi.isFile()) {
-		rv=Node::unpersistNode(fi.absoluteFilePath().toStdString());
-	}
+	//QFileInfo fi(QString::fromStdString(rPathWithFileAbs));
+	//if (fi.exists() && fi.isFile()) {
+		rv=Node::unpersistNode(rPathWithFileAbs);
+	//}
 	return rv;
 }
 
 bool NodeManager::loadProjectNode(const string& rProjectPathAbs, const string &rName) {
 	bool rv=false;
-	string rPathWithFileAbs=DirUtil::concatPath(rProjectPathAbs, rName);
+	string rPathWithFileAbs=rProjectPathAbs+"/"+rName;
 
 	if (mNodeProject) {
 		closeNodes();
@@ -62,7 +62,7 @@ bool NodeManager::loadProjectNode(const string& rProjectPathAbs, const string &r
 
 bool NodeManager::loadSceneNode(const string& rProjectPathAbs, const string &rName) {
 	bool rv=false;
-	string rPathWithFileAbs=DirUtil::concatPath(rProjectPathAbs, rName);
+	string rPathWithFileAbs=rProjectPathAbs+"/"+rName;
 
 	for (NodeScene* r : mNodeSceneList) {
 		if (r->getName()==rName) {
@@ -82,7 +82,7 @@ bool NodeManager::loadSceneNode(const string& rProjectPathAbs, const string &rNa
 
 bool NodeManager::loadResourceNode(const string& rProjectPathAbs, const string &rName) {
 	bool rv=false;
-	string rPathWithFileAbs=DirUtil::concatPath(rProjectPathAbs, rName);
+	string rPathWithFileAbs=rProjectPathAbs+"/"+rName;
 
 	for (auto r : mNodeResourceList) {
 		if (r->getName()==rName) {
@@ -124,13 +124,13 @@ void NodeManager::closeNodes() {
 void NodeManager::saveNodes(const string& rProjectPathAbs) {
 	if (mNodeProject) {
 		mNodeProject->setNextFreeId(NodeIdGenerator::getInstance().getNextFreeNumber());
-		Node::persistNode(mNodeProject, DirUtil::concatPath(rProjectPathAbs, mNodeProject->getName()));
+		Node::persistNode(mNodeProject, rProjectPathAbs+"/"+mNodeProject->getName());
 
 		for (auto r : mNodeSceneList) {
-			Node::persistNode(r, DirUtil::concatPath(rProjectPathAbs, r->getName()));
+			Node::persistNode(r, rProjectPathAbs+"/"+r->getName());
 		}
 		for (auto r : mNodeResourceList) {
-			Node::persistNode(r, DirUtil::concatPath(rProjectPathAbs, r->getName()));
+			Node::persistNode(r, rProjectPathAbs+"/"+r->getName());
 		}
 	}
 }

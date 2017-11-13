@@ -1,4 +1,4 @@
-#include "node.h"
+#include "node2d.h"
 #include <iostream>
 #include <fstream>
 #include <glm/glm.hpp>
@@ -128,6 +128,14 @@ Node::~Node() {
 	mPropertyMap.clear();
 	mPropertyList.clear();
 
+}
+
+void Node::deleteChildNodes() {
+	for (auto *rNode : mNodes) {
+		delete rNode;
+	}
+	mNodes.clear();
+	mNodes.shrink_to_fit();
 }
 
 Node* Node::getParent() {
@@ -277,13 +285,6 @@ Node* Node::getFirstChildNode() {
 	return firstChild;
 }
 
-void Node::deleteChildNodes() {
-	for (auto *rNode : mNodes) {
-		delete rNode;
-	}
-	mNodes.clear();
-	mNodes.shrink_to_fit();
-}
 
 void Node::deleteChildNode(Node *rNodeToDelete) {
     for (auto it=mNodes.begin();it!=mNodes.end();it++) {
@@ -572,11 +573,16 @@ Node* Node::unpersistNode(const string &rFileNameAbs) {
 			NodeType rNodeType=getNodeTypeFromString(rNodeTypeString);
 			rNodeRv=getInstanceFromNodeType(rNodeType, false);
 			rNodeRv->deserializeSelf(rJSONValueParent);
+			rNodeRv->initialSetupAfterLoadRecursive();
+
 		}
 	}
 	return rNodeRv;
 }
 
+void Node::initialSetupAfterLoadRecursive() {
+
+}
 
 void Node::serialize(string &buf, unsigned long indent) {
 	string rC=string(indent, ' ');
@@ -684,110 +690,5 @@ void Node::deserializeSelf(JSONValue *rJSONValueParent) {
 	} while (0);
 }
 
-
-void Node2d::setResizeHandleSizeLocal(float rResizeHandleSizeLocalX, float rResizeHandleSizeLocalY) {
-	glm::mat4 matrix=glm::make_mat4x4(mCurrentModelMatrix.getPointer());
-
-	int w=getSize().x;
-	float w2=w/2.0;
-	int h=getSize().y;
-	float h2=h/2.0;
-
-	for (int cnt=0;cnt<3;cnt++) {
-		float startX=w2;
-		float startY=h2;
-		if (cnt==1) {
-			startX=w2;//+rResizeHandleSizeLocalX;
-			startY=0-rResizeHandleSizeLocalY/2.0;
-		} else if (cnt==2) {
-			startX=0-rResizeHandleSizeLocalX/2.0;
-			startY=h2;//+rResizeHandleSizeLocalY;
-		}
-
-		for (int i=0;i<4;i++) {
-			int x=startX;
-			int y=startY;
-			switch(i) {
-			case 0:
-				break;
-			case 1:
-				x+=rResizeHandleSizeLocalX;
-				break;
-			case 2:
-				x+=rResizeHandleSizeLocalX;
-				y+=rResizeHandleSizeLocalY;
-				break;
-			case 3:
-				y+=rResizeHandleSizeLocalY;
-				break;
-			}
-			glm::vec4 vh=matrix*glm::vec4{x,y,0.0,1.0};
-			if (cnt==0) {
-				mResizeHandleBR[i].x=vh.x;
-				mResizeHandleBR[i].y=vh.y;
-				mResizeHandleLocalBR[i].x=x;
-				mResizeHandleLocalBR[i].y=y;
-			} else if (cnt==1) {
-				mResizeHandleRight[i].x=vh.x;
-				mResizeHandleRight[i].y=vh.y;
-				mResizeHandleLocalRight[i].x=x;
-				mResizeHandleLocalRight[i].y=y;
-			} else if (cnt==2) {
-				mResizeHandleBottom[i].x=vh.x;
-				mResizeHandleBottom[i].y=vh.y;
-				mResizeHandleLocalBottom[i].x=x;
-				mResizeHandleLocalBottom[i].y=y;
-			}
-		}
-	}
-}
-
-void Node2d::setCurrentLocalModelMatrix(GLMMatrix4 &m) {
-	mCurrentLocalModelMatrix.setFromPointer(m.getPointer());
-	calculateCoords(mCurrentLocalModelMatrix, &mCurrentLocalLocationCenter, &mCurrentLocalLocationBox[0]);
-}
-
-GLMMatrix4 Node2d::getCurrentLocalModelMatrix() {
-	return mCurrentLocalModelMatrix;
-}
-
-void Node2d::setCurrentModelMatrix(GLMMatrix4 &m) {
-	mCurrentModelMatrix.setFromPointer(m.getPointer());
-	calculateCoords(mCurrentModelMatrix, &mCurrentWorldLocationCenter, &mCurrentWorldLocationBox[0]);
-}
-
-GLMMatrix4 Node2d::getCurrentModelMatrix() {
-	return mCurrentModelMatrix;
-}
-
-void Node2d::calculateCoords(GLMMatrix4 &m, PointFloat* current2LocationCenter, PointFloat* mCurrent4LocationBox) {
-	glm::mat4 matrix=glm::make_mat4x4(m.getPointer());
-
-	int w=getSize().x;
-	float w2=w/2.0;
-	int h=getSize().y;
-	float h2=h/2.0;
-
-	glm::vec4 rCenter=matrix*glm::vec4{0.0,0.0,0.0,1.0};
-	current2LocationCenter->x=rCenter.x;
-	current2LocationCenter->y=rCenter.y;
-
-	// top left
-	glm::vec4 rW=matrix*glm::vec4{-w2,-h2,0.0,1.0};
-	mCurrent4LocationBox[0].x=rW.x;
-	mCurrent4LocationBox[0].y=rW.y;
-	// top right
-	rW=matrix*glm::vec4{w2,-h2,0.0,1.0};
-	mCurrent4LocationBox[1].x=rW.x;
-	mCurrent4LocationBox[1].y=rW.y;
-	// bottom right
-	rW=matrix*glm::vec4{w2,h2,0.0,1.0};
-	mCurrent4LocationBox[2].x=rW.x;
-	mCurrent4LocationBox[2].y=rW.y;
-	// bottom left
-	rW=matrix*glm::vec4{-w2,h2,0.0,1.0};
-	mCurrent4LocationBox[3].x=rW.x;
-	mCurrent4LocationBox[3].y=rW.y;
-}
 
 

@@ -9,7 +9,6 @@
 #include <future>
 #include "../math/glmwrapper.h"
 
-
 enum class NodeType {
 	Root,
 	Node,
@@ -47,20 +46,22 @@ using namespace std;
 class Node
 {
 private:
-	vector<Node*>				mNodes;
 	Node*						mParent=nullptr;
 	map<string, PropertyBase*>	mPropertyMap;
 	vector<PropertyBase*>		mPropertyList;
 	void setProperty(const string& rName, PropertyBase* r);
 	void deserializeSelf(JSONValue *rJSONValueParent);
 protected:
+	vector<Node*>				mNodes;
 	NodeType					mNodeType=NodeType::Node;
+	bool						mIsDrawable=false;
+	virtual void initialSetupAfterLoadRecursive();
 public:
 	Node(bool rCreateNewId);
 	Node();
 	//Node(NodeType rNodeType);
 	//Node(NodeType rNodeType, bool rCreateNewId);
-	~Node();
+	virtual ~Node();
 	vector<Node*> &childs();
 	Node* addChildNode(Node*);
 	Node* getParent();
@@ -178,137 +179,6 @@ public:
 };
 
 
-class Node2d : public Node {
-private:
-	PointFloat mCurrentWorldLocationCenter;
-	PointFloat mCurrentWorldLocationBox[4];
-
-	PointFloat mCurrentLocalLocationCenter;
-	PointFloat mCurrentLocalLocationBox[4];
-
-	float	   mResizeHandleSizeLocal;
-	PointFloat mResizeHandleBR[4];
-	PointFloat mResizeHandleLocalBR[4];
-	PointFloat mResizeHandleRight[4];
-	PointFloat mResizeHandleLocalRight[4];
-	PointFloat mResizeHandleBottom[4];
-	PointFloat mResizeHandleLocalBottom[4];
-
-	//PointFloat mResizeHandleR[4];
-	//PointFloat mResizeHandleB[4];
-	GLMMatrix4 mCurrentModelMatrix;
-	GLMMatrix4 mCurrentLocalModelMatrix;
-	float z;
-public:
-	PROPERTY_POINTINT_GETSET(Position)
-	PROPERTY_POINTINT_GETSET(Size)
-	PROPERTY_POINTFLOAT_GETSET(Scale)
-	PROPERTY_FLOAT_GETSET(Rotation)
-	PROPERTY_BOOL_GETSET(FlipX)
-	PROPERTY_BOOL_GETSET(FlipY)
-
-	Node2d(bool rCreateNewId) : Node(rCreateNewId) {
-		mNodeType=NodeType::Node2d;
-		setPosition();
-		setSize();
-		setScale(PointFloat(1.0,1.0));
-		setRotation();
-		setFlipX(false);
-		setFlipY(false);
-	}
-
-	void setCurrentModelMatrix(GLMMatrix4 &m);
-	GLMMatrix4 getCurrentModelMatrix();
-
-	void setCurrentLocalModelMatrix(GLMMatrix4 &m);
-	GLMMatrix4 getCurrentLocalModelMatrix();
-
-	void setResizeHandleSizeLocal(float rResizeHandleSizeLocalX, float rResizeHandleSizeLocalY);
-	void calculateCoords(GLMMatrix4 &m, PointFloat* current2LocationCenter, PointFloat* mCurrent4LocationBox);
-
-	PointFloat* getResizeHandleBottomRight() {
-		return mResizeHandleBR;
-	}
-	PointFloat* getResizeHandleRight() {
-		return mResizeHandleRight;
-	}
-	PointFloat* getResizeHandleBottom() {
-		return mResizeHandleBottom;
-	}
-	PointFloat* getResizeHandleLocalBottomRight() {
-		return mResizeHandleLocalBR;
-	}
-	PointFloat* getResizeHandleLocalRight() {
-		return mResizeHandleLocalRight;
-	}
-
-	PointFloat *getResizeHandleLocalBottom() {
-		return mResizeHandleLocalBottom;
-	}
-
-	PointFloat &getCurrentWorldLocationCenter() {
-		return mCurrentWorldLocationCenter;
-	}
-	PointFloat *getCurrentWorldLocationBox() {
-		return mCurrentWorldLocationBox;
-	}
-
-	PointFloat *getCurrentLocalLocationBox() {
-		return mCurrentLocalLocationBox;
-	}
-
-	Node2d() : Node2d(true) {
-	}
-
-};
-
-class NodeScene : public Node2d {
-private:
-public:
-
-	NodeScene(bool rCreateNewId) : Node2d(rCreateNewId) {
-		mNodeType=NodeType::Scene;
-	}
-
-	NodeScene() : NodeScene(true) {
-	}
-};
-
-class NodeLayer : public Node2d {
-private:
-public:
-	PROPERTY_BOOL_GETSET(Visible)
-	PROPERTY_BOOL_GETSET(Locked)
-
-	NodeLayer(bool rCreateNewId) : Node2d(rCreateNewId) {
-		mNodeType=NodeType::Layer;
-		setVisible(true);
-		setLocked(false);
-	}
-
-	NodeLayer() : NodeLayer(true) {
-	}
-};
-
-class NodeSprite : public Node2d {
-private:
-public:
-	PROPERTY_BOOL_GETSET(IsAnimated)
-	// if isAnimated==true
-		PROPERTY_FRAMEREF_GETSET(FrameRef)
-	// else
-		PROPERTY_STRING_GETSET(DefaultAnimation)
-	// end if
-	NodeSprite(bool rCreateNewId) : Node2d(rCreateNewId) {
-		mNodeType=NodeType::Sprite;
-		setIsAnimated(false);
-		setFrameRef();
-		setDefaultAnimation();
-	}
-
-	NodeSprite() : NodeSprite(true) {
-	}
-};
 
 
 

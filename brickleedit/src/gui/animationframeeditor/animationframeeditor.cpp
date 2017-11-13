@@ -1,6 +1,5 @@
 #include "animationframeeditor.h"
 #include "ui_animationframeeditor.h"
-#include "../../project/projectcontext.h"
 #include "../guicontext.h"
 #include "../treeutil.h"
 #include "../previewimageutil.h"

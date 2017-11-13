@@ -1,6 +1,5 @@
 #include "brushselection.h"
 #include "ui_brushselection.h"
-#include "../../project/projectcontext.h"
 #include "../guicontext.h"
 #include "../previewimageutil.h"
 

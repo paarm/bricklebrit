@@ -8,6 +8,10 @@ SelectionManager::SelectionManager()
 
 void SelectionManager::deselectAllNodes() {
 	GuiContext::getInstance().getMainWindow().getSelectionDock().removeAllNodes();
+	for(Node* rNode : mSelectedSceneNodes) {
+		Node2d *rNode2d=static_cast<Node2d*>(rNode);
+		rNode2d->updateSelection(false);
+	}
 	mSelectedSceneNodes.clear();
 	mLatestSelected=nullptr;
 }
@@ -33,6 +37,8 @@ void SelectionManager::deselectNode(Node *rDeselectedNode) {
 		}
 		);
 		if (it!=mSelectedSceneNodes.end()) {
+			Node2d *rNode2d=static_cast<Node2d*>(rDeselectedNode);
+			rNode2d->updateSelection(false);
 			mSelectedSceneNodes.erase(it);
 			mSelectedSceneNodes.shrink_to_fit();
 		}
@@ -64,6 +70,9 @@ void SelectionManager::replaceAllSelectedWithNode(Node *rSelectedNode) {
 void SelectionManager::setNodeAsSelected(Node* rSelectedNode) {
 	if (!isNodeSelected(rSelectedNode)) {
 		if (rSelectedNode!=nullptr) {
+			Node2d *rNode2d=static_cast<Node2d*>(rSelectedNode);
+			rNode2d->updateSelection(true);
+
 			mSelectedSceneNodes.push_back(rSelectedNode);
 			setAsLatestSelected(nullptr);
 			GuiContext::getInstance().getMainWindow().getSelectionDock().addNode(rSelectedNode);
@@ -79,7 +88,11 @@ void SelectionManager::startBulkSelection() {
 void SelectionManager::setNodeAsSelectedInBulk(Node *rSelectedNode) {
 	if (!isNodeSelected(rSelectedNode)) {
 		if (rSelectedNode!=nullptr) {
+			Node2d *rNode2d=static_cast<Node2d*>(rSelectedNode);
+			rNode2d->updateSelection(true);
+
 			mSelectedSceneNodes.push_back(rSelectedNode);
+			//mSelectedBulkNodes.push_back(rSelectedNode);
 		}
 	}
 }
@@ -87,8 +100,12 @@ void SelectionManager::setNodeAsSelectedInBulk(Node *rSelectedNode) {
 void SelectionManager::finishBulkSelection() {
 	setAsLatestSelected(nullptr);
     GuiContext::getInstance().getMainWindow().getSelectionDock().addNodes(mSelectedSceneNodes);
+	//mSelectedBulkNodes.clear();
 }
 
+//vector<Node*> &SelectionManager::getCurrentBulkSelectionNodes() {
+//	return mSelectedBulkNodes;
+//}
 void SelectionManager::setAsLatestSelected(Node* rNode) {
 	const auto &it=std::find_if(mSelectedSceneNodes.begin(), mSelectedSceneNodes.end(), [rNode] (Node* entry) {
 		return rNode==entry;
@@ -115,7 +132,8 @@ bool SelectionManager::haveSelectedNodes() {
 	return rv;
 }
 
-const vector<Node*> SelectionManager::getSelectedNodes() {
+vector<Node*> &SelectionManager::getSelectedNodes() {
 	return mSelectedSceneNodes;
 }
+
 

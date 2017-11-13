@@ -18,11 +18,11 @@ void SceneItemMoveManager::startMove(Camera *rCamera, int rStartMouseX, int rSta
 	mStartWorldY=worldPosStart.getY();
 
 	mStartPositionsOnMove.clear();
-	const vector<Node*> v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
+	const vector<Node*> &v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
 	for (Node* n : v) {
 		if (n->getNodeType()==NodeType::Sprite) {
 			NodeSprite* rNodeSprite=static_cast<NodeSprite*>(n);
-			mStartPositionsOnMove[rNodeSprite]=rNodeSprite->getCurrentWorldLocationCenter();
+			mStartPositionsOnMove[rNodeSprite]=PointFloat(rNodeSprite->getLocationInfo().rWorldLocationCenter.x,rNodeSprite->getLocationInfo().rWorldLocationCenter.y);
 		}
 	}
 }
@@ -43,7 +43,7 @@ bool SceneItemMoveManager::updateMove(int rMouseX, int rMouseY) {
 		float distanceX=mStartWorldX-worldPosCurrent.getX();
 		float distanceY=mStartWorldY-worldPosCurrent.getY();
 
-		vector<Node*> v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
+		vector<Node*> &v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
 		for (Node *n : v) {
 			if (n->getNodeType()==NodeType::Sprite) {
 				NodeSprite* rNodeSprite=static_cast<NodeSprite*>(n);
@@ -53,7 +53,8 @@ bool SceneItemMoveManager::updateMove(int rMouseX, int rMouseY) {
 					PointFloat pos=getStartWorldPositionOfNode(rNodeSprite);
 					pos.x-=distanceX;
 					pos.y-=distanceY;
-					PointInt pp=WorldCalculator::getLocalPosFromWorldPos(rNode2dParent, pos, true);
+					glm::vec4 pv=rNode2dParent->getLocalPosFromWorldPos(pos.x, pos.y, GuiContext::getInstance().isGridActive());
+					PointInt pp(pv.x, pv.y);
 					rNodeSprite->setPosition(pp);
 				}
 			}

@@ -1,6 +1,5 @@
 #include "spriteeditor.h"
 #include "ui_spriteeditor.h"
-#include "../../project/projectcontext.h"
 #include "../guicontext.h"
 #include "../treeutil.h"
 #include "../previewimageutil.h"

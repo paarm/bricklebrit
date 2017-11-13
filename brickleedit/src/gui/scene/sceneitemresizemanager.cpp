@@ -8,7 +8,7 @@
 SceneItemResizeManager::SceneItemResizeManager() {
 }
 
-void SceneItemResizeManager::startResize(PointFloat* rResizeHandle, bool rXonly, bool rYonly, Camera *rCamera, Node2d* rNode2d, int rStartMouseX, int rStartMouseY) {
+void SceneItemResizeManager::startResize(HandleLocationInfo* rHandleLocationInfo, bool rXonly, bool rYonly, Camera *rCamera, Node2d* rNode2d, int rStartMouseX, int rStartMouseY) {
 	mIsOnResize=false;
 	if (rCamera && rNode2d && rNode2d->getParent() && (rNode2d->getParent()->getNodeType()==NodeType::Layer || rNode2d->getParent()->getNodeType()==NodeType::Sprite || rNode2d->getParent()->getNodeType()==NodeType::Scene)) {
 		mIsOnResize=true;
@@ -16,8 +16,8 @@ void SceneItemResizeManager::startResize(PointFloat* rResizeHandle, bool rXonly,
 		mStartMouseX=rStartMouseX;
 		mStartMouseY=rStartMouseY;
 		GLMVector3 worldPosStart=mCamera->unproject(mStartMouseX, mStartMouseY);
-		mStartWorldOffsetX=worldPosStart.getX()-rResizeHandle[0].x;
-		mStartWorldOffsetY=worldPosStart.getY()-rResizeHandle[0].y;
+		mStartWorldOffsetX=worldPosStart.getX()-rHandleLocationInfo->rWorldLocationBox[0].x;
+		mStartWorldOffsetY=worldPosStart.getY()-rHandleLocationInfo->rWorldLocationBox[0].y;
 		mXonly=rXonly;
 		mYonly=rYonly;
         mStartWorldX=worldPosStart.getX();
@@ -52,10 +52,10 @@ bool SceneItemResizeManager::updateResize(bool rSyncXY, int rMouseX, int rMouseY
 	bool rv=false;
 	if (mIsOnResize) {
 		GLMVector3 worldPosCurrent=mCamera->unproject(rMouseX, rMouseY);
-        PointFloat wp(worldPosCurrent.getX()-mStartWorldOffsetX, worldPosCurrent.getY()-mStartWorldOffsetY);
-        PointInt localPos=WorldCalculator::getLocalPosFromWorldPos(mNode2d, wp, false);
-		int diffX=mStartSize.x-localPos.x*2;
-		int diffY=mStartSize.y-localPos.y*2;
+		PointFloat wp();
+		glm::vec4 pv=mNode2d->getLocalPosFromWorldPos(worldPosCurrent.getX()-mStartWorldOffsetX, worldPosCurrent.getY()-mStartWorldOffsetY, false);
+		int diffX=mStartSize.x-pv.x*2;
+		int diffY=mStartSize.y-pv.y*2;
 		if (mXonly) {
 			diffY=0;
 		}

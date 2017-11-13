@@ -1,6 +1,11 @@
 #include "newprojectdialog.h"
 #include "ui_newprojectdialog.h"
 #include "../guicontext.h"
+#include <QFileDialog>
+#include <QDir>
+#include <QFileInfo>
+#include <QMessageBox>
+
 
 NewProjectDialog::NewProjectDialog(QWidget *parent) :
 	QDialog(parent),

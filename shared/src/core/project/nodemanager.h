@@ -1,5 +1,5 @@
 #pragma once
-#include <bricklelib.h>
+#include "../tree/node2d.h"
 
 class NodeManager
 {

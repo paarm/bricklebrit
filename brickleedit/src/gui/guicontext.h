@@ -20,7 +20,6 @@ private:
 	SelectionManager	mSelectionManager;
 	LayerManager		mLayerManager;
 	Tool				mCurrentTool;
-	Node2d*				mCurrentPaintCanvas=nullptr;
 
 	GuiContext();
 	void sceneSwitched();

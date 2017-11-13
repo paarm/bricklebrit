@@ -1,6 +1,9 @@
 #pragma once
-#include <QtWidgets>
-
+//#include <QtWidgets>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QCheckBox>
+#include <QToolBar>
 struct BrushFields {
 	QLineEdit *mParentNode=nullptr;
 	QLineEdit *mBrushNode=nullptr;

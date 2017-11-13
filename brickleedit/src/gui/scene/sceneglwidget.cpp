@@ -1,14 +1,18 @@
 #include "sceneglwidget.h"
 #include "../guicontext.h"
-#include "../../project/projectcontext.h"
 #include <glm/vec3.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "worldcalculator.h"
 
+void SceneGlWidget::resetScene() {
+	//mDrawNodeScene.cleanup();
+}
+
 void SceneGlWidget::initializeGL()
 {
-	initializeOpenGLFunctions();
+	//initializeOpenGLFunctions();
+	glewInit();
 	glClearColor(0,0,0,1);
 	//glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHT0);
@@ -102,20 +106,25 @@ void SceneGlWidget::mouseReleaseEvent(QMouseEvent * event ) {
 		mViewportMoveInfo.startX=0;
 		mViewportMoveInfo.startY=0;
 	} else 	if (event->button()==Qt::LeftButton) {
+#if 0
 		if (mSceneItemMoveManager.isOnMove()) {
-			vector<Node*> v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
+			vector<Node*> &v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
 			if (!v.empty()) {
 				Node *latestSelected=v.back();
-				GuiContext::getInstance().setSceneNodeInTreeAsSelected(latestSelected);
+				// xxx GuiContext::getInstance().setSceneNodeInTreeAsSelected(latestSelected);
 			}
 		}
+#endif
 		mSceneItemMoveManager.stopMove();
 		if (mSceneItemResizeManager.isOnResize()) {
-			GuiContext::getInstance().setSceneNodeInTreeAsSelected(mSceneItemResizeManager.getNodeForResize());
+			// xxx GuiContext::getInstance().setSceneNodeInTreeAsSelected(mSceneItemResizeManager.getNodeForResize());
 			mSceneItemResizeManager.stopResize();
 		}
 		if (mSceneBulkSelectManager.isOnSelect()) {
 			mSceneBulkSelectManager.stopSelect();
+			//vector<Node*>&v=GuiContext::getInstance().getSelectionManager().getCurrentBulkSelectionNodes();
+			//for (Node*n : v) {
+			//}
 			GuiContext::getInstance().getSelectionManager().finishBulkSelection();
 			update();
 		}
@@ -135,10 +144,10 @@ void SceneGlWidget::mouseMoveEvent(QMouseEvent * event ) {
 
 		this->update();//update();
 	} else if (GuiContext::getInstance().getCurrentTool()==Tool::Brush) {
-		if (GuiContext::getInstance().getCurrentPaintCanvas() &&
-			GuiContext::getInstance().getMainWindow().getBrushDock().getSelectedBrushNode()) {
-			this->update();
-		}
+		GLMVector3 pos=mCamera.unproject(event->pos().x(), event->pos().y());
+		GuiContext::getInstance().getMainWindow().getBrushDock().updateBrushNodesPosition(pos.getX(), pos.getY());
+
+		this->update();
 	} else if (GuiContext::getInstance().getCurrentTool()==Tool::Selection) {
 		if (mSceneItemResizeManager.isOnResize()) {
 			bool syncXY=!event->modifiers().testFlag(Qt::ControlModifier);
@@ -154,6 +163,20 @@ void SceneGlWidget::mouseMoveEvent(QMouseEvent * event ) {
 		} else if (mSceneBulkSelectManager.isOnSelect()) {
 			bool requireUpdate=mSceneBulkSelectManager.updateSelect(event->pos().x(), event->pos().y());
 			if (requireUpdate) {
+				GuiContext::getInstance().getSelectionManager().deselectAllNodes();
+				NodeScene *scene=GuiContext::getInstance().getCurrentScene();
+				if (scene) {
+					vector<Node2d*> v;
+					scene->pickUpBox(v, mSceneBulkSelectManager.getStartWorldX(),
+											 mSceneBulkSelectManager.getStartWorldY(),
+											 mSceneBulkSelectManager.getCurrentWorldX(),
+											 mSceneBulkSelectManager.getCurrentWorldY());
+					for (Node2d* n : v) {
+						GuiContext::getInstance().getSelectionManager().setNodeAsSelectedInBulk(n);
+					}
+					this->update();
+				}
+#if 0
 				vector<Node*> v;
 				WorldCalculator::intersectTestForScene(v, GuiContext::getInstance().getCurrentScene(),
 													   mSceneBulkSelectManager.getStartWorldX(),
@@ -164,8 +187,9 @@ void SceneGlWidget::mouseMoveEvent(QMouseEvent * event ) {
 				GuiContext::getInstance().getSelectionManager().deselectAllNodes();
 				for (Node* n: v) {
 					GuiContext::getInstance().getSelectionManager().setNodeAsSelectedInBulk(n);
+					mDrawNodeScene.updateSelectionRecursive(n, true);
 				}
-				this->update();
+#endif
 			}
 		}
 	}
@@ -229,33 +253,33 @@ void SceneGlWidget::onLeftMouseClicked(QMouseEvent *event, int mx, int my) {
 		//cout<<"World X=" << std::to_string(posVec.x*this->size().width()/2.0)<<" Y="<< std::to_string(this->size().height()/2.0*posVec.y)<<std::endl;
 
 		if (GuiContext::getInstance().getSelectionManager().haveSelectedNodes()) {
-			const vector<Node*> v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
+			const vector<Node*> &v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
 			for (Node* n : v) {
 				if (n->getNodeType()==NodeType::Sprite) {
 					NodeSprite* rNodeSprite=static_cast<NodeSprite*>(n);
 					bool intersecting=false;
-					for (int i=0;i<3;i++) {
-						PointFloat *rResizeHandle=nullptr;
+					for (int i=0;i<=HandleLocation::Bottom;i++) {
+						HandleLocationInfo *rHandleLocationInfo=nullptr;
+						HandleLocation::HandleNumber rHandleNr;
 						bool rXonly=false;
 						bool rYonly=false;
 						if (i==0) {
 							//Bottom Right
-							rResizeHandle=rNodeSprite->getResizeHandleBottomRight();
+							rHandleNr=HandleLocation::BottomRight;
 						} else if (i==1) {
 							// Right, resize to X only
-							rResizeHandle=rNodeSprite->getResizeHandleRight();
+							rHandleNr=HandleLocation::Right;
 							rXonly=true;
 						} else if (i==2) {
 							// Bottom, resize to Y only
-							rResizeHandle=rNodeSprite->getResizeHandleBottom();
+							rHandleNr=HandleLocation::Bottom;
 							rYonly=true;
 						}
-						if (rResizeHandle) {
-							if (WorldCalculator::isBoxIntersecting(rResizeHandle, pos.getX(), pos.getY(), 1.0, 1.0)) {
-								mSceneItemResizeManager.startResize(rResizeHandle, rXonly, rYonly, &mCamera, rNodeSprite, mx, my);
-								intersecting=true;
-								break;
-							}
+						rHandleLocationInfo=rNodeSprite->intersectsHandle(pos.getX(), pos.getY(), rHandleNr);
+						if (rHandleLocationInfo) {
+							mSceneItemResizeManager.startResize(rHandleLocationInfo, rXonly, rYonly, &mCamera, rNodeSprite, mx, my);
+							intersecting=true;
+							break;
 						}
 					}
 					if (intersecting) {
@@ -265,63 +289,83 @@ void SceneGlWidget::onLeftMouseClicked(QMouseEvent *event, int mx, int my) {
 			}
 		}
 		if (!mSceneItemResizeManager.isOnResize()) {
-			vector<Node*> v;
-			WorldCalculator::intersectTestForScene(v, GuiContext::getInstance().getCurrentScene(), pos.getX(), pos.getY(), 1.0, 1.0, true);
-			bool startMoveOnExistingSelection=false;
-			if (!event->modifiers().testFlag(Qt::ControlModifier)) {
-				for (Node* n : v) {
-					if (GuiContext::getInstance().getSelectionManager().isNodeSelected(n)) {
-						startMoveOnExistingSelection=true;
+			NodeScene *scene=GuiContext::getInstance().getCurrentScene();
+			if (scene) {
+				vector<Node2d*> v;
+				//glm::mat4 reverseViewMatrix=glm::inverse(glm::make_mat4(mCamera.getProjectionMatrix().getPointer()));
+				//glm::vec4 localPos(pos.getX(), pos.getY(), 0, 1);
+				//localPos=reverseViewMatrix*localPos;
+
+				//glm::mat4 mrev=glm::inverse();
+
+				scene->pickUpBox(v, pos.getX(), pos.getY(), pos.getX()+1.0, pos.getY()+1.0);
+
+				//WorldCalculator::intersectTestForScene(v, GuiContext::getInstance().getCurrentScene(), pos.getX(), pos.getY(), 1.0, 1.0, true);
+				bool startMoveOnExistingSelection=false;
+				if (!event->modifiers().testFlag(Qt::ControlModifier)) {
+					for (Node2d* n : v) {
+						if (GuiContext::getInstance().getSelectionManager().isNodeSelected(n)) {
+							startMoveOnExistingSelection=true;
+						}
+					}
+					if (!startMoveOnExistingSelection) {
+						GuiContext::getInstance().getSelectionManager().deselectAllNodes();
 					}
 				}
 				if (!startMoveOnExistingSelection) {
-					GuiContext::getInstance().getSelectionManager().deselectAllNodes();
-				}
-			}
-			if (!startMoveOnExistingSelection) {
-				for (Node* n : v) {
-					bool select=false;
-					bool deselect=false;
-					if (event->modifiers().testFlag(Qt::ControlModifier)) {
-						if (GuiContext::getInstance().getSelectionManager().isNodeSelected(n)) {
-							deselect=true;
-						} else {
+					for (Node2d* n : v) {
+						bool select=false;
+						bool deselect=false;
+						bool isAlreadySelected=GuiContext::getInstance().getSelectionManager().isNodeSelected(n);
+
+						if (event->modifiers().testFlag(Qt::ControlModifier)) {
+							if (isAlreadySelected) {
+								deselect=true;
+							} else if (!isAlreadySelected) {
+								select=true;
+							}
+						} else if (!isAlreadySelected) {
 							select=true;
 						}
-					} else {
-						select=true;
-					}
-					if (select) {
-						GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
-						GuiContext::getInstance().getSelectionManager().setNodeAsSelected(n);
-					} else if (deselect) {
-						//GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
-						GuiContext::getInstance().getSelectionManager().deselectNode(n);
+						if (select) {
+							// xxx GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
+							GuiContext::getInstance().getSelectionManager().setNodeAsSelected(n);
+							//mDrawNodeScene.updateSelectionRecursive(n, true);
+						} else if (deselect) {
+							//GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
+							GuiContext::getInstance().getSelectionManager().deselectNode(n);
+							//mDrawNodeScene.updateSelectionRecursive(n, false);
+						}
 					}
 				}
+				if (GuiContext::getInstance().getSelectionManager().haveSelectedNodes()) {
+					mSceneItemMoveManager.startMove(&mCamera, mx, my);
+				} else {
+					mSceneBulkSelectManager.startSelect(&mCamera, mx, my);
+					GuiContext::getInstance().getSelectionManager().startBulkSelection();
+				}
 			}
-			if (GuiContext::getInstance().getSelectionManager().haveSelectedNodes()) {
-				mSceneItemMoveManager.startMove(&mCamera, mx, my);
-			} else {
-				mSceneBulkSelectManager.startSelect(&mCamera, mx, my);
-				GuiContext::getInstance().getSelectionManager().startBulkSelection();
-			}
+			update();
 		}
-		update();
 	} else if ( GuiContext::getInstance().getCurrentTool()==Tool::Brush &&
-				GuiContext::getInstance().getCurrentPaintCanvas() &&
-				GuiContext::getInstance().getMainWindow().getBrushDock().getSelectedBrushNode()) {
+				GuiContext::getInstance().getCurrentPaintCanvas()) {
 		if (GuiContext::getInstance().isNodeVisibleOn(GuiContext::getInstance().getCurrentPaintCanvas())
 			&& !GuiContext::getInstance().isNodeLocked(GuiContext::getInstance().getCurrentPaintCanvas())
 				) {
+			GuiContext::getInstance().getMainWindow().getBrushDock().commitBrushNodes();
+			GLMVector3 pos=mCamera.unproject(mx, my);
+			GuiContext::getInstance().getMainWindow().getBrushDock().updateBrushNodesPosition(pos.getX(), pos.getY());
+
+			update();
+#if 0
 			GLMVector3 pos=mCamera.unproject(mx, my);
 			vector<NodeSprite*> v=GuiContext::getInstance().getMainWindow().getBrushDock().getNewNodesFromBrush(pos.getX(), pos.getY());
 			if (!v.empty()) {
 				for (NodeSprite *rNodeSprite : v) {
 					GuiContext::getInstance().insertNewSceneNode(rNodeSprite);
 				}
-				update();
 			}
+#endif
 		}
 	}
 }
@@ -411,16 +455,28 @@ void SceneGlWidget::paintGL()
 	cout<<"Paint Nr: " <<paintCount << endl;
 	NodeScene *scene=GuiContext::getInstance().getCurrentScene();
 	if (scene) {
-		GLMMatrix4 m;
-        WorldCalculator::updateNodeMatrix(m, scene);
-		paintNode(scene, false);
+		glm::mat4 viewMatrix=glm::make_mat4(mCamera.getViewMatrix().getPointer());
+		//initializeDrawNode(scene);
+		scene->updateDraw(viewMatrix);
+		//GLMMatrix4 m;
+
+		//WorldCalculator::updateNodeMatrix(m, scene);
+		//paintNode(scene, false);
 		//paintChilds(scene);
 		//glEnable(GL_TEXTURE_2D);
 		//glDisable(GL_TEXTURE_2D);
+		//if (mDrawNodeScene.childCount()==0) {
+		//	initializeDrawNode(scene, &mDrawNodeScene);
+		//}
+		//mDrawNodeScene.updateTextureVertexBuffer();
+		//mDrawNodeScene.updateSelectionVertexBuffer();
+		//mDrawNodeScene.draw(viewMatrix);
+		//mDrawNodeScene.drawSelection(viewMatrix);
 	}
 
 	glDisable(GL_TEXTURE_2D);
-	vector<Node*> v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
+#if 0
+	vector<Node*> &v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
 	for (Node *n : v) {
 		if (n->getNodeType()==NodeType::Sprite) {
 			NodeSprite* rNodeSprite=static_cast<NodeSprite*>(n);
@@ -487,6 +543,7 @@ void SceneGlWidget::paintGL()
 			}
 		}
 	}
+#endif
 	if (mSceneBulkSelectManager.isOnSelect()) {
 		glLoadMatrixf (mCamera.getViewMatrix().getPointer());
 
@@ -502,7 +559,37 @@ void SceneGlWidget::paintGL()
 	glDisable(GL_TEXTURE_2D);
 }
 
+#if 0
+void SceneGlWidget::initializeDrawNode(Node2d *rNodeParent) {
+	for (Node* rNode : rNodeParent->childs()) {
+		if (rNode->getNodeType()==NodeType::Layer || rNode->getNodeType()==NodeType::Sprite) {
+			Node2d *rNode2d=static_cast<Node2d*>(rNode);
+			if (rNode->getNodeType()==NodeType::Sprite && rNode2d->isFrameRefDirty()) {
+				NodeTexture *rNodeTexture=nullptr;
+				NodeTextureFrame *rNodeTextureFrame=nullptr;
+				BTexturePng *bTexture=nullptr;
+				float tx=0.0;
+				float ty=0.0;
+				float tw=0.0;
+				float th=0.0;
+				if (rNode->getNodeType()==NodeType::Sprite) {
+					NodeSprite *paintNode=static_cast<NodeSprite*>(rNode);
+					getTexture(paintNode, &rNodeTexture, &rNodeTextureFrame);
+					if (rNodeTexture) {
+						bTexture=ProjectContext::getInstance().getTexture(rNodeTexture->getPath());
+						getTextureCoords(paintNode, rNodeTextureFrame, bTexture, &tx, &ty, &tw, &th);
+					}
+				}
+				rNode2d->updateTextureUV(tx, ty, tw, th);
+				rNode2d->updateTexture(bTexture);
+			}
+			initializeDrawNode(rNode2d);
+		}
+	}
+}
+#endif
 
+#if 0
 void SceneGlWidget::paintChilds(Node2d *rNodeParent) {
 	bool visible=true;
 	if (rNodeParent && rNodeParent->getNodeType()==NodeType::Layer) {
@@ -618,82 +705,8 @@ void SceneGlWidget::paintChilds(Node2d *rNodeParent) {
 		}
 	}
 }
-
-void SceneGlWidget::getTexture(NodeSprite *paintNode, NodeTexture **rOutNodeTexture, NodeTextureFrame **rOutNodeTextureFrame) {
-	if (paintNode) {
-		NodeResource* rNodeResource=ProjectContext::getInstance().getOrLoadResourceByName(paintNode->getFrameRef().resourcefile);
-		if (!rNodeResource) {
-			rNodeResource=ProjectContext::getInstance().getDefaultResource();
-		}
-		if (rNodeResource) {
-			NodeTexture *rNodeTexture=nullptr;
-			NodeTextureFrame *rNodeTextureFrame=nullptr;
-
-			Node *rNodeRef=rNodeResource->getNodeWithNodeId(paintNode->getFrameRef().textureid);
-			if (rNodeRef) {
-				if (rNodeRef->getNodeType()==NodeType::Texture) {
-					rNodeTexture=static_cast<NodeTexture*>(rNodeRef);
-					if (!paintNode->getFrameRef().frame.empty()) {
-						rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeTexture->getNodeFromIndex(atoi(paintNode->getFrameRef().frame.c_str())));
-						//rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeTexture->getChildNodeWithName(paintNode->getFrameRef().frame));
-					}
-				} else if (rNodeRef->getNodeType()==NodeType::Animation) {
-					NodeAnimation* rNodeAnimation=static_cast<NodeAnimation*>(rNodeRef);
-					if (!paintNode->getFrameRef().frame.empty()) {
-						NodeAnimationFrame* rNodeAnimationFrame=static_cast<NodeAnimationFrame*>(rNodeAnimation->getChildNodeWithNameAndNodeType(paintNode->getFrameRef().frame, NodeType::AnimationFrame));
-						if (rNodeAnimationFrame) {
-							NodeResource* rNodeResourceAnimationFrame=ProjectContext::getInstance().getOrLoadResourceByName(rNodeAnimationFrame->getFrameRef().resourcefile);
-							if (rNodeResourceAnimationFrame) {
-								rNodeTexture=static_cast<NodeTexture*>(rNodeResourceAnimationFrame->getNodeWithNodeId(rNodeAnimationFrame->getFrameRef().textureid));
-								if (rNodeTexture && !rNodeAnimationFrame->getFrameRef().frame.empty()) {
-									//rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeTexture->getChildNodeWithName(rNodeAnimationFrame->getFrameRef().frame));
-									rNodeTextureFrame=static_cast<NodeTextureFrame*>(rNodeTexture->getNodeFromIndex(atoi(rNodeAnimationFrame->getFrameRef().frame.c_str())));
-								}
-							}
-						}
-					}
-				}
-				(*rOutNodeTexture)=rNodeTexture;
-				(*rOutNodeTextureFrame)=rNodeTextureFrame;
-			}
-		}
-	}
-}
-
-void SceneGlWidget::getTextureCoords(NodeSprite* rNodeSprite, NodeTextureFrame *rNodeTextureFrame, BTexturePng *bTexture, float *outtx, float *outty, float *outtw, float* outth) {
-	float tx=0.0;
-	float ty=0.0;
-	float tw=1.0;
-	float th=1.0;
-
-	if (rNodeTextureFrame) {
-		if (rNodeTextureFrame->getFrame().width>0 && rNodeTextureFrame->getFrame().height>0) {
-			if (rNodeTextureFrame->getFrame().x>0) {
-				tx=((float)rNodeTextureFrame->getFrame().x)/((float)bTexture->width);
-			}
-			if (rNodeTextureFrame->getFrame().y>0) {
-				ty=((float)rNodeTextureFrame->getFrame().y)/((float)bTexture->height);
-			}
-			tw=(((float)rNodeTextureFrame->getFrame().x)+((float)rNodeTextureFrame->getFrame().width))/((float)bTexture->width);
-			th=(((float)rNodeTextureFrame->getFrame().y)+((float)rNodeTextureFrame->getFrame().height))/((float)bTexture->height);
-		}
-	}
-	if (rNodeSprite->getFlipX()) {
-		float tmp=tx;
-		tx=tw;
-		tw=tmp;
-	}
-	if (rNodeSprite->getFlipY()) {
-		float tmp=ty;
-		ty=th;
-		th=tmp;
-	}
-	(*outtx)=tx;
-	(*outty)=ty;
-	(*outtw)=tw;
-	(*outth)=th;
-}
-
+#endif
+#if 0
 void SceneGlWidget::paintNode(Node* rNode, bool isBrushCanvas) {
 	bool visible=true;
 	if (rNode->getNodeType()==NodeType::Layer) {
@@ -703,30 +716,6 @@ void SceneGlWidget::paintNode(Node* rNode, bool isBrushCanvas) {
 	if (visible) {
 		//glPushMatrix();
 		if (rNode->getNodeType()==NodeType::Layer || rNode->getNodeType()==NodeType::Sprite) {
-#if 0
-			Node2d *paintNode2d=(Node2d*)rNode;
-			int x=paintNode2d->getPosition().x;
-			int y=paintNode2d->getPosition().y;
-			int w=paintNode2d->getSize().x;
-			float scaleX=paintNode2d->getScale().x;
-			float scaleY=paintNode2d->getScale().y;
-			float w2=w/2.0;
-			int h=paintNode2d->getSize().y;
-			float h2=h/2.0;
-			int angle=paintNode2d->getRotation();
-			if (angle>360.0) {
-				angle=angle/360.0;
-			} else if (angle<0.0) {
-				angle=360.0+angle;
-			}
-			//glTranslatef(0, 0, 0);
-			glTranslatef(x, y, 0.0);
-			glRotatef(angle, 0.0, 0.0, 1.0);
-			if (scaleX!=1.0 || scaleY!=1.0) {
-				glScalef(scaleX, scaleY, 1.0);
-			}
-#endif
-
 			if (rNode->getNodeType()==NodeType::Sprite) {
 				NodeSprite *paintNode=static_cast<NodeSprite*>(rNode);
 				float w2=paintNode->getSize().x/2.0;
@@ -796,3 +785,4 @@ void SceneGlWidget::paintNode(Node* rNode, bool isBrushCanvas) {
 		//glPopMatrix();
 	}
 }
+#endif

@@ -1,6 +1,9 @@
 #include "guicontext.h"
 #include <QMessageBox>
 #include "treeutil.h"
+#include <QFileDialog>
+#include <QDir>
+#include <QFileInfo>
 
 #include "grideditor/grideditor.h"
 GuiContext::GuiContext()
@@ -223,10 +226,11 @@ void GuiContext::setCurrentScene(const string& rName) {
 
 		getMainWindow().setSceneAvailable(getCurrentScene());
 		//getMainWindow().getSceneTreeDock().switchToScene(getCurrentScene());
-		getMainWindow().getBrushDock().setBrushEnabled(getCurrentScene()?true:false);
+		getMainWindow().getBrushDock().setBrushPossible(getCurrentScene()?true:false);
 
 		//setCurrentPaintCanvas(getCurrentScene(), false);
 		setWindowTitle();
+		getMainWindow().getSceneGlWidget().resetScene();
 		updateGlWidget();
 	}
 }
@@ -466,7 +470,16 @@ bool GuiContext::isGridActive() {
 }
 
 void GuiContext::setCurrentTool(Tool rTool) {
-	mCurrentTool=rTool;
+	if (mCurrentTool!=rTool) {
+		mCurrentTool=rTool;
+		if (mCurrentTool==Tool::Brush) {
+			GuiContext::getInstance().getMainWindow().getActionToolBrush()->setChecked(true);
+			GuiContext::getInstance().getMainWindow().getBrushDock().BrushToolActivated(true);
+		} else {
+			GuiContext::getInstance().getMainWindow().getActionToolBrush()->setChecked(false);
+			GuiContext::getInstance().getMainWindow().getBrushDock().BrushToolActivated(false);
+		}
+	}
 }
 
 Tool GuiContext::getCurrentTool() {
@@ -474,32 +487,35 @@ Tool GuiContext::getCurrentTool() {
 }
 
 void GuiContext::setCurrentPaintCanvas(Node2d *rNode, bool switchToBrushTool) {
-	mCurrentPaintCanvas=rNode;
-    if (rNode && switchToBrushTool && getCurrentTool()!=Tool::Brush) {
-        setCurrentTool(Tool::Brush);
-        GuiContext::getInstance().getMainWindow().getActionToolBrush()->setChecked(true);
-    }
+	if (rNode && switchToBrushTool && getCurrentTool()!=Tool::Brush) {
+		setCurrentTool(Tool::Brush);
+	}
+	this->getMainWindow().getBrushDock().setCurrentPaintCanvas(rNode);
 }
 
+Node2d* GuiContext::getCurrentPaintCanvas() {
+	return this->getMainWindow().getBrushDock().getCurrentPaintCanvas();
+}
+
+
 void GuiContext::onPickAsBrush() {
-	this->getMainWindow().getBrushDock().setCurrentSelectionAsBrush();
 	if (getCurrentTool()!=Tool::Brush) {
 		setCurrentTool(Tool::Brush);
-		GuiContext::getInstance().getMainWindow().getActionToolBrush()->setChecked(true);
 	}
+	this->getMainWindow().getBrushDock().setCurrentSelectionAsBrush();
 }
 
 void GuiContext::onSelectedItemAsBrush(SelectedItem rSelectedItem) {
-	getMainWindow().getBrushDock().setSelectedItemAsBrush(rSelectedItem);
 	if (getCurrentTool()!=Tool::Brush) {
 		setCurrentTool(Tool::Brush);
-		GuiContext::getInstance().getMainWindow().getActionToolBrush()->setChecked(true);
 	}
+	getMainWindow().getBrushDock().setSelectedItemAsBrush(rSelectedItem);
 }
 
 void GuiContext::onEraseSelected() {
     const vector<Node*> v=mSelectionManager.getSelectedNodes();
-    if (v.size()>0) {
+	mSelectionManager.deselectAllNodes();
+	if (v.size()>0) {
         vector<int> vId;
         for (Node* n : v) {
             vId.push_back(n->getId());
@@ -507,14 +523,8 @@ void GuiContext::onEraseSelected() {
         for (int rNodeId : vId) {
 			eraseNodeFromSceneWithId(rNodeId);
         }
-        mSelectionManager.deselectAllNodes();
         updateGlWidget();
     }
-}
-
-
-Node2d* GuiContext::getCurrentPaintCanvas() {
-	return mCurrentPaintCanvas;
 }
 
 Node * GuiContext::getFrameReferenceNodeForSprite(NodeSprite *rNodeSprite) {

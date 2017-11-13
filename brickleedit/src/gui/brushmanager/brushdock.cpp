@@ -2,7 +2,6 @@
 #include "ui_brushdock.h"
 #include "brushselection.h"
 #include "../previewimageutil.h"
-#include "../../project/projectcontext.h"
 #include "../guicontext.h"
 #include <glm/vec3.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -14,16 +13,14 @@ BrushDock::BrushDock(QWidget *parent) :
 	ui(new Ui::BrushDock)
 {
 	ui->setupUi(this);
-	setBrushEnabled(false);
+	setBrushPossible(false);
 }
 
 BrushDock::~BrushDock()
 {
 	delete ui;
-	for (NodeSprite* rNodeSprite : mNodeFromBrushListCache) {
-		delete rNodeSprite;
-	}
-	mNodeFromBrushListCache.clear();
+	mCurrentBrushNodes.clear();
+	mCurrentPaintCanvas=nullptr;
 }
 
 void BrushDock::on_selectBrush_clicked()
@@ -48,9 +45,10 @@ void BrushDock::clearBrush() {
     ui->flipY->setChecked(false);
 	mBrushInfoItemList.clear();
 	mBrushInfoCenterIndex=0;
+	removeBrushNodes();
 }
 
-void BrushDock::setBrushEnabled(bool enabled) {
+void BrushDock::setBrushPossible(bool enabled) {
 	if (!enabled) {
 		clearBrush();
 	}
@@ -64,15 +62,36 @@ void BrushDock::setBrushEnabled(bool enabled) {
     ui->rotate->setEnabled(enabled);
 }
 
-void BrushDock::setCurrentSelectionAsBrush() {
-	vector<Node*> v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
-	setNodesAsBrush(v);
+void BrushDock::BrushToolActivated(bool activated) {
+	if (activated) {
+		createNewBrushNodes();
+	} else {
+		removeBrushNodes();
+	}
 }
 
-void BrushDock::setNodesAsBrush(vector<Node*> v) {
+void BrushDock::setCurrentPaintCanvas(Node2d *rNode2d) {
+	if (mCurrentPaintCanvas!=rNode2d || rNode2d==nullptr) {
+		removeBrushNodes();
+		mCurrentPaintCanvas=rNode2d;
+		createNewBrushNodes();
+	}
+}
+
+Node2d* BrushDock::getCurrentPaintCanvas() {
+	return mCurrentPaintCanvas;
+}
+
+void BrushDock::setCurrentSelectionAsBrush() {
+	removeBrushNodes();
+	vector<Node*> &v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
+	setNodesAsBrush(v);
+	createNewBrushNodes();
+}
+
+void BrushDock::setNodesAsBrush(vector<Node*> &v) {
 	mBrushInfoItemList.clear();
 	mBrushInfoCenterIndex=0;
-	mBrushIsInvalid=true;
 	Node *rNode=GuiContext::getInstance().getSelectionManager().getLatestSelected();
 
 	if (rNode && rNode->getNodeType()==NodeType::Sprite) {
@@ -93,8 +112,8 @@ void BrushDock::setNodesAsBrush(vector<Node*> v) {
 					rBrushInfoItem.rSelectedItemPref.flipX=rNodeSprite->getFlipX();
 					rBrushInfoItem.rSelectedItemPref.flipY=rNodeSprite->getFlipY();
 					if (rNodeSprite!=rNodeSpriteCenter) {
-						rBrushInfoItem.rSelectedItemPref.offsetX=rNodeSprite->getCurrentWorldLocationCenter().x-rNodeSpriteCenter->getCurrentWorldLocationCenter().x;
-						rBrushInfoItem.rSelectedItemPref.offsetY=rNodeSprite->getCurrentWorldLocationCenter().y-rNodeSpriteCenter->getCurrentWorldLocationCenter().y;
+						rBrushInfoItem.rSelectedItemPref.offsetX=rNodeSprite->getLocationInfo().rWorldLocationCenter.x-rNodeSpriteCenter->getLocationInfo().rWorldLocationCenter.x;
+						rBrushInfoItem.rSelectedItemPref.offsetY=rNodeSprite->getLocationInfo().rWorldLocationCenter.y-rNodeSpriteCenter->getLocationInfo().rWorldLocationCenter.y;
 					} else {
 						mBrushInfoCenterIndex=mBrushInfoItemList.size();
 						setCenterBrushUIInfo(rBrushInfoItem);
@@ -107,9 +126,10 @@ void BrushDock::setNodesAsBrush(vector<Node*> v) {
 }
 
 void BrushDock::setSelectedItemAsBrush(SelectedItem rSelectedItem) {
+	removeBrushNodes();
+
 	mBrushInfoItemList.clear();
 	mBrushInfoCenterIndex=0;
-	mBrushIsInvalid=true;
 	BrushInfoItem rBrushInfoItem;
 	rBrushInfoItem.rSelectedItem=rSelectedItem;
 	rBrushInfoItem.rSelectedItemPref.scale=PointFloat(1.0,1.0);
@@ -130,6 +150,7 @@ void BrushDock::setSelectedItemAsBrush(SelectedItem rSelectedItem) {
 	setCenterBrushUIInfo(rBrushInfoItem);
 	mBrushInfoCenterIndex=mBrushInfoItemList.size();
 	mBrushInfoItemList.push_back(rBrushInfoItem);
+	createNewBrushNodes();
 }
 
 void BrushDock::setCenterBrushUIInfo(BrushInfoItem& rBrushInfoItem) {
@@ -170,93 +191,158 @@ Node* BrushDock::getSelectedBrushNode() {
 	return nullptr;
 }
 
-
-vector<NodeSprite *> BrushDock::getNewNodesFromBrush(float worldX, float worldY) {
-	vector<NodeSprite *>rv;
-	vector<NodeSprite*>& v=getNodesFromBrush(worldX, worldY);
-	for (NodeSprite* rNodeSprite : v) {
-		NodeSprite *rNodeSprite_new=new NodeSprite();
-
-		rNodeSprite_new->setPosition(rNodeSprite->getPosition());
-		rNodeSprite_new->setSize(rNodeSprite->getSize());
-		rNodeSprite_new->setScale(rNodeSprite->getScale());
-		rNodeSprite_new->setRotation(rNodeSprite->getRotation());
-		rNodeSprite_new->setFrameRef(rNodeSprite->getFrameRef());
-		rNodeSprite_new->setFlipX(rNodeSprite->getFlipX());
-		rNodeSprite_new->setFlipY(rNodeSprite->getFlipY());
-		rNodeSprite_new->setName("Sprite");
-		rv.push_back(rNodeSprite_new);
+void BrushDock::removeBrushNodes() {
+	if (mCurrentPaintCanvas && mCurrentBrushNodes.size()>0) {
+		for (NodeSprite* rNodeSprite: mCurrentBrushNodes) {
+			mCurrentPaintCanvas->deleteChildNode(rNodeSprite);
+		}
 	}
-	return rv;
+	mCurrentBrushNodes.clear();
 }
 
-vector<NodeSprite*>& BrushDock::getNodesFromBrush(float worldX, float worldY) {
-	if (GuiContext::getInstance().getCurrentPaintCanvas() &&
-		GuiContext::getInstance().getCurrentTool()==Tool::Brush &&
-		getSelectedBrushNode()) {
-
-		size_t cntBrushes=mBrushInfoItemList.size();
-		size_t cntSpriteCache=mNodeFromBrushListCache.size();
-		int missingSpriteCacheEntries=cntBrushes-cntSpriteCache;
-		if (missingSpriteCacheEntries>0) {
-			for (int i=0;i<missingSpriteCacheEntries;i++) {
-				mNodeFromBrushListCache.push_back(new NodeSprite());
-			}
+void BrushDock::updateBrushNodesPosition(float worldX, float worldY) {
+	if (mCurrentPaintCanvas &&
+		mCurrentBrushNodes.size()>0 &&
+		GuiContext::getInstance().getCurrentTool()==Tool::Brush) {
+		int i=0;
+		for (NodeSprite* rNodeSprite : mCurrentBrushNodes) {
+			BrushInfoItem& rBrushInfoItem=mBrushInfoItemList.at(i);
+			glm::vec4 pv=mCurrentPaintCanvas->getLocalPosFromWorldPos(worldX+rBrushInfoItem.rSelectedItemPref.offsetX, worldY+rBrushInfoItem.rSelectedItemPref.offsetY, GuiContext::getInstance().isGridActive());
+			//PointInt pp=WorldCalculator::getLocalPosFromWorldPos(GuiContext::getInstance().getCurrentPaintCanvas(), PointFloat(worldX+rBrushInfoItem.rSelectedItemPref.offsetX, worldY+rBrushInfoItem.rSelectedItemPref.offsetY), true);
+			PointInt pp(pv.x, pv.y);
+			rNodeSprite->setPosition(pp);
+			i++;
 		}
-		if (mBrushIsInvalid) {
-			mNodeFromBrushList.clear();
-			int i=0;
-			for (BrushInfoItem& rBrushInfoItem : mBrushInfoItemList) {
-				NodeSprite* rNodeSprite=mNodeFromBrushListCache.at(i);
-				PointInt pp=WorldCalculator::getLocalPosFromWorldPos(GuiContext::getInstance().getCurrentPaintCanvas(), PointFloat(worldX+rBrushInfoItem.rSelectedItemPref.offsetX, worldY+rBrushInfoItem.rSelectedItemPref.offsetY), true);
-
-				rNodeSprite->setPosition(pp);
-				if (i==int(mBrushInfoCenterIndex)) {
-					rNodeSprite->setSize(PointInt(ui->sizeX->value(), ui->sizeY->value()));
-					rNodeSprite->setScale(PointFloat(ui->scaleX->value(), ui->scaleY->value()));
-					rNodeSprite->setRotation(ui->rotate->value());
-					rNodeSprite->setFlipX(ui->flipX->isChecked());
-					rNodeSprite->setFlipY(ui->flipY->isChecked());
-				} else {
-					rNodeSprite->setSize(rBrushInfoItem.rSelectedItemPref.sizeWH);
-					rNodeSprite->setScale(rBrushInfoItem.rSelectedItemPref.scale);
-					rNodeSprite->setRotation(rBrushInfoItem.rSelectedItemPref.rotation);
-					rNodeSprite->setFlipX(rBrushInfoItem.rSelectedItemPref.flipX);
-					rNodeSprite->setFlipY(rBrushInfoItem.rSelectedItemPref.flipY);
-				}
-				if (rBrushInfoItem.rSelectedItem.rNodeAnimationFrame) {
-					rNodeSprite->getFrameRef().frame=rBrushInfoItem.rSelectedItem.rNodeAnimationFrame->getFrameRef().frame;
-					rNodeSprite->getFrameRef().resourcefile=rBrushInfoItem.rSelectedItem.rNodeAnimationFrame->getFrameRef().resourcefile;
-					rNodeSprite->getFrameRef().textureid=rBrushInfoItem.rSelectedItem.rNodeAnimationFrame->getFrameRef().textureid;
-				} else if(rBrushInfoItem.rSelectedItem.rNodeTextureFrame) {
-					rNodeSprite->getFrameRef().frame=rBrushInfoItem.rSelectedItem.rNodeTextureFrame->getName();
-					rNodeSprite->getFrameRef().resourcefile=rBrushInfoItem.rSelectedItem.resourceName;
-					rNodeSprite->getFrameRef().textureid=rBrushInfoItem.rSelectedItem.rNodeTexture->getId();
-				} else if (rBrushInfoItem.rSelectedItem.rNodeTexture) {
-					rNodeSprite->getFrameRef().resourcefile=rBrushInfoItem.rSelectedItem.resourceName;
-					rNodeSprite->getFrameRef().textureid=rBrushInfoItem.rSelectedItem.rNodeTexture->getId();
-					rNodeSprite->getFrameRef().frame="";
-				}
-				mNodeFromBrushList.push_back(rNodeSprite);
-				i++;
-			}
-		} else {
-			int i=0;
-			for(NodeSprite* rNodeSprite: mNodeFromBrushList) {
-				BrushInfoItem& rBrushInfoItem=mBrushInfoItemList.at(i);
-				PointInt pp=WorldCalculator::getLocalPosFromWorldPos(GuiContext::getInstance().getCurrentPaintCanvas(), PointFloat(worldX+rBrushInfoItem.rSelectedItemPref.offsetX, worldY+rBrushInfoItem.rSelectedItemPref.offsetY), true);
-				rNodeSprite->setPosition(pp);
-				if (i==int(mBrushInfoCenterIndex)) {
-					rNodeSprite->setSize(PointInt(ui->sizeX->value(), ui->sizeY->value()));
-					rNodeSprite->setScale(PointFloat(ui->scaleX->value(), ui->scaleY->value()));
-					rNodeSprite->setRotation(ui->rotate->value());
-					rNodeSprite->setFlipX(ui->flipX->isChecked());
-					rNodeSprite->setFlipY(ui->flipY->isChecked());
-				}
-				i++;
-			}
-		}
-		mBrushIsInvalid=false;
 	}
-	return mNodeFromBrushList;
+}
+
+void BrushDock::commitBrushNodes() {
+	if (mCurrentPaintCanvas &&
+		mCurrentBrushNodes.size()>0 &&
+		GuiContext::getInstance().getCurrentTool()==Tool::Brush) {
+		mCurrentBrushNodes.clear();
+		createNewBrushNodes();
+	}
+}
+
+void BrushDock::createNewBrushNodes() {
+	//removeBrushNodes();
+	if (GuiContext::getInstance().getCurrentTool()==Tool::Brush &&
+		mCurrentPaintCanvas &&
+		mBrushInfoItemList.size()>0) {
+		float worldX=0.0;
+		float worldY=0.0;
+
+		int i=0;
+		for (BrushInfoItem& rBrushInfoItem : mBrushInfoItemList) {
+			NodeSprite* rNodeSprite=new NodeSprite();
+			glm::vec4 pv=GuiContext::getInstance().getCurrentPaintCanvas()->getLocalPosFromWorldPos(worldX+rBrushInfoItem.rSelectedItemPref.offsetX, worldY+rBrushInfoItem.rSelectedItemPref.offsetY, GuiContext::getInstance().isGridActive());
+			//PointInt pp=WorldCalculator::getLocalPosFromWorldPos(GuiContext::getInstance().getCurrentPaintCanvas(), PointFloat(worldX+rBrushInfoItem.rSelectedItemPref.offsetX, worldY+rBrushInfoItem.rSelectedItemPref.offsetY), true);
+			PointInt pp(pv.x, pv.y);
+			rNodeSprite->setPosition(pp);
+			if (i==int(mBrushInfoCenterIndex)) {
+				rNodeSprite->setSize(PointInt(ui->sizeX->value(), ui->sizeY->value()));
+				rNodeSprite->setScale(PointFloat(ui->scaleX->value(), ui->scaleY->value()));
+				rNodeSprite->setRotation(ui->rotate->value());
+				rNodeSprite->setFlipX(ui->flipX->isChecked());
+				rNodeSprite->setFlipY(ui->flipY->isChecked());
+			} else {
+				rNodeSprite->setSize(rBrushInfoItem.rSelectedItemPref.sizeWH);
+				rNodeSprite->setScale(rBrushInfoItem.rSelectedItemPref.scale);
+				rNodeSprite->setRotation(rBrushInfoItem.rSelectedItemPref.rotation);
+				rNodeSprite->setFlipX(rBrushInfoItem.rSelectedItemPref.flipX);
+				rNodeSprite->setFlipY(rBrushInfoItem.rSelectedItemPref.flipY);
+			}
+			if (rBrushInfoItem.rSelectedItem.rNodeAnimationFrame) {
+				rNodeSprite->setFrameRef(FrameRef(rBrushInfoItem.rSelectedItem.rNodeAnimationFrame->getFrameRef().resourcefile, rBrushInfoItem.rSelectedItem.rNodeAnimationFrame->getFrameRef().textureid, rBrushInfoItem.rSelectedItem.rNodeAnimationFrame->getFrameRef().frame));
+				//rNodeSprite->getFrameRef().frame=;
+				//rNodeSprite->getFrameRef().resourcefile=rBrushInfoItem.rSelectedItem.rNodeAnimationFrame->getFrameRef().resourcefile;
+				//rNodeSprite->getFrameRef().textureid=rBrushInfoItem.rSelectedItem.rNodeAnimationFrame->getFrameRef().textureid;
+			} else if(rBrushInfoItem.rSelectedItem.rNodeTextureFrame) {
+				rNodeSprite->setFrameRef(FrameRef(rBrushInfoItem.rSelectedItem.resourceName, rBrushInfoItem.rSelectedItem.rNodeTexture->getId(), rBrushInfoItem.rSelectedItem.rNodeTextureFrame->getName()));
+				//rNodeSprite->getFrameRef().frame=rBrushInfoItem.rSelectedItem.rNodeTextureFrame->getName();
+				//rNodeSprite->getFrameRef().resourcefile=rBrushInfoItem.rSelectedItem.resourceName;
+				//rNodeSprite->getFrameRef().textureid=rBrushInfoItem.rSelectedItem.rNodeTexture->getId();
+			} else if (rBrushInfoItem.rSelectedItem.rNodeTexture) {
+				rNodeSprite->setFrameRef(FrameRef(rBrushInfoItem.rSelectedItem.resourceName, rBrushInfoItem.rSelectedItem.rNodeTexture->getId(), ""));
+				//rNodeSprite->getFrameRef().resourcefile=rBrushInfoItem.rSelectedItem.resourceName;
+				//rNodeSprite->getFrameRef().textureid=rBrushInfoItem.rSelectedItem.rNodeTexture->getId();
+				//rNodeSprite->getFrameRef().frame="";
+			}
+			mCurrentBrushNodes.push_back(rNodeSprite);
+			mCurrentPaintCanvas->addChildNode(rNodeSprite);
+			i++;
+		}
+	}
+}
+
+
+void BrushDock::on_flipX_toggled(bool checked)
+{
+	int i=0;
+	for(Node2d* n : mCurrentBrushNodes) {
+		n->setFlipX(checked);
+		mBrushInfoItemList.at(i).rSelectedItemPref.flipX=checked;
+		i++;
+	}
+}
+
+void BrushDock::on_flipY_toggled(bool checked)
+{
+	int i=0;
+	for(Node2d* n : mCurrentBrushNodes) {
+		n->setFlipY(checked);
+		mBrushInfoItemList.at(i).rSelectedItemPref.flipY=checked;
+		i++;
+	}
+}
+
+void BrushDock::on_rotate_valueChanged(int arg1)
+{
+	int i=0;
+	for(Node2d* n : mCurrentBrushNodes) {
+		n->setRotation(arg1);
+		mBrushInfoItemList.at(i).rSelectedItemPref.rotation=arg1;
+		i++;
+	}
+}
+
+void BrushDock::on_scaleX_valueChanged(double arg1)
+{
+	int i=0;
+	for(Node2d* n : mCurrentBrushNodes) {
+		n->setScale(PointFloat(arg1, n->getScale().y));
+		mBrushInfoItemList.at(i).rSelectedItemPref.scale=n->getScale();
+		i++;
+	}
+}
+
+void BrushDock::on_scaleY_valueChanged(double arg1)
+{
+	int i=0;
+	for(Node2d* n : mCurrentBrushNodes) {
+		n->setScale(PointFloat(n->getScale().x, arg1));
+		mBrushInfoItemList.at(i).rSelectedItemPref.scale=n->getScale();
+		i++;
+	}
+}
+
+void BrushDock::on_sizeX_valueChanged(int arg1)
+{
+	int i=0;
+	for(Node2d* n : mCurrentBrushNodes) {
+		n->setSize(PointInt(arg1, n->getSize().y));
+		mBrushInfoItemList.at(i).rSelectedItemPref.sizeWH=n->getSize();
+		i++;
+	}
+}
+
+void BrushDock::on_sizeY_valueChanged(int arg1)
+{
+	int i=0;
+	for(Node2d* n : mCurrentBrushNodes) {
+		n->setSize(PointInt(n->getSize().x, arg1));
+		mBrushInfoItemList.at(i).rSelectedItemPref.sizeWH=n->getSize();
+		i++;
+	}
 }

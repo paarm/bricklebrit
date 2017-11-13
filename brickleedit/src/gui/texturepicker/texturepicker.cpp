@@ -1,5 +1,4 @@
 #include "texturepicker.h"
-#include "../../project/projectcontext.h"
 #include "../guicontext.h"
 
 TexturePicker::TexturePicker(QTreeWidget *rTreeWidget)

@@ -1,6 +1,8 @@
 #pragma once
-#include <QtWidgets>
 #include "scene/sceneglwidget.h"
+//#include <QtWidgets>
+#include <QMainWindow>
+
 #include "toolbar.h"
 #include "menubar.h"
 #include "newproject/newprojectdialog.h"
