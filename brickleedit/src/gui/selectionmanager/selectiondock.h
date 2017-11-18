@@ -30,6 +30,8 @@ private slots:
 
 	void on_setAsCanvas_clicked();
 
+    void on_reparentNodes_clicked();
+
 private:
 	Ui::SelectionDock *ui;
 	void updateLatestSelected();

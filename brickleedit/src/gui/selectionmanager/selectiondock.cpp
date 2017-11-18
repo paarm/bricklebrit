@@ -12,6 +12,7 @@ SelectionDock::SelectionDock(QWidget *parent) :
 	ui->setupUi(this);
 	ui->deselectOther->setEnabled(false);
 	ui->setAsCanvas->setEnabled(false);
+    ui->reparentNodes->setEnabled(false);
     ui->treeWidget->setColumnWidth(0, 80);
 	ui->treeWidget->setColumnWidth(1, 100);
 	ui->treeWidget->setColumnWidth(2, 100);
@@ -36,6 +37,8 @@ void SelectionDock::removeNode(Node *rNode) {
 void SelectionDock::removeAllNodes() {
 	ui->treeWidget->clear();
 	ui->deselectOther->setEnabled(false);
+    ui->reparentNodes->setEnabled(false);
+    ui->setAsCanvas->setEnabled(false);
 }
 
 void SelectionDock::addNodes(vector<Node*> &v) {
@@ -156,9 +159,11 @@ void SelectionDock::updateLatestSelected() {
 	}
 	if (ui->treeWidget->topLevelItemCount()>0) {
 		ui->setAsCanvas->setEnabled(true);
-	} else {
+        ui->reparentNodes->setEnabled(true);
+    } else {
 		ui->setAsCanvas->setEnabled(false);
-	}
+        ui->reparentNodes->setEnabled(false);
+    }
 }
 
 void SelectionDock::on_treeWidget_itemActivated(QTreeWidgetItem *item, int column) {
@@ -195,4 +200,11 @@ void SelectionDock::on_setAsCanvas_clicked()
 			) {
 		GuiContext::getInstance().setCurrentPaintCanvas(static_cast<Node2d*>(rNode), true);
 	}
+}
+
+void SelectionDock::on_reparentNodes_clicked()
+{
+    if (GuiContext::getInstance().getSelectionManager().moveToCurrentLayer()>0) {
+        GuiContext::getInstance().updateGlWidget();
+    }
 }

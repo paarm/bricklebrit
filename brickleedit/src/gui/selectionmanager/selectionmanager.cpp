@@ -151,4 +151,20 @@ vector<Node*> &SelectionManager::getSelectedNodes() {
 	return mSelectedSceneNodes;
 }
 
-
+int SelectionManager::moveToCurrentLayer() {
+    int movedNodes=0;
+    NodeLayer* rNodeLayer=GuiContext::getInstance().getLayerManager().getCurrentLayer();
+    if (rNodeLayer) {
+        for(auto rNode : mSelectedSceneNodes) {
+            Node2d *rNode2d=static_cast<Node2d*>(rNode);
+            if (rNode2d->getParent()!=rNodeLayer) {
+                rNodeLayer->moveChildNode(rNode2d);
+                glm::vec4 worldPos=rNode2d->getLocationInfo().rWorldLocationCenter;
+                glm::vec4 localPos=rNodeLayer->getLocalPosFromWorldPos(worldPos.x, worldPos.y, false);
+                rNode2d->setPosition(PointInt(localPos.x, localPos.y));
+                movedNodes++;
+            }
+        }
+    }
+    return movedNodes;
+}

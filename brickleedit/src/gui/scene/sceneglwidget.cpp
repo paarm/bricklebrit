@@ -253,106 +253,112 @@ void SceneGlWidget::onLeftMouseClicked(QMouseEvent *event, int mx, int my) {
 		cout<<"World X=" << std::to_string(pos.getX())<<" Y="<< std::to_string(pos.getY())<<std::endl;
 		//cout<<"World X=" << std::to_string(posVec.x*this->size().width()/2.0)<<" Y="<< std::to_string(this->size().height()/2.0*posVec.y)<<std::endl;
 
-		if (GuiContext::getInstance().getSelectionManager().haveSelectedNodes()) {
-			const vector<Node*> &v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
-			for (Node* n : v) {
-				if (n->getNodeType()==NodeType::Sprite) {
-					NodeSprite* rNodeSprite=static_cast<NodeSprite*>(n);
-					bool intersecting=false;
-					for (int i=0;i<=HandleLocation::Bottom;i++) {
-						HandleLocationInfo *rHandleLocationInfo=nullptr;
-						HandleLocation::HandleNumber rHandleNr;
-						bool rXonly=false;
-						bool rYonly=false;
-						if (i==0) {
-							//Bottom Right
-							rHandleNr=HandleLocation::BottomRight;
-						} else if (i==1) {
-							// Right, resize to X only
-							rHandleNr=HandleLocation::Right;
-							rXonly=true;
-						} else if (i==2) {
-							// Bottom, resize to Y only
-							rHandleNr=HandleLocation::Bottom;
-							rYonly=true;
-						}
-						rHandleLocationInfo=rNodeSprite->intersectsHandle(pos.getX(), pos.getY(), rHandleNr);
-						if (rHandleLocationInfo) {
-							mSceneItemResizeManager.startResize(rHandleLocationInfo, rXonly, rYonly, &mCamera, rNodeSprite, mx, my);
-							intersecting=true;
-							break;
-						}
-					}
-					if (intersecting) {
-						break;
-					}
-				}
-			}
-		}
-		if (!mSceneItemResizeManager.isOnResize()) {
-			NodeScene *scene=GuiContext::getInstance().getCurrentScene();
-			if (scene) {
-				vector<Node2d*> v;
-				//glm::mat4 reverseViewMatrix=glm::inverse(glm::make_mat4(mCamera.getProjectionMatrix().getPointer()));
-				//glm::vec4 localPos(pos.getX(), pos.getY(), 0, 1);
-				//localPos=reverseViewMatrix*localPos;
 
-				//glm::mat4 mrev=glm::inverse();
+        if (!event->modifiers().testFlag(Qt::ShiftModifier)) {
+            if (GuiContext::getInstance().getSelectionManager().haveSelectedNodes()) {
+                const vector<Node*> &v=GuiContext::getInstance().getSelectionManager().getSelectedNodes();
+                for (Node* n : v) {
+                    if (n->getNodeType()==NodeType::Sprite) {
+                        NodeSprite* rNodeSprite=static_cast<NodeSprite*>(n);
+                        bool intersecting=false;
+                        for (int i=0;i<=HandleLocation::Bottom;i++) {
+                            HandleLocationInfo *rHandleLocationInfo=nullptr;
+                            HandleLocation::HandleNumber rHandleNr;
+                            bool rXonly=false;
+                            bool rYonly=false;
+                            if (i==0) {
+                                //Bottom Right
+                                rHandleNr=HandleLocation::BottomRight;
+                            } else if (i==1) {
+                                // Right, resize to X only
+                                rHandleNr=HandleLocation::Right;
+                                rXonly=true;
+                            } else if (i==2) {
+                                // Bottom, resize to Y only
+                                rHandleNr=HandleLocation::Bottom;
+                                rYonly=true;
+                            }
+                            rHandleLocationInfo=rNodeSprite->intersectsHandle(pos.getX(), pos.getY(), rHandleNr);
+                            if (rHandleLocationInfo) {
+                                mSceneItemResizeManager.startResize(rHandleLocationInfo, rXonly, rYonly, &mCamera, rNodeSprite, mx, my);
+                                intersecting=true;
+                                break;
+                            }
+                        }
+                        if (intersecting) {
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!mSceneItemResizeManager.isOnResize()) {
+                NodeScene *scene=GuiContext::getInstance().getCurrentScene();
+                if (scene) {
+                    vector<Node2d*> v;
+                    //glm::mat4 reverseViewMatrix=glm::inverse(glm::make_mat4(mCamera.getProjectionMatrix().getPointer()));
+                    //glm::vec4 localPos(pos.getX(), pos.getY(), 0, 1);
+                    //localPos=reverseViewMatrix*localPos;
 
-				scene->pickUpBox(v, pos.getX(), pos.getY(), pos.getX()+1.0, pos.getY()+1.0, false);
-				if (v.size()>1) {
-					Node2d* rLast=v.back();
-					v.clear();
-					v.push_back(rLast);
-				}
+                    //glm::mat4 mrev=glm::inverse();
 
-				//WorldCalculator::intersectTestForScene(v, GuiContext::getInstance().getCurrentScene(), pos.getX(), pos.getY(), 1.0, 1.0, true);
-				bool startMoveOnExistingSelection=false;
-				if (!event->modifiers().testFlag(Qt::ControlModifier)) {
-					for (Node2d* n : v) {
-						if (GuiContext::getInstance().getSelectionManager().isNodeSelected(n)) {
-							startMoveOnExistingSelection=true;
-						}
-					}
-					if (!startMoveOnExistingSelection) {
-						GuiContext::getInstance().getSelectionManager().deselectAllNodes();
-					}
-				}
-				if (!startMoveOnExistingSelection) {
-					for (Node2d* n : v) {
-						bool select=false;
-						bool deselect=false;
-						bool isAlreadySelected=GuiContext::getInstance().getSelectionManager().isNodeSelected(n);
+                    scene->pickUpBox(v, pos.getX(), pos.getY(), pos.getX()+1.0, pos.getY()+1.0, false);
+                    if (v.size()>1) {
+                        Node2d* rLast=v.back();
+                        v.clear();
+                        v.push_back(rLast);
+                    }
 
-						if (event->modifiers().testFlag(Qt::ControlModifier)) {
-							if (isAlreadySelected) {
-								deselect=true;
-							} else if (!isAlreadySelected) {
-								select=true;
-							}
-						} else if (!isAlreadySelected) {
-							select=true;
-						}
-						if (select) {
-							// xxx GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
-							GuiContext::getInstance().getSelectionManager().setNodeAsSelected(n);
-							//mDrawNodeScene.updateSelectionRecursive(n, true);
-						} else if (deselect) {
-							//GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
-							GuiContext::getInstance().getSelectionManager().deselectNode(n);
-							//mDrawNodeScene.updateSelectionRecursive(n, false);
-						}
-					}
-				}
-				if (GuiContext::getInstance().getSelectionManager().haveSelectedNodes()) {
-					mSceneItemMoveManager.startMove(&mCamera, mx, my);
-				} else {
-					mSceneBulkSelectManager.startSelect(&mCamera, mx, my);
-					GuiContext::getInstance().getSelectionManager().startBulkSelection();
-				}
-			}
-			update();
-		}
+                    //WorldCalculator::intersectTestForScene(v, GuiContext::getInstance().getCurrentScene(), pos.getX(), pos.getY(), 1.0, 1.0, true);
+                    bool startMoveOnExistingSelection=false;
+                    if (!event->modifiers().testFlag(Qt::ControlModifier)) {
+                        for (Node2d* n : v) {
+                            if (GuiContext::getInstance().getSelectionManager().isNodeSelected(n)) {
+                                startMoveOnExistingSelection=true;
+                            }
+                        }
+                        if (!startMoveOnExistingSelection) {
+                            GuiContext::getInstance().getSelectionManager().deselectAllNodes();
+                        }
+                    }
+                    if (!startMoveOnExistingSelection) {
+                        for (Node2d* n : v) {
+                            bool select=false;
+                            bool deselect=false;
+                            bool isAlreadySelected=GuiContext::getInstance().getSelectionManager().isNodeSelected(n);
+
+                            if (event->modifiers().testFlag(Qt::ControlModifier)) {
+                                if (isAlreadySelected) {
+                                    deselect=true;
+                                } else if (!isAlreadySelected) {
+                                    select=true;
+                                }
+                            } else if (!isAlreadySelected) {
+                                select=true;
+                            }
+                            if (select) {
+                                // xxx GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
+                                GuiContext::getInstance().getSelectionManager().setNodeAsSelected(n);
+                                //mDrawNodeScene.updateSelectionRecursive(n, true);
+                            } else if (deselect) {
+                                //GuiContext::getInstance().setSceneNodeInTreeAsSelected(n);
+                                GuiContext::getInstance().getSelectionManager().deselectNode(n);
+                                //mDrawNodeScene.updateSelectionRecursive(n, false);
+                            }
+                        }
+                    }
+                    if (GuiContext::getInstance().getSelectionManager().haveSelectedNodes()) {
+                        mSceneItemMoveManager.startMove(&mCamera, mx, my);
+                    } else {
+                        mSceneBulkSelectManager.startSelect(&mCamera, mx, my);
+                        GuiContext::getInstance().getSelectionManager().startBulkSelection();
+                    }
+                }
+                update();
+            }
+        } else {
+            mSceneBulkSelectManager.startSelect(&mCamera, mx, my);
+            GuiContext::getInstance().getSelectionManager().startBulkSelection();
+        }
 	} else if ( GuiContext::getInstance().getCurrentTool()==Tool::Brush &&
 				GuiContext::getInstance().getCurrentPaintCanvas()) {
 		if (GuiContext::getInstance().isNodeVisibleOn(GuiContext::getInstance().getCurrentPaintCanvas())

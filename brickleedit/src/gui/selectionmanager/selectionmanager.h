@@ -24,7 +24,7 @@ public:
 	void startBulkSelection();
 	void setNodeAsSelectedInBulk(Node *rSelectedNode);
 	void finishBulkSelection();
-
+    int moveToCurrentLayer();
 
 };
 
