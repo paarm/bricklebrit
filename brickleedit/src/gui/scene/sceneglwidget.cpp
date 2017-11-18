@@ -170,7 +170,8 @@ void SceneGlWidget::mouseMoveEvent(QMouseEvent * event ) {
 					scene->pickUpBox(v, mSceneBulkSelectManager.getStartWorldX(),
 											 mSceneBulkSelectManager.getStartWorldY(),
 											 mSceneBulkSelectManager.getCurrentWorldX(),
-											 mSceneBulkSelectManager.getCurrentWorldY());
+											 mSceneBulkSelectManager.getCurrentWorldY(),
+											true);
 					for (Node2d* n : v) {
 						GuiContext::getInstance().getSelectionManager().setNodeAsSelectedInBulk(n);
 					}
@@ -298,7 +299,12 @@ void SceneGlWidget::onLeftMouseClicked(QMouseEvent *event, int mx, int my) {
 
 				//glm::mat4 mrev=glm::inverse();
 
-				scene->pickUpBox(v, pos.getX(), pos.getY(), pos.getX()+1.0, pos.getY()+1.0);
+				scene->pickUpBox(v, pos.getX(), pos.getY(), pos.getX()+1.0, pos.getY()+1.0, false);
+				if (v.size()>1) {
+					Node2d* rLast=v.back();
+					v.clear();
+					v.push_back(rLast);
+				}
 
 				//WorldCalculator::intersectTestForScene(v, GuiContext::getInstance().getCurrentScene(), pos.getX(), pos.getY(), 1.0, 1.0, true);
 				bool startMoveOnExistingSelection=false;

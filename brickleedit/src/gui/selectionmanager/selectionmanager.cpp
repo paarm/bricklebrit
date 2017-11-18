@@ -10,7 +10,7 @@ void SelectionManager::deselectAllNodes() {
 	GuiContext::getInstance().getMainWindow().getSelectionDock().removeAllNodes();
 	for(Node* rNode : mSelectedSceneNodes) {
 		Node2d *rNode2d=static_cast<Node2d*>(rNode);
-		rNode2d->updateSelection(false);
+		rNode2d->updateSelection(false, {0,0,0});
 	}
 	mSelectedSceneNodes.clear();
 	mLatestSelected=nullptr;
@@ -38,7 +38,7 @@ void SelectionManager::deselectNode(Node *rDeselectedNode) {
 		);
 		if (it!=mSelectedSceneNodes.end()) {
 			Node2d *rNode2d=static_cast<Node2d*>(rDeselectedNode);
-			rNode2d->updateSelection(false);
+			rNode2d->updateSelection(false,{0,0,0});
 			mSelectedSceneNodes.erase(it);
 			mSelectedSceneNodes.shrink_to_fit();
 		}
@@ -71,9 +71,9 @@ void SelectionManager::setNodeAsSelected(Node* rSelectedNode) {
 	if (!isNodeSelected(rSelectedNode)) {
 		if (rSelectedNode!=nullptr) {
 			Node2d *rNode2d=static_cast<Node2d*>(rSelectedNode);
-			rNode2d->updateSelection(true);
 
 			mSelectedSceneNodes.push_back(rSelectedNode);
+			//rNode2d->updateSelection(true, {0,0,100});
 			setAsLatestSelected(nullptr);
 			GuiContext::getInstance().getMainWindow().getSelectionDock().addNode(rSelectedNode);
 		}
@@ -89,7 +89,8 @@ void SelectionManager::setNodeAsSelectedInBulk(Node *rSelectedNode) {
 	if (!isNodeSelected(rSelectedNode)) {
 		if (rSelectedNode!=nullptr) {
 			Node2d *rNode2d=static_cast<Node2d*>(rSelectedNode);
-			rNode2d->updateSelection(true);
+
+			rNode2d->updateSelection(true, {0,1.0/255.0*107.0,1.0/255.0*180.0});
 
 			mSelectedSceneNodes.push_back(rSelectedNode);
 			//mSelectedBulkNodes.push_back(rSelectedNode);
@@ -99,7 +100,7 @@ void SelectionManager::setNodeAsSelectedInBulk(Node *rSelectedNode) {
 
 void SelectionManager::finishBulkSelection() {
 	setAsLatestSelected(nullptr);
-    GuiContext::getInstance().getMainWindow().getSelectionDock().addNodes(mSelectedSceneNodes);
+	GuiContext::getInstance().getMainWindow().getSelectionDock().addNodes(mSelectedSceneNodes);
 	//mSelectedBulkNodes.clear();
 }
 
@@ -107,6 +108,7 @@ void SelectionManager::finishBulkSelection() {
 //	return mSelectedBulkNodes;
 //}
 void SelectionManager::setAsLatestSelected(Node* rNode) {
+	Node* rLatestSelectedLast=mLatestSelected;
 	const auto &it=std::find_if(mSelectedSceneNodes.begin(), mSelectedSceneNodes.end(), [rNode] (Node* entry) {
 		return rNode==entry;
 	});
@@ -117,6 +119,19 @@ void SelectionManager::setAsLatestSelected(Node* rNode) {
 	} else {
 		mLatestSelected=nullptr;
 	}
+
+	if (mLatestSelected && mLatestSelected!=rLatestSelectedLast) {
+		for(auto rNode : mSelectedSceneNodes) {
+			Node2d *rNode2d=static_cast<Node2d*>(rNode);
+
+			if (rNode2d==mLatestSelected) {
+				rNode2d->updateSelection(true, {0,1.0/255.0*200.0,1.0/255.0*58.0});
+			} else {
+				rNode2d->updateSelection(true, {0,1.0/255.0*107.0,1.0/255.0*180.0});
+			}
+		}
+	}
+
 	GuiContext::getInstance().updateNodeName(mLatestSelected);
 }
 

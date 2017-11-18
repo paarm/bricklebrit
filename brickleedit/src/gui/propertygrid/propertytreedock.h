@@ -30,6 +30,7 @@ private slots:
 	void on_propertyTree_itemClicked(QTreeWidgetItem *item, int column);
 
 private:
+	Node* mNode=nullptr;
 	Ui::PropertyTreeDock *ui;
 	PropertyEditDelegate *mPropertyNumberDelegate=nullptr;
 

@@ -18,6 +18,26 @@ struct WireVertex {
 	float z;
 };
 
+struct ColorInfo {
+	float r;
+	float g;
+	float b;
+	bool operator==(ColorInfo &rColorInfoOther) {
+		if (rColorInfoOther.r==r && rColorInfoOther.g==g && rColorInfoOther.b==b) {
+			return true;
+		}
+		return false;
+	}
+	bool operator!=(ColorInfo &rColorInfoOther) {
+		return !(&rColorInfoOther==this);
+	}
+};
+
+struct WireVertexWithColor {
+	ColorInfo	colorInfo;
+	WireVertex wireVertext;
+};
+
 struct TextureVertex {
 	struct TextureCoords	textureCoords;
 	struct WireVertex		wireVertex;
@@ -27,8 +47,8 @@ struct TextureVertexBox {
 	TextureVertex textureVertex[4];
 };
 
-struct WireVertexBox {
-	WireVertex wireVertex[4];
+struct WireVertexWithColorBox {
+	WireVertexWithColor wireVertexWithColor[4];
 };
 
 struct VertexBufferBase {
@@ -45,7 +65,7 @@ struct TexturedChildGroup : VertexBufferBase {
 };
 
 struct WiredChildGroup : VertexBufferBase {
-	WireVertexBox	*rVertexBuffer=nullptr;
+	WireVertexWithColorBox	*rVertexBuffer=nullptr;
 };
 
 struct DirtyInfo {
@@ -143,6 +163,7 @@ struct FrameRefInfo {
 struct SelectionInfo {
 	bool		rIsSelected=false;
 	bool		rIsSelectionDirty=false;
+	ColorInfo	rColorInfo={255,255,255};
 };
 
 
@@ -232,6 +253,7 @@ public:
 		mIsDrawable=true;
 	}
 	virtual void initialSetupAfterLoadRecursive() override;
+	void synchronizeProperties();
 
 	void setPosition(const PointInt& r);
 	void setPosition();
@@ -266,8 +288,8 @@ public:
 	FrameRef& getFrameRef();
 
 	void updateDraw(glm::mat4 &rViewMatrix);
-	void updateSelection(bool isSelected);
-	void pickUpBox(vector<Node2d*> &v, float x, float y, float dx, float dy);
+	void updateSelection(bool isSelected, ColorInfo rColorInfo);
+	void pickUpBox(vector<Node2d*> &v, float x, float y, float dx, float dy, bool onlyIfFullInside);
 	HandleLocationInfo* intersectsHandle(float worldX, float worldY, HandleLocation::HandleNumber rHandleNumber);
 
 	LocationInfo& getLocationInfo();

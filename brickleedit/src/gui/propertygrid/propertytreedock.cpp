@@ -18,6 +18,7 @@ PropertyTreeDock::~PropertyTreeDock()
 
 void PropertyTreeDock::clear() {
 	ui->propertyTree->clear();
+	mNode=nullptr;
 }
 
 PropertyInfo PropertyTreeDock::getPropertyInfoFromTreeItem(QTreeWidgetItem* r) {
@@ -201,6 +202,10 @@ bool PropertyTreeDock::onPropertyChange(PropertyInfo* rPropertyInfo, QString dat
 			GuiContext::getInstance().currentPropertyValueChanged(rPropertyInfo->getNode());
 		}
 	}
+	if (rPropertyInfo && mNode && mNode->getNodeType()==NodeType::Layer || mNode->getNodeType()==NodeType::Sprite) {
+		Node2d *rNode2d=static_cast<Node2d*>(mNode);
+		rNode2d->synchronizeProperties();
+	}
 	return rv;
 }
 
@@ -278,6 +283,7 @@ void PropertyTreeDock::addSubProperty(Node* rNode, PropertyBase* rPropertyBase, 
 
 void PropertyTreeDock::setPropertiesForNode(Node* rNode) {
 	clear();
+	mNode=rNode;
 	if (rNode) {
 		unsigned long count=rNode->getPropertyCount();
 		for (unsigned long i=0;i<count;i++) {

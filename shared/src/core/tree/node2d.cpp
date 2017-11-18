@@ -6,6 +6,16 @@ Node2d::~Node2d() {
 }
 
 void Node2d::initialSetupAfterLoadRecursive() {
+	synchronizeProperties();
+	if (getChildCount()>0) {
+		for (Node* rNode : mNodes) {
+			Node2d *rNode2d=static_cast<Node2d*>(rNode);
+			rNode2d->initialSetupAfterLoadRecursive();
+		}
+	}
+}
+
+void Node2d::synchronizeProperties() {
 	updatePosition(getPosition().x, getPosition().y, 0.0);
 	updateSize(getSize().x, getSize().y);
 	updateScale(getScale().x, getScale().y);
@@ -14,12 +24,6 @@ void Node2d::initialSetupAfterLoadRecursive() {
 	updateFrameRef(getFrameRef().resourcefile, getFrameRef().textureid, getFrameRef().frame);
 	updateFlipX(getFlipX());
 	updateFlipY(getFlipY());
-	if (getChildCount()>0) {
-		for (Node* rNode : mNodes) {
-			Node2d *rNode2d=static_cast<Node2d*>(rNode);
-			rNode2d->initialSetupAfterLoadRecursive();
-		}
-	}
 }
 
 //Position
@@ -303,9 +307,10 @@ void Node2d::updateTexture(BTexturePng *rBTexturePng) {
 	}
 }
 
-void Node2d::updateSelection(bool isSelected) {
-	if (mSelectionInfo.rIsSelected!=isSelected) {
+void Node2d::updateSelection(bool isSelected, ColorInfo rColorInfo) {
+	if (mSelectionInfo.rIsSelected!=isSelected || mSelectionInfo.rColorInfo!=rColorInfo) {
 		mSelectionInfo.rIsSelected=isSelected;
+		mSelectionInfo.rColorInfo=rColorInfo;
 		mSelectionInfo.rIsSelectionDirty=true;
 	}
 }
@@ -575,10 +580,10 @@ void Node2d::updateTextureVertexBuffer(bool forceDirtyParent) {
 		}
 		for (Node* rNode : mNodes) {
 			Node2d *rNode2d=static_cast<Node2d*>(rNode);
-			bool forceDirtyParent=forceDirtyParent||rNode2d->mDirtyInfo.isDirty();
+			bool forceDirtyParent_next=(forceDirtyParent||rNode2d->mDirtyInfo.isDirty());
 			rNode2d->mDirtyInfo.resetDirty();
 			//rNode2d->mFrameRefInfo.rIsFrameDirty=false;
-			rNode2d->updateTextureVertexBuffer(forceDirtyParent);
+			rNode2d->updateTextureVertexBuffer(forceDirtyParent_next);
 		}
 	}
 }
@@ -590,13 +595,13 @@ bool Node2d::reallocateWiredVertexBufferIfRequired(WiredChildGroup* rWiredChildG
 			refill=true;
 			if (rWiredChildGroup->rCapacity<rWiredChildGroup->rAboutToUse) {
 				if (rWiredChildGroup->rVertexBuffer) {
-					rWiredChildGroup->rVertexBuffer=(WireVertexBox*)realloc(rWiredChildGroup->rVertexBuffer, sizeof(WireVertexBox)*rWiredChildGroup->rAboutToUse);
+					rWiredChildGroup->rVertexBuffer=(WireVertexWithColorBox*)realloc(rWiredChildGroup->rVertexBuffer, sizeof(WireVertexWithColorBox)*rWiredChildGroup->rAboutToUse);
 				} else {
-					rWiredChildGroup->rVertexBuffer=(WireVertexBox*)malloc(sizeof(WireVertexBox)*rWiredChildGroup->rAboutToUse);
+					rWiredChildGroup->rVertexBuffer=(WireVertexWithColorBox*)malloc(sizeof(WireVertexWithColorBox)*rWiredChildGroup->rAboutToUse);
 				}
 				rWiredChildGroup->rCapacity=rWiredChildGroup->rAboutToUse;
 			}
-			memset(rWiredChildGroup->rVertexBuffer,0,sizeof(sizeof(WireVertexBox)*rWiredChildGroup->rCapacity));
+			memset(rWiredChildGroup->rVertexBuffer,0,sizeof(sizeof(WireVertexWithColorBox)*rWiredChildGroup->rCapacity));
 			rWiredChildGroup->rUsed=rWiredChildGroup->rAboutToUse;
 		}
 		rWiredChildGroup->rAboutToUse=0;
@@ -632,11 +637,14 @@ void Node2d::updateSelectionVertexBuffer(bool forceDirtyParent) {
 				Node2d *rNode2d=static_cast<Node2d*>(rNode);
 				if (rNode2d->mSelectionInfo.rIsSelected) {
 					for (int i=0;i<4;i++) {
-						WireVertex &rWireVertex=mWiredChildGroup->rVertexBuffer[mWiredChildGroup->rNextToWriteIndex].wireVertex[i];
+						WireVertexWithColor &rWireVertexWithColor=mWiredChildGroup->rVertexBuffer[mWiredChildGroup->rNextToWriteIndex].wireVertexWithColor[i];
 						glm::vec4 &s=rNode2d->mLocationInfo.rLocalLocationBox[i];
-						rWireVertex.x=s.x;
-						rWireVertex.y=s.y;
-						rWireVertex.z=s.z;
+						rWireVertexWithColor.wireVertext.x=s.x;
+						rWireVertexWithColor.wireVertext.y=s.y;
+						rWireVertexWithColor.wireVertext.z=s.z;
+						rWireVertexWithColor.colorInfo.r=rNode2d->mSelectionInfo.rColorInfo.r;
+						rWireVertexWithColor.colorInfo.g=rNode2d->mSelectionInfo.rColorInfo.g;
+						rWireVertexWithColor.colorInfo.b=rNode2d->mSelectionInfo.rColorInfo.b;
 					}
 					mWiredChildGroup->rNextToWriteIndex++;
 				}
@@ -650,11 +658,14 @@ void Node2d::updateSelectionVertexBuffer(bool forceDirtyParent) {
 				if (rNode2d->mSelectionInfo.rIsSelected) {
 					for (int cnt=0;cnt<3;cnt++) {
 						for (int i=0;i<4;i++) {
-							WireVertex &rWireVertex=mHandleWiredChildGroup->rVertexBuffer[mHandleWiredChildGroup->rNextToWriteIndex].wireVertex[i];
+							WireVertexWithColor &rWireVertexWithColor=mHandleWiredChildGroup->rVertexBuffer[mHandleWiredChildGroup->rNextToWriteIndex].wireVertexWithColor[i];
 							glm::vec4 &s=rNode2d->mHandleLocationInfo[cnt].rLocalLocationBox[i];
-							rWireVertex.x=s.x;
-							rWireVertex.y=s.y;
-							rWireVertex.z=s.z;
+							rWireVertexWithColor.wireVertext.x=s.x;
+							rWireVertexWithColor.wireVertext.y=s.y;
+							rWireVertexWithColor.wireVertext.z=s.z;
+							rWireVertexWithColor.colorInfo.r=rNode2d->mSelectionInfo.rColorInfo.r;
+							rWireVertexWithColor.colorInfo.g=rNode2d->mSelectionInfo.rColorInfo.g;
+							rWireVertexWithColor.colorInfo.b=rNode2d->mSelectionInfo.rColorInfo.b;
 						}
 						mHandleWiredChildGroup->rNextToWriteIndex++;
 					}
@@ -664,9 +675,9 @@ void Node2d::updateSelectionVertexBuffer(bool forceDirtyParent) {
 		}
 		for (Node* rNode : mNodes) {
 			Node2d *rNode2d=static_cast<Node2d*>(rNode);
-			bool forceDirtyParent=forceDirtyParent || rNode2d->mSelectionInfo.rIsSelectionDirty;
+			bool forceDirtyParent_next=(forceDirtyParent || rNode2d->mSelectionInfo.rIsSelectionDirty);
 			rNode2d->mSelectionInfo.rIsSelectionDirty=false;
-			rNode2d->updateSelectionVertexBuffer(forceDirtyParent);
+			rNode2d->updateSelectionVertexBuffer(forceDirtyParent_next);
 		}
 	}
 }
@@ -722,14 +733,14 @@ void Node2d::drawSelection(glm::mat4 &rViewMatrix) {
 			}
 			if (rDrawSelection && mWiredChildGroup->rGlBufferId!=0) {
 				glBindBuffer(GL_ARRAY_BUFFER, mWiredChildGroup->rGlBufferId);
-				glLineWidth(2.0);
-				glLineStipple(1, 0x3FC9);
-				glEnable(GL_LINE_STIPPLE);
+				glLineWidth(1.5);
+				//glLineStipple(1, 0x3FC9);
+				//glEnable(GL_LINE_STIPPLE);
 				glPolygonMode(GL_FRONT, GL_LINE);
 				glPolygonMode(GL_BACK, GL_LINE);
-				glColor3f(0.3, 0.5, 1.0);
-				glInterleavedArrays(GL_V3F, sizeof(WireVertex), nullptr);
-				glBufferData(GL_ARRAY_BUFFER, mWiredChildGroup->rUsed*sizeof(WireVertexBox), mWiredChildGroup->rVertexBuffer, GL_STATIC_DRAW);
+				//glColor3f(0.3, 0.5, 1.0);
+				glInterleavedArrays(GL_C3F_V3F, sizeof(WireVertexWithColor), nullptr);
+				glBufferData(GL_ARRAY_BUFFER, mWiredChildGroup->rUsed*sizeof(WireVertexWithColorBox), mWiredChildGroup->rVertexBuffer, GL_STATIC_DRAW);
 				glDrawArrays(GL_QUADS, 0, mWiredChildGroup->rUsed*4);
 				glDisable(GL_LINE_STIPPLE);
 			}
@@ -738,14 +749,14 @@ void Node2d::drawSelection(glm::mat4 &rViewMatrix) {
 			}
 			if (rDrawHandles && mHandleWiredChildGroup->rGlBufferId!=0) {
 				glBindBuffer(GL_ARRAY_BUFFER, mHandleWiredChildGroup->rGlBufferId);
-				glLineWidth(2.0);
+				glLineWidth(1.0);
 				//glLineStipple(1, 0x3FC9);
 				//glEnable(GL_LINE_STIPPLE);
 				glPolygonMode(GL_FRONT, GL_LINE);
 				glPolygonMode(GL_BACK, GL_LINE);
-				glColor3f(0.3,1.5, 1.0);
-				glInterleavedArrays(GL_V3F, sizeof(WireVertex), nullptr);
-				glBufferData(GL_ARRAY_BUFFER, mHandleWiredChildGroup->rUsed*sizeof(WireVertexBox), mHandleWiredChildGroup->rVertexBuffer, GL_STATIC_DRAW);
+				//glColor3f(0.3,1.5, 1.0);
+				glInterleavedArrays(GL_C3F_V3F, sizeof(WireVertexWithColor), nullptr);
+				glBufferData(GL_ARRAY_BUFFER, mHandleWiredChildGroup->rUsed*sizeof(WireVertexWithColorBox), mHandleWiredChildGroup->rVertexBuffer, GL_STATIC_DRAW);
 				glDrawArrays(GL_QUADS, 0, mHandleWiredChildGroup->rUsed*4);
 			}
 		}
@@ -822,17 +833,24 @@ HandleLocationInfo* Node2d::intersectsHandle(float worldX, float worldY, HandleL
 	return nullptr;
 }
 
-void Node2d::pickUpBox(vector<Node2d*> &v, float x, float y, float dx, float dy) {
-	if (getNodeType()==NodeType::Sprite && getVisible()) {
-		bool ss=false;
+void Node2d::pickUpBox(vector<Node2d*> &v, float x, float y, float dx, float dy, bool onlyIfFullInside) {
+	bool locked=false;
+	if (getNodeType()==NodeType::Layer) {
+		locked=static_cast<NodeLayer*>(this)->getLocked();
+	}
+
+	if (getNodeType()==NodeType::Sprite && getVisible() && !locked) {
+		int ss=0;
 		for (int i=0;i<4;i++) {
 			if (intersects2(x, y, dx, dy,
 							mLocationInfo.rWorldLocationBox[i].x, mLocationInfo.rWorldLocationBox[i].y)) {
-				ss=true;
-				break;
+				ss++;
+				if (!onlyIfFullInside) {
+					break;
+				}
 			}
 		}
-		if (!ss) {
+		if (ss==0 && !onlyIfFullInside) {
 			glm::vec4 local[4];
 			local[0].x=x;
 			local[0].y=y;
@@ -858,21 +876,21 @@ void Node2d::pickUpBox(vector<Node2d*> &v, float x, float y, float dx, float dy)
 				local[i]=mLocationInfo.rModelMatrixWithParentInverse*local[i];
 				if (intersects2(mLocationInfo.rVertexLocationBox[0].x, mLocationInfo.rVertexLocationBox[0].y, mLocationInfo.rVertexLocationBox[2].x, mLocationInfo.rVertexLocationBox[2].y,
 								local[i].x, local[i].y)) {
-					ss=true;
+					ss++;
 					break;
 				}
 				//std::cout << "Local " << std::to_string(i) <<" " << local[i].x << " x " << local[i].y << std::endl;
 			}
 		}
 
-		if (ss) {
+		if ((onlyIfFullInside && ss==4) || (!onlyIfFullInside && ss>0)) {
 			v.push_back(this);
 		}
 	}
-	if (getVisible() && getChildCount()>0) {
+	if (!locked && getVisible() && getChildCount()>0) {
 		for (Node* rNode : mNodes) {
 			Node2d *rNode2d=static_cast<Node2d*>(rNode);
-			rNode2d->pickUpBox(v, x, y, dx, dy);
+			rNode2d->pickUpBox(v, x, y, dx, dy, onlyIfFullInside);
 		}
 	}
 }
