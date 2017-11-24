@@ -5,6 +5,7 @@
 #include "thirdparty/lodepng/lodepng.h"
 #include "jsonparser/jsonparser.h"
 #include "texture/texturemanager.h"
+#include "texture/textureutil.h"
 #include "utils/dirutil.h"
 #include "utils/ignoreparam.h"
 #include "camera/camera.h"

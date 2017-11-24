@@ -48,7 +48,7 @@ void SceneItemResizeManager::stopResize() {
 
 }
 
-bool SceneItemResizeManager::updateResize(bool rSyncXY, int rMouseX, int rMouseY) {
+bool SceneItemResizeManager::updateResize(bool rSyncXY, int rMouseX, int rMouseY, bool snapToGrid) {
 	bool rv=false;
 	if (mIsOnResize) {
 		GLMVector3 worldPosCurrent=mCamera->unproject(rMouseX, rMouseY);
@@ -56,6 +56,18 @@ bool SceneItemResizeManager::updateResize(bool rSyncXY, int rMouseX, int rMouseY
 		glm::vec4 pv=mNode2d->getLocalPosFromWorldPos(worldPosCurrent.getX()-mStartWorldOffsetX, worldPosCurrent.getY()-mStartWorldOffsetY, false);
 		int diffX=mStartSize.x-pv.x*2;
 		int diffY=mStartSize.y-pv.y*2;
+		if (snapToGrid /*GuiContext::getInstance().isGridActive()*/) {
+			int gridSizeX=ProjectContext::getInstance().getNodeProject()->getGridSize().x;
+			int gridSizeY=ProjectContext::getInstance().getNodeProject()->getGridSize().y;
+			if (gridSizeX>0) {
+				diffX=diffX/gridSizeX*gridSizeX;
+			}
+			if (gridSizeY>0) {
+				diffY=diffY/gridSizeY*gridSizeY;
+			}
+		}
+
+
 		if (mXonly) {
 			diffY=0;
 		}

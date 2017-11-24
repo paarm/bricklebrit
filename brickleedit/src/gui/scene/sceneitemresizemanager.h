@@ -23,7 +23,7 @@ private:
 public:
 	SceneItemResizeManager();
 	void startResize(HandleLocationInfo* rHandleLocationInfo, bool rXonly, bool rYonly, Camera *rCamera, Node2d* rNode2d, int rStartMouseX, int rStartMouseY);
-	bool updateResize(bool rSyncXY, int rMouseX, int rMouseY);
+	bool updateResize(bool rSyncXY, int rMouseX, int rMouseY, bool snapToGrid);
 	void stopResize();
 	bool isOnResize();
 	Node2d* getNodeForResize();

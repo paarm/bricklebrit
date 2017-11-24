@@ -151,7 +151,8 @@ void SceneGlWidget::mouseMoveEvent(QMouseEvent * event ) {
 	} else if (GuiContext::getInstance().getCurrentTool()==Tool::Selection) {
 		if (mSceneItemResizeManager.isOnResize()) {
 			bool syncXY=!event->modifiers().testFlag(Qt::ControlModifier);
-			bool requireUpdate=mSceneItemResizeManager.updateResize(syncXY, event->pos().x(), event->pos().y());
+			bool snapToGrid=(GuiContext::getInstance().isGridActive() && !event->modifiers().testFlag(Qt::ShiftModifier));
+			bool requireUpdate=mSceneItemResizeManager.updateResize(syncXY, event->pos().x(), event->pos().y(), snapToGrid);
 			if (requireUpdate) {
 				this->update();
 			}
